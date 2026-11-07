@@ -2,6 +2,7 @@
 
     python -m evals.run_evals                 # all case_* packets
     python -m evals.run_evals --limit 6       # a quick subset
+    python -m evals.run_evals --cases case_017,note_mismatch
     python -m evals.run_evals --model llama-3.3-70b-versatile
 
 Measures, per run:
@@ -133,6 +134,7 @@ def summarize(results: list[dict]) -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--limit", type=int, help="only the first N cases")
+    parser.add_argument("--cases", help="comma-separated case ids or scenarios, e.g. case_017,note_mismatch")
     parser.add_argument("--model", help="override both extraction and review model")
     parser.add_argument("--pause", type=float, default=1.0, help="seconds between cases (free-tier rate limits)")
     args = parser.parse_args()
@@ -141,7 +143,12 @@ def main() -> None:
 
     model = args.model or settings.extraction_model
     llm = GroqLLM(settings.groq_api_key, model, settings.request_timeout, settings.max_retries)
-    cases = list_cases("case_")[: args.limit] if args.limit else list_cases("case_")
+    cases = list_cases("case_")
+    if args.cases:
+        wanted = set(args.cases.split(","))
+        cases = [c for c in cases if c["case_id"] in wanted or c["scenario"] in wanted]
+    if args.limit:
+        cases = cases[: args.limit]
     results = []
     for i, case in enumerate(cases, 1):
         for _ in range(5):
