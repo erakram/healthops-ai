@@ -15,6 +15,10 @@ tamper-evident audit trail.
 upload ─► Document Agent ─► rules engine ─► Claims Review Agent ─► human review ─► payer
           reads each PDF     17 checks        finds what rules       approve /        submitted
           + evidence boxes   (no LLM)         can't (with a quote)   reject / correct  exactly once
+
+payer ─► 835 remittance ─► Denial Triage Agent ─► Appeal Agent ─► biller edits & sends ─► overturned / upheld
+         parsed like a      why, what to do,       letter whose       (or corrected claim,     money recovered
+         real ERA file      by when, odds          every fact cites   bill patient, write off)
 ```
 
 | Piece | How it works |
@@ -26,6 +30,9 @@ upload ─► Document Agent ─► rules engine ─► Claims Review Agent ─�
 | **Human in the loop** | Agents never approve. A biller approves or rejects (with a reason); anyone can correct a misread field, which re-validates the claim and is stored as a future test case. |
 | **Durable workflow** | An explicit state machine plus a job queue in the database. Jobs survive restarts, resume document by document, wait out provider rate limits, and the payer submission is idempotent. |
 | **Audit trail** | Append-only, each row hashed with the previous row's hash. The UI re-verifies the whole chain. |
+| **Payer and 835** | A deterministic mock payer adjudicates each submission (timely filing, eligibility, authorization, records review, bundling edits, fee schedule, deductible) and answers with real X12 835 text. Our side reads it with an 835 parser, the same path as an imported clearinghouse file, and opens a denial for every adjustment someone must act on. Corrected claims get a reversal (CLP 22) and a replacement payment. |
+| **Denial Triage Agent** | Mostly rules: the reason code (CARC/RARC) gives the category, the payer contract gives the deadline, the packet shows whether an authorization existed. The LLM only judges whether the clinical note meets the payer policy's criteria, and a criterion counts as met only with a quote found in the note. Policies are found with BM25 search over the policy library. Recommends appeal, corrected claim, bill patient or write-off, with expected recovery. |
+| **Appeal Agent** | Drafts the appeal; every argument paragraph must cite the note, the authorization or the policy. Quotes are verified against the source, paragraphs with no verified citation or with a date, amount or ID that isn't in the record are removed and shown to the biller. The letter header (IDs, dates, amounts) is filled in by code. The biller edits and sends; citations stay attached server-side. |
 | **Evals** | `evals/run_evals.py` scores the real model against the answer keys of 26 synthetic packets: classification, field accuracy, grounding rate, finding precision/recall, AI-review catches and false alarms, tokens and time. |
 
 ## Stack
@@ -33,6 +40,7 @@ upload ─► Document Agent ─► rules engine ─► Claims Review Agent ─�
 - **Backend:** Python, FastAPI, SQLAlchemy (SQLite locally, Postgres in Docker/Render), PyMuPDF, Groq (`openai/gpt-oss-120b` by default) behind a small provider adapter
 - **Frontend:** Next.js 15 (App Router), React 19, Tailwind 4, Motion, TanStack Query, Recharts
 - **Live updates:** server-sent events from the worker to the UI
+- **Denials:** X12 835 writer/parser, CARC/RARC catalog, BM25 policy search (no extra dependencies)
 - **Auth:** JWT in an httpOnly cookie, roles `intake`, `biller`, `admin` enforced by the API
 
 ```
@@ -40,16 +48,18 @@ healthops-ai/
 ├── backend/
 │   ├── app/
 │   │   ├── core/            workflow state machine, jobs, audit chain, auth, LLM adapter, events
-│   │   ├── agents/          document extraction agent, claims review agent
+│   │   ├── agents/          document, claims review, denial triage and appeal agents
 │   │   ├── documents/       PDF text + word boxes, page rendering, quote grounding
 │   │   ├── verticals/
-│   │   │   └── healthcare/  document types, rules, prompts, sample loader  ← the "vertical pack"
+│   │   │   └── healthcare/  document types, rules, prompts, 835, CARC codes, policies, mock payer  ← the "vertical pack"
 │   │   ├── api/             auth, claims, dashboard, audit, live events
 │   │   ├── pipeline.py      extract → validate → submit handlers
 │   │   └── worker.py        background job runner
+│   │   ├── revenue.py       remit → triage → draft_appeal → appeal_decision handlers
 │   ├── scripts/generate_samples.py   synthetic packets with planted problems + answer keys
-│   ├── evals/run_evals.py            accuracy against the answer keys, with the real model
-│   └── tests/                        73 tests, offline (fake LLM)
+│   ├── evals/run_evals.py            intake agents vs. the answer keys, with the real model
+│   ├── evals/run_denial_evals.py     denial agents vs. the den_* answer keys
+│   └── tests/                        149 tests, offline (fake LLM)
 ├── frontend/                Next.js app
 └── docker-compose.yml       Postgres + API + web
 ```
@@ -78,8 +88,11 @@ npm run dev -- --port 3010      # proxies /api to http://127.0.0.1:8010 (BACKEND
 ```
 
 Open http://localhost:3010, pick a demo role, then **New claim → try a synthetic packet**.
-Good ones to show: *Clinical note says the chest X-ray was deferred* (only the AI reviewer can catch it) and
-*Invoice contains hidden instructions to the AI* (prompt injection).
+Good ones to show: *Clinical note says the chest X-ray was deferred* (only the AI reviewer can catch it),
+*Invoice contains hidden instructions to the AI* (prompt injection), and from the "payer will answer" group
+*Epidural injection denied as not medically necessary, note supports it*: approve it, and a few seconds later the
+payer's 835 arrives, triage checks the note against the policy, and an appeal is drafted for you to send.
+The **Denials** page also has seeded history to work, including corrected claims.
 
 **With Docker:** `GROQ_API_KEY=... docker compose up --build`, then http://localhost:3000.
 
@@ -88,8 +101,14 @@ Good ones to show: *Clinical note says the chest X-ray was deferred* (only the A
 ```bash
 cd backend
 .venv/bin/python -m pytest -q          # offline, deterministic: rules, audit chain, workflow, full API flow
-.venv/bin/python -m evals.run_evals    # real model, ~1 claim/minute on Groq's free tier
+.venv/bin/python -m evals.run_evals          # intake agents, real model, ~1 claim/minute on Groq's free tier
+.venv/bin/python -m evals.run_denial_evals   # denial agents: triage, criteria, citations, appeal outcomes
 ```
+
+The database schema has no migrations yet: after pulling changes that add tables or columns, delete
+`backend/data/` and restart (demo data is re-seeded). Sample dates are relative to when
+`scripts.generate_samples` ran (see `sample_data/payer_state.json`); regenerate and reset if they're months old,
+or the mock payer will start denying claims for timely filing.
 
 The rules test runs every sample's answer key through the rules engine and requires that **exactly** the
 planted problems are found: each one caught, nothing else flagged.
@@ -98,5 +117,7 @@ planted problems are found: each one caught, nothing else flagged.
 
 - Text PDFs only: scanned documents need OCR or a vision model.
 - PHI redaction before LLM calls isn't in yet (planned: Microsoft Presidio).
-- The payer is a mock; denials (835 remittance) and the appeal-drafting agent are the next milestone.
+- The payer is a mock: deterministic rules and a synthetic policy library, not a real payer's edits.
+- No 837 (claim) file is written yet; the payer receives a JSON claim. 835 is real X12.
+- No schema migrations (Alembic) yet.
 - Groq's free tier allows ~8k tokens/minute, about one claim per minute. Jobs wait and resume automatically.
