@@ -1,6 +1,6 @@
 "use client";
 
-import { BadgeCheck, CheckCircle2, Copy, FileWarning, Gavel, Plus, Send, ShieldX, Sparkles, X, XCircle } from "lucide-react";
+import { AlertTriangle, BadgeCheck, CheckCircle2, Copy, FileWarning, Gavel, ListChecks, Plus, Send, ShieldX, Sparkles, X, XCircle } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -9,6 +9,15 @@ import type { Appeal, Citation, Evidence, Paragraph } from "@/lib/api";
 import { cn, money } from "@/lib/utils";
 
 type Edit = { source_index: number | null; text: string };
+
+const norm = (t: string) => t.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+/** Same rule as the server: an item counts as cited when a citation from that source quotes it. */
+function isCited(item: { source: string; quote: string }, citations: Citation[]) {
+  const want = norm(item.quote);
+  return citations.some((c) => c.source === item.source && norm(c.quote).length >= Math.min(want.length, 8)
+    && (want.includes(norm(c.quote)) || norm(c.quote).includes(want)));
+}
 
 function initial(appeal: Appeal): Edit[] {
   const saved = appeal.letter?.paragraphs;
@@ -82,6 +91,29 @@ export function AppealEditor({ appeal, editable, sending, saving, recovered, onS
           ) : null}
         </div>
       )}
+
+      {!!draft.checklist?.length && (() => {
+        const all = shown.flatMap((p) => p.citations);
+        const items = draft.checklist!.map((c) => ({ ...c, ok: isCited(c, all) }));
+        const missing = items.filter((i) => !i.ok);
+        return (
+          <div className={cn("rounded-2xl border p-4", missing.length ? "border-amber-400/30 bg-amber-400/[0.06]" : "border-emerald-400/20 bg-emerald-400/[0.04]")}>
+            <p className="mb-2 flex items-center gap-2 text-sm text-white">
+              {missing.length ? <AlertTriangle className="size-4 text-amber-300" /> : <ListChecks className="size-4 text-emerald-300" />}
+              Evidence the payer will look for: {items.length - missing.length}/{items.length} cited
+            </p>
+            <ul className="space-y-1">
+              {items.map((i, k) => (
+                <li key={k} className="flex gap-2 text-xs">
+                  {i.ok ? <CheckCircle2 className="mt-0.5 size-3.5 shrink-0 text-emerald-300" /> : <XCircle className="mt-0.5 size-3.5 shrink-0 text-amber-300" />}
+                  <span className={i.ok ? "text-slate-400" : "text-amber-100"}><span className="font-mono">{i.id}</span> “{i.quote}”</span>
+                </li>
+              ))}
+            </ul>
+            {missing.length > 0 && isDraft && <p className="mt-2 text-[11px] text-amber-200/70">Missing evidence usually means the payer upholds. Ask for a new draft, or add it before sending.</p>}
+          </div>
+        );
+      })()}
 
       {/* The letter, on paper */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}

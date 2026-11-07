@@ -309,3 +309,54 @@ def test_835_import_matches_claims_by_number(client):
     r = client.post("/api/remittances/import", files={"file": ("era.835", raw.replace(claim["number"], "CLM-NOPE"))})
     assert r.json() == {"matched": 0, "unknown_claims": ["CLM-NOPE"], "remittances": []}
     assert client.post("/api/remittances/import", files={"file": ("x.835", "hello")}).status_code == 400
+
+
+def test_checklist_flags_an_authorization_appeal_that_doesnt_cite_the_number():
+    """Seen in evals: the model argued the service was authorized but never quoted the
+    authorization number from the determination letter, so the payer upheld."""
+    case = next(c for c in DENIAL_CASES if c["scenario"] == "auth_not_on_file")
+    claim, record, docs, clp = _adjudicate(case)
+    [(group, triage)] = _triage(case, FakeLLM())
+
+    class Vague(FakeLLM):
+        def _appeal(self, payload):
+            assert any(e["quote"].startswith("Authorization number") for e in payload["evidence_to_cite"])
+            return {"paragraphs": [
+                {"kind": "argument", "text": "The procedure was approved by utilization management.",
+                 "citations": [{"source": "prior_authorization", "quote": "Determination: APPROVED"}]},
+                {"kind": "request", "text": "Please reprocess the claim.", "citations": []}]}
+
+    draft = draft_appeal(Vague(), _facts(case, clp, group), triage.as_json(), docs, get_policy("UM-0197"))
+    missing = [c["id"] for c in draft.checklist if not c["cited"]]
+    assert "A1" in missing and draft.stats["evidence_cited"] < draft.stats["evidence_required"]
+    cpts = [l["cpt"] for l in group["lines"]]
+    decision = payer.review_appeal("authorization", cpts, [c for p in draft.paragraphs for c in p["citations"]],
+                                   record, claim.service_date, None)
+    assert not decision.overturned and decision.missing == ["A1"]  # exactly what the checklist warned about
+
+    good = draft_appeal(FakeLLM(), _facts(case, clp, group), triage.as_json(), docs, get_policy("UM-0197"))
+    assert all(c["cited"] for c in good.checklist if c["id"] == "A1")
+    assert payer.review_appeal("authorization", cpts, [c for p in good.paragraphs for c in p["citations"]],
+                               record, claim.service_date, None).overturned
+
+
+def test_llm_retries_when_the_model_returns_a_list():
+    from app.core.llm import GroqLLM
+
+    replies = iter(['[{"text": "a paragraph"}]', '{"paragraphs": []}'])
+
+    class Message:
+        def __init__(self):
+            self.content = next(replies)
+
+    class Client:
+        class chat:
+            class completions:
+                @staticmethod
+                def create(**_):
+                    return SimpleNamespace(choices=[SimpleNamespace(message=Message())],
+                                           usage=SimpleNamespace(prompt_tokens=1, completion_tokens=1))
+
+    llm = GroqLLM.__new__(GroqLLM)
+    llm.client, llm.default_model, llm._rate_limit_error = Client, "m", type("Never", (Exception,), {})
+    assert llm.complete_json("s", "u").data == {"paragraphs": []}

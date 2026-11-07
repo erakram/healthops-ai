@@ -145,6 +145,7 @@ export interface Appeal {
     header?: { date: string; from: string; to: string; subject: string; reference: [string, string][];
                salutation: string; closing: string; signature: string };
     decision?: { satisfied: string[]; missing: string[] }; historical?: boolean; error?: string;
+    checklist?: { id: string; source: string; quote: string; cited: boolean }[];
   };
   letter: { paragraphs?: Paragraph[]; attachments?: string[] };
   edited_by: string | null; sent_by: string | null; sent_at: string | null; decided_at: string | null;

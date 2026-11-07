@@ -34,10 +34,11 @@ class AppealDraft:
     stats: dict
     llm: LLMResult | None = None
     attachments: list[str] = field(default_factory=list)
+    checklist: list[dict] = field(default_factory=list)  # evidence the payer will look for, and whether it's cited
 
     def as_json(self) -> dict:
         return {"paragraphs": self.paragraphs, "removed": self.removed, "stats": self.stats,
-                "attachments": self.attachments}
+                "attachments": self.attachments, "checklist": self.checklist}
 
 
 def _norm(text: str) -> str:
@@ -94,6 +95,35 @@ def _verify(citation: dict, docs: dict[str, tuple[int, ParsedPdf]], policy_text:
     return out
 
 
+def evidence_to_cite(facts: dict, triage: dict, docs: dict[str, tuple[int, ParsedPdf]]) -> list[dict]:
+    """What the payer's reviewer will look for, as exact lines from the record. The model is
+    asked to cite each one, and the draft is checked against this list before a person sends it."""
+    items = []
+    if triage.get("category") == "authorization" and "prior_authorization" in docs:
+        _, pdf = docs["prior_authorization"]
+        number = _norm(facts.get("prior_auth_number") or "")
+        lines = [" ".join(l.split()) for l in pdf.text.splitlines() if l.strip()]
+        for line in lines:
+            if (number and number in _norm(line)) or line.lower().startswith(("valid from", "valid to")):
+                items.append({"id": "A1" if number and number in _norm(line) else "A2", "source": "prior_authorization",
+                              "quote": line})
+    for c in triage.get("criteria", []):
+        if c.get("met") and c.get("evidence"):
+            items.append({"id": c["id"], "source": "clinical_note", "quote": c["quote"]})
+    return items
+
+
+def _cited(item: dict, citations: list[dict]) -> bool:
+    want = _norm(item["quote"])
+    return any(c["source"] == item["source"] and (want in _norm(c["quote"]) or _norm(c["quote"]) in want)
+               and len(_norm(c["quote"])) >= min(len(want), 8) for c in citations)
+
+
+def checklist(items: list[dict], paragraphs: list[dict]) -> list[dict]:
+    citations = [c for p in paragraphs for c in p.get("citations", [])]
+    return [{**item, "cited": _cited(item, citations)} for item in items]
+
+
 def draft_appeal(llm: LLM, facts: dict, triage: dict, docs: dict[str, tuple[int, ParsedPdf]], policy: dict | None,
                  model: str | None = None) -> AppealDraft:
     policy_text = ""
@@ -109,6 +139,7 @@ def draft_appeal(llm: LLM, facts: dict, triage: dict, docs: dict[str, tuple[int,
         "analysis": {"reasons": triage.get("reasons", []),
                      "criteria": [{k: c.get(k) for k in ("id", "text", "met", "quote")} for c in triage.get("criteria", [])]},
         "policy": policy_text or None,
+        "evidence_to_cite": [{k: e[k] for k in ("source", "quote")} for e in evidence_to_cite(facts, triage, docs)],
         "sources": sources,
     }
     result = llm.complete_json(APPEAL_SYSTEM, json.dumps(payload, indent=1), model=model)
@@ -141,11 +172,13 @@ def draft_appeal(llm: LLM, facts: dict, triage: dict, docs: dict[str, tuple[int,
             paragraphs.append({"kind": kind, "text": text, "citations": good, "dropped_citations": dropped})
 
     attachments = sorted({c["label"] for p in paragraphs for c in p["citations"] if c["source"] != "policy"})
+    checks = checklist(evidence_to_cite(facts, triage, docs), paragraphs)
     stats = {"citations": total, "verified_citations": verified,
              "citation_rate": round(verified / total, 3) if total else None,
              "paragraphs": len(paragraphs), "removed_paragraphs": len(removed),
-             "invented_fact_paragraphs": sum(1 for r in removed if r["reason"].startswith("Mentions"))}
-    return AppealDraft(paragraphs, removed, stats, result, attachments)
+             "invented_fact_paragraphs": sum(1 for r in removed if r["reason"].startswith("Mentions")),
+             "evidence_cited": sum(1 for c in checks if c["cited"]), "evidence_required": len(checks)}
+    return AppealDraft(paragraphs, removed, stats, result, attachments, checks)
 
 
 def letter_header(facts: dict, provider: str, today: date) -> dict:

@@ -135,6 +135,8 @@ def summarize(results: list[dict]) -> dict:
         "model_overclaims_caught": sum(len(r["model_overclaimed"]) for r in denied),
         "appeals_drafted": len(appeals),
         "citation_verification_rate": rate(sum(r["appeal"]["verified_citations"] for r in appeals), total_citations),
+        "required_evidence_cited": rate(sum(r["appeal"].get("evidence_cited", 0) for r in winnable),
+                                        sum(r["appeal"].get("evidence_required", 0) for r in winnable)),
         "paragraphs_removed": sum(r["appeal"]["removed_paragraphs"] for r in appeals),
         "invented_fact_paragraphs_caught": sum(r["appeal"]["invented_fact_paragraphs"] for r in appeals),
         "winnable_appeals_overturned": rate(sum(r["overturned"] for r in winnable), len(winnable)),

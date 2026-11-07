@@ -59,7 +59,7 @@ healthops-ai/
 │   ├── scripts/generate_samples.py   synthetic packets with planted problems + answer keys
 │   ├── evals/run_evals.py            intake agents vs. the answer keys, with the real model
 │   ├── evals/run_denial_evals.py     denial agents vs. the den_* answer keys
-│   └── tests/                        149 tests, offline (fake LLM)
+│   └── tests/                        151 tests, offline (fake LLM)
 ├── frontend/                Next.js app
 └── docker-compose.yml       Postgres + API + web
 ```

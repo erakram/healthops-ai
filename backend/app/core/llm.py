@@ -86,6 +86,9 @@ class GroqLLM:
             except json.JSONDecodeError as exc:
                 last_error = exc
                 continue
+            if not isinstance(data, dict):  # seen in evals: a bare list instead of the requested object
+                last_error = ValueError(f"expected a JSON object, got {type(data).__name__}")
+                continue
             usage = response.usage
             return LLMResult(data=data, model=model,
                              input_tokens=getattr(usage, "prompt_tokens", 0) or 0,
