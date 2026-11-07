@@ -1,0 +1,73 @@
+{
+  "case_id": "hist_025",
+  "scenario": "coverage_inactive",
+  "title": "Coverage ended before the date of service",
+  "visit": "knee_scope",
+  "patient": "Leah Ramires",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-158940",
+      "patient_name": "Leah Ramires",
+      "patient_dob": "10/14/1958",
+      "member_id": "BWM878353717",
+      "payer_name": "Bluewater Mutual",
+      "provider_name": "Lakeside Orthopedics",
+      "provider_npi": "1266429228",
+      "service_date": "10/28/2026",
+      "total_charge": "$4,720.00",
+      "prior_auth_number": "PA-6121116",
+      "line_items": [
+        {
+          "cpt": "29881",
+          "description": "Knee arthroscopy with meniscectomy",
+          "units": 1,
+          "charge": "$4,720.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "S83.241A",
+        "M17.11"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Leah Ramires",
+      "member_id": "BWM878353717",
+      "payer_name": "Bluewater Mutual",
+      "group_number": "GRP-9053",
+      "coverage_start": "01/01/2025",
+      "coverage_end": "10/11/2026"
+    },
+    "clinical_note": {
+      "patient_name": "Leah Ramires",
+      "patient_dob": "10/14/1958",
+      "service_date": "October 28, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-81547",
+      "patient_name": "Leah Ramires",
+      "service_date": "10/28/2026",
+      "total_amount": "$4,720.00",
+      "line_items": [
+        {
+          "cpt": "29881",
+          "description": "Knee arthroscopy with meniscectomy",
+          "units": 1,
+          "charge": "$4,720.00"
+        }
+      ]
+    },
+    "prior_authorization": {
+      "auth_number": "PA-6121116",
+      "member_id": "BWM878353717",
+      "valid_from": "10/08/2026",
+      "valid_to": "12/07/2026",
+      "approved_cpt_codes": [
+        "29881"
+      ]
+    }
+  },
+  "expected_findings": [
+    "COVERAGE-INACTIVE"
+  ],
+  "expects_ai_review": false
+}

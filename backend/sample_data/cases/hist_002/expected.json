@@ -1,0 +1,71 @@
+{
+  "case_id": "hist_002",
+  "scenario": "clean",
+  "title": "Clean claim, everything matches",
+  "visit": "mri_brain",
+  "patient": "Jonah Mbeki",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-176025",
+      "patient_name": "Jonah Mbeki",
+      "patient_dob": "03/10/1993",
+      "member_id": "NWH198208318",
+      "payer_name": "Northwind Health Plan",
+      "provider_name": "Harbor Imaging Center",
+      "provider_npi": "1583529924",
+      "service_date": "09/30/2026",
+      "total_charge": "$2,380.00",
+      "prior_auth_number": "PA-6967260",
+      "line_items": [
+        {
+          "cpt": "70553",
+          "description": "MRI brain with and without contrast",
+          "units": 1,
+          "charge": "$2,380.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "G43.909",
+        "R51.9"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Jonah Mbeki",
+      "member_id": "NWH198208318",
+      "payer_name": "Northwind Health Plan",
+      "group_number": "GRP-4289",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Jonah Mbeki",
+      "patient_dob": "03/10/1993",
+      "service_date": "September 30, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-21248",
+      "patient_name": "Jonah Mbeki",
+      "service_date": "09/30/2026",
+      "total_amount": "$2,380.00",
+      "line_items": [
+        {
+          "cpt": "70553",
+          "description": "MRI brain with and without contrast",
+          "units": 1,
+          "charge": "$2,380.00"
+        }
+      ]
+    },
+    "prior_authorization": {
+      "auth_number": "PA-6967260",
+      "member_id": "NWH198208318",
+      "valid_from": "09/10/2026",
+      "valid_to": "11/09/2026",
+      "approved_cpt_codes": [
+        "70553"
+      ]
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false
+}

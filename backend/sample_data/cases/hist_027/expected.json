@@ -1,0 +1,64 @@
+{
+  "case_id": "hist_027",
+  "scenario": "prior_auth_missing",
+  "title": "Imaging billed without the prior authorization",
+  "visit": "echo",
+  "patient": "Ethan Sato",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-839547",
+      "patient_name": "Ethan Sato",
+      "patient_dob": "04/18/1960",
+      "member_id": "SCS480177898",
+      "payer_name": "Summit CareShield",
+      "provider_name": "Maplewood Cardiology",
+      "provider_npi": "1854792755",
+      "service_date": "10/15/2026",
+      "total_charge": "$1,095.00",
+      "prior_auth_number": null,
+      "line_items": [
+        {
+          "cpt": "93306",
+          "description": "Echocardiogram, complete",
+          "units": 1,
+          "charge": "$1,095.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "I10",
+        "R07.9"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Ethan Sato",
+      "member_id": "SCS480177898",
+      "payer_name": "Summit CareShield",
+      "group_number": "GRP-3980",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Ethan Sato",
+      "patient_dob": "04/18/1960",
+      "service_date": "October 15, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-50877",
+      "patient_name": "Ethan Sato",
+      "service_date": "10/15/2026",
+      "total_amount": "$1,095.00",
+      "line_items": [
+        {
+          "cpt": "93306",
+          "description": "Echocardiogram, complete",
+          "units": 1,
+          "charge": "$1,095.00"
+        }
+      ]
+    }
+  },
+  "expected_findings": [
+    "PRIOR-AUTH-MISSING"
+  ],
+  "expects_ai_review": false
+}

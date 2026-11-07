@@ -1,0 +1,72 @@
+{
+  "case_id": "case_006",
+  "scenario": "amount_mismatch",
+  "title": "Invoice total differs from the claim total",
+  "visit": "mri_back",
+  "patient": "Claire Osei",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-827085",
+      "patient_name": "Claire Osei",
+      "patient_dob": "08/10/1994",
+      "member_id": "NWH838243511",
+      "payer_name": "Northwind Health Plan",
+      "provider_name": "Harbor Imaging Center",
+      "provider_npi": "1223581376",
+      "service_date": "10/17/2026",
+      "total_charge": "$1,575.00",
+      "prior_auth_number": "PA-7433469",
+      "line_items": [
+        {
+          "cpt": "72148",
+          "description": "MRI lumbar spine without contrast",
+          "units": 1,
+          "charge": "$1,575.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "M54.50"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Claire Osei",
+      "member_id": "NWH838243511",
+      "payer_name": "Northwind Health Plan",
+      "group_number": "GRP-5350",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Claire Osei",
+      "patient_dob": "08/10/1994",
+      "service_date": "October 17, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-95823",
+      "patient_name": "Claire Osei",
+      "service_date": "10/17/2026",
+      "total_amount": "$1,695.00",
+      "line_items": [
+        {
+          "cpt": "72148",
+          "description": "MRI lumbar spine without contrast",
+          "units": 1,
+          "charge": "$1,695.00"
+        }
+      ]
+    },
+    "prior_authorization": {
+      "auth_number": "PA-7433469",
+      "member_id": "NWH838243511",
+      "valid_from": "09/27/2026",
+      "valid_to": "11/26/2026",
+      "approved_cpt_codes": [
+        "72148"
+      ]
+    }
+  },
+  "expected_findings": [
+    "AMOUNT-MISMATCH"
+  ],
+  "expects_ai_review": false
+}

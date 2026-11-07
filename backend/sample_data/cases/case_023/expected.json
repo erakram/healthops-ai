@@ -1,0 +1,85 @@
+{
+  "case_id": "case_023",
+  "scenario": "note_mismatch",
+  "title": "Clinical note says the chest X-ray was deferred, but it was billed",
+  "visit": "chest",
+  "patient": "Robert Ashworth",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-896917",
+      "patient_name": "Robert Ashworth",
+      "patient_dob": "07/02/1957",
+      "member_id": "BWM628734767",
+      "payer_name": "Bluewater Mutual",
+      "provider_name": "Maplewood Cardiology",
+      "provider_npi": "1928728603",
+      "service_date": "10/05/2026",
+      "total_charge": "$411.00",
+      "prior_auth_number": null,
+      "line_items": [
+        {
+          "cpt": "99214",
+          "description": "Office visit, established, moderate complexity",
+          "units": 1,
+          "charge": "$215.00"
+        },
+        {
+          "cpt": "93000",
+          "description": "Electrocardiogram, 12-lead",
+          "units": 1,
+          "charge": "$78.00"
+        },
+        {
+          "cpt": "71046",
+          "description": "Chest X-ray, 2 views",
+          "units": 1,
+          "charge": "$118.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "R07.9"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Robert Ashworth",
+      "member_id": "BWM628734767",
+      "payer_name": "Bluewater Mutual",
+      "group_number": "GRP-1098",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Robert Ashworth",
+      "patient_dob": "07/02/1957",
+      "service_date": "October 5, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-89233",
+      "patient_name": "Robert Ashworth",
+      "service_date": "10/05/2026",
+      "total_amount": "$411.00",
+      "line_items": [
+        {
+          "cpt": "99214",
+          "description": "Office visit, established, moderate complexity",
+          "units": 1,
+          "charge": "$215.00"
+        },
+        {
+          "cpt": "93000",
+          "description": "Electrocardiogram, 12-lead",
+          "units": 1,
+          "charge": "$78.00"
+        },
+        {
+          "cpt": "71046",
+          "description": "Chest X-ray, 2 views",
+          "units": 1,
+          "charge": "$118.00"
+        }
+      ]
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": true
+}

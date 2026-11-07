@@ -1,0 +1,63 @@
+{
+  "case_id": "case_010",
+  "scenario": "name_mismatch",
+  "title": "Patient name spelled differently on the invoice",
+  "visit": "uri",
+  "patient": "Marcus Larkin",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-387299",
+      "patient_name": "Marcus Larkin",
+      "patient_dob": "10/04/1983",
+      "member_id": "BWM663897486",
+      "payer_name": "Bluewater Mutual",
+      "provider_name": "Riverside Family Medicine",
+      "provider_npi": "1191642812",
+      "service_date": "10/02/2026",
+      "total_charge": "$145.00",
+      "prior_auth_number": null,
+      "line_items": [
+        {
+          "cpt": "99213",
+          "description": "Office visit, established, low complexity",
+          "units": 1,
+          "charge": "$145.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "J06.9"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Marcus Larkin",
+      "member_id": "BWM663897486",
+      "payer_name": "Bluewater Mutual",
+      "group_number": "GRP-9992",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Marcus Larkin",
+      "patient_dob": "10/04/1983",
+      "service_date": "October 2, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-50892",
+      "patient_name": "Marcus Larkia",
+      "service_date": "10/02/2026",
+      "total_amount": "$145.00",
+      "line_items": [
+        {
+          "cpt": "99213",
+          "description": "Office visit, established, low complexity",
+          "units": 1,
+          "charge": "$145.00"
+        }
+      ]
+    }
+  },
+  "expected_findings": [
+    "NAME-MISMATCH"
+  ],
+  "expects_ai_review": false
+}

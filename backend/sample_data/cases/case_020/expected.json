@@ -1,0 +1,73 @@
+{
+  "case_id": "case_020",
+  "scenario": "prior_auth_mismatch",
+  "title": "Authorization covers a different procedure",
+  "visit": "mri_brain",
+  "patient": "Robert Haddad",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-255824",
+      "patient_name": "Robert Haddad",
+      "patient_dob": "03/22/1999",
+      "member_id": "BWM704425606",
+      "payer_name": "Bluewater Mutual",
+      "provider_name": "Harbor Imaging Center",
+      "provider_npi": "1636121133",
+      "service_date": "10/27/2026",
+      "total_charge": "$2,380.00",
+      "prior_auth_number": "PA-5470294",
+      "line_items": [
+        {
+          "cpt": "70553",
+          "description": "MRI brain with and without contrast",
+          "units": 1,
+          "charge": "$2,380.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "G43.909",
+        "R51.9"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Robert Haddad",
+      "member_id": "BWM704425606",
+      "payer_name": "Bluewater Mutual",
+      "group_number": "GRP-4086",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Robert Haddad",
+      "patient_dob": "03/22/1999",
+      "service_date": "October 27, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-32995",
+      "patient_name": "Robert Haddad",
+      "service_date": "10/27/2026",
+      "total_amount": "$2,380.00",
+      "line_items": [
+        {
+          "cpt": "70553",
+          "description": "MRI brain with and without contrast",
+          "units": 1,
+          "charge": "$2,380.00"
+        }
+      ]
+    },
+    "prior_authorization": {
+      "auth_number": "PA-5470294",
+      "member_id": "BWM704425606",
+      "valid_from": "10/07/2026",
+      "valid_to": "12/06/2026",
+      "approved_cpt_codes": [
+        "72148"
+      ]
+    }
+  },
+  "expected_findings": [
+    "PRIOR-AUTH-MISMATCH"
+  ],
+  "expects_ai_review": false
+}

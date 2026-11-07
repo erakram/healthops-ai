@@ -1,0 +1,64 @@
+{
+  "case_id": "hist_029",
+  "scenario": "prior_auth_missing",
+  "title": "Imaging billed without the prior authorization",
+  "visit": "echo",
+  "patient": "Andre Larkin",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-855013",
+      "patient_name": "Andre Larkin",
+      "patient_dob": "11/02/1995",
+      "member_id": "BWM191590145",
+      "payer_name": "Bluewater Mutual",
+      "provider_name": "Maplewood Cardiology",
+      "provider_npi": "1830568329",
+      "service_date": "10/25/2026",
+      "total_charge": "$1,095.00",
+      "prior_auth_number": null,
+      "line_items": [
+        {
+          "cpt": "93306",
+          "description": "Echocardiogram, complete",
+          "units": 1,
+          "charge": "$1,095.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "I10",
+        "R07.9"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Andre Larkin",
+      "member_id": "BWM191590145",
+      "payer_name": "Bluewater Mutual",
+      "group_number": "GRP-2809",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Andre Larkin",
+      "patient_dob": "11/02/1995",
+      "service_date": "October 25, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-25761",
+      "patient_name": "Andre Larkin",
+      "service_date": "10/25/2026",
+      "total_amount": "$1,095.00",
+      "line_items": [
+        {
+          "cpt": "93306",
+          "description": "Echocardiogram, complete",
+          "units": 1,
+          "charge": "$1,095.00"
+        }
+      ]
+    }
+  },
+  "expected_findings": [
+    "PRIOR-AUTH-MISSING"
+  ],
+  "expects_ai_review": false
+}

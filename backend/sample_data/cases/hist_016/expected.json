@@ -1,0 +1,73 @@
+{
+  "case_id": "hist_016",
+  "scenario": "amount_mismatch",
+  "title": "Invoice total differs from the claim total",
+  "visit": "echo",
+  "patient": "Michael Osei",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-656883",
+      "patient_name": "Michael Osei",
+      "patient_dob": "04/09/1991",
+      "member_id": "CRH996617228",
+      "payer_name": "Cedar Ridge Health",
+      "provider_name": "Maplewood Cardiology",
+      "provider_npi": "1661606222",
+      "service_date": "10/14/2026",
+      "total_charge": "$1,095.00",
+      "prior_auth_number": "PA-6558849",
+      "line_items": [
+        {
+          "cpt": "93306",
+          "description": "Echocardiogram, complete",
+          "units": 1,
+          "charge": "$1,095.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "I10",
+        "R07.9"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Michael Osei",
+      "member_id": "CRH996617228",
+      "payer_name": "Cedar Ridge Health",
+      "group_number": "GRP-7242",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Michael Osei",
+      "patient_dob": "04/09/1991",
+      "service_date": "October 14, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-63992",
+      "patient_name": "Michael Osei",
+      "service_date": "10/14/2026",
+      "total_amount": "$1,180.00",
+      "line_items": [
+        {
+          "cpt": "93306",
+          "description": "Echocardiogram, complete",
+          "units": 1,
+          "charge": "$1,180.00"
+        }
+      ]
+    },
+    "prior_authorization": {
+      "auth_number": "PA-6558849",
+      "member_id": "CRH996617228",
+      "valid_from": "09/24/2026",
+      "valid_to": "11/23/2026",
+      "approved_cpt_codes": [
+        "93306"
+      ]
+    }
+  },
+  "expected_findings": [
+    "AMOUNT-MISMATCH"
+  ],
+  "expects_ai_review": false
+}

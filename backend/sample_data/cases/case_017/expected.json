@@ -1,0 +1,64 @@
+{
+  "case_id": "case_017",
+  "scenario": "prior_auth_missing",
+  "title": "Imaging billed without the prior authorization",
+  "visit": "knee_scope",
+  "patient": "Nadia Iverson",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-603461",
+      "patient_name": "Nadia Iverson",
+      "patient_dob": "12/01/1986",
+      "member_id": "SCS635622137",
+      "payer_name": "Summit CareShield",
+      "provider_name": "Lakeside Orthopedics",
+      "provider_npi": "1052688102",
+      "service_date": "10/30/2026",
+      "total_charge": "$4,720.00",
+      "prior_auth_number": null,
+      "line_items": [
+        {
+          "cpt": "29881",
+          "description": "Knee arthroscopy with meniscectomy",
+          "units": 1,
+          "charge": "$4,720.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "S83.241A",
+        "M17.11"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Nadia Iverson",
+      "member_id": "SCS635622137",
+      "payer_name": "Summit CareShield",
+      "group_number": "GRP-7794",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Nadia Iverson",
+      "patient_dob": "12/01/1986",
+      "service_date": "October 30, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-38955",
+      "patient_name": "Nadia Iverson",
+      "service_date": "10/30/2026",
+      "total_amount": "$4,720.00",
+      "line_items": [
+        {
+          "cpt": "29881",
+          "description": "Knee arthroscopy with meniscectomy",
+          "units": 1,
+          "charge": "$4,720.00"
+        }
+      ]
+    }
+  },
+  "expected_findings": [
+    "PRIOR-AUTH-MISSING"
+  ],
+  "expects_ai_review": false
+}

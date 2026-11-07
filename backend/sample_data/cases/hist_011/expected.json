@@ -1,0 +1,71 @@
+{
+  "case_id": "hist_011",
+  "scenario": "clean",
+  "title": "Clean claim, everything matches",
+  "visit": "echo",
+  "patient": "Hannah Brennan",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-472455",
+      "patient_name": "Hannah Brennan",
+      "patient_dob": "11/20/1984",
+      "member_id": "BWM675577203",
+      "payer_name": "Bluewater Mutual",
+      "provider_name": "Maplewood Cardiology",
+      "provider_npi": "1944586225",
+      "service_date": "10/27/2026",
+      "total_charge": "$1,095.00",
+      "prior_auth_number": "PA-4861129",
+      "line_items": [
+        {
+          "cpt": "93306",
+          "description": "Echocardiogram, complete",
+          "units": 1,
+          "charge": "$1,095.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "I10",
+        "R07.9"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Hannah Brennan",
+      "member_id": "BWM675577203",
+      "payer_name": "Bluewater Mutual",
+      "group_number": "GRP-4317",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Hannah Brennan",
+      "patient_dob": "11/20/1984",
+      "service_date": "October 27, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-78601",
+      "patient_name": "Hannah Brennan",
+      "service_date": "10/27/2026",
+      "total_amount": "$1,095.00",
+      "line_items": [
+        {
+          "cpt": "93306",
+          "description": "Echocardiogram, complete",
+          "units": 1,
+          "charge": "$1,095.00"
+        }
+      ]
+    },
+    "prior_authorization": {
+      "auth_number": "PA-4861129",
+      "member_id": "BWM675577203",
+      "valid_from": "10/07/2026",
+      "valid_to": "12/06/2026",
+      "approved_cpt_codes": [
+        "93306"
+      ]
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false
+}

@@ -1,0 +1,70 @@
+{
+  "case_id": "case_002",
+  "scenario": "clean",
+  "title": "Clean claim, everything matches",
+  "visit": "mri_back",
+  "patient": "Ruth Quintero",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-996951",
+      "patient_name": "Ruth Quintero",
+      "patient_dob": "03/23/1966",
+      "member_id": "CRH344708707",
+      "payer_name": "Cedar Ridge Health",
+      "provider_name": "Harbor Imaging Center",
+      "provider_npi": "1903417727",
+      "service_date": "10/28/2026",
+      "total_charge": "$1,575.00",
+      "prior_auth_number": "PA-4790382",
+      "line_items": [
+        {
+          "cpt": "72148",
+          "description": "MRI lumbar spine without contrast",
+          "units": 1,
+          "charge": "$1,575.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "M54.50"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Ruth Quintero",
+      "member_id": "CRH344708707",
+      "payer_name": "Cedar Ridge Health",
+      "group_number": "GRP-7167",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Ruth Quintero",
+      "patient_dob": "03/23/1966",
+      "service_date": "October 28, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-79166",
+      "patient_name": "Ruth Quintero",
+      "service_date": "10/28/2026",
+      "total_amount": "$1,575.00",
+      "line_items": [
+        {
+          "cpt": "72148",
+          "description": "MRI lumbar spine without contrast",
+          "units": 1,
+          "charge": "$1,575.00"
+        }
+      ]
+    },
+    "prior_authorization": {
+      "auth_number": "PA-4790382",
+      "member_id": "CRH344708707",
+      "valid_from": "10/08/2026",
+      "valid_to": "12/07/2026",
+      "approved_cpt_codes": [
+        "72148"
+      ]
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false
+}

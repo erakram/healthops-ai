@@ -1,0 +1,64 @@
+{
+  "case_id": "hist_028",
+  "scenario": "prior_auth_missing",
+  "title": "Imaging billed without the prior authorization",
+  "visit": "mri_brain",
+  "patient": "Maria Kowalski",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-321095",
+      "patient_name": "Maria Kowalski",
+      "patient_dob": "02/27/1998",
+      "member_id": "SCS118231358",
+      "payer_name": "Summit CareShield",
+      "provider_name": "Harbor Imaging Center",
+      "provider_npi": "1774430593",
+      "service_date": "09/30/2026",
+      "total_charge": "$2,380.00",
+      "prior_auth_number": null,
+      "line_items": [
+        {
+          "cpt": "70553",
+          "description": "MRI brain with and without contrast",
+          "units": 1,
+          "charge": "$2,380.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "G43.909",
+        "R51.9"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Maria Kowalski",
+      "member_id": "SCS118231358",
+      "payer_name": "Summit CareShield",
+      "group_number": "GRP-2710",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Maria Kowalski",
+      "patient_dob": "02/27/1998",
+      "service_date": "September 30, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-89023",
+      "patient_name": "Maria Kowalski",
+      "service_date": "09/30/2026",
+      "total_amount": "$2,380.00",
+      "line_items": [
+        {
+          "cpt": "70553",
+          "description": "MRI brain with and without contrast",
+          "units": 1,
+          "charge": "$2,380.00"
+        }
+      ]
+    }
+  },
+  "expected_findings": [
+    "PRIOR-AUTH-MISSING"
+  ],
+  "expects_ai_review": false
+}

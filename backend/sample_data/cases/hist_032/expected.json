@@ -1,0 +1,59 @@
+{
+  "case_id": "hist_032",
+  "scenario": "missing_invoice",
+  "title": "Itemized invoice wasn't included",
+  "visit": "mri_brain",
+  "patient": "David Fischer",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-815607",
+      "patient_name": "David Fischer",
+      "patient_dob": "10/03/1991",
+      "member_id": "NWH206929356",
+      "payer_name": "Northwind Health Plan",
+      "provider_name": "Harbor Imaging Center",
+      "provider_npi": "1010505562",
+      "service_date": "10/30/2026",
+      "total_charge": "$2,380.00",
+      "prior_auth_number": "PA-1640921",
+      "line_items": [
+        {
+          "cpt": "70553",
+          "description": "MRI brain with and without contrast",
+          "units": 1,
+          "charge": "$2,380.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "G43.909",
+        "R51.9"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "David Fischer",
+      "member_id": "NWH206929356",
+      "payer_name": "Northwind Health Plan",
+      "group_number": "GRP-8352",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "David Fischer",
+      "patient_dob": "10/03/1991",
+      "service_date": "October 30, 2026"
+    },
+    "prior_authorization": {
+      "auth_number": "PA-1640921",
+      "member_id": "NWH206929356",
+      "valid_from": "10/10/2026",
+      "valid_to": "12/09/2026",
+      "approved_cpt_codes": [
+        "70553"
+      ]
+    }
+  },
+  "expected_findings": [
+    "DOC-MISSING-INVOICE"
+  ],
+  "expects_ai_review": false
+}

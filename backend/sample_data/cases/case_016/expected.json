@@ -1,0 +1,63 @@
+{
+  "case_id": "case_016",
+  "scenario": "coverage_inactive",
+  "title": "Coverage ended before the date of service",
+  "visit": "uri",
+  "patient": "Lucas Lindqvist",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-666832",
+      "patient_name": "Lucas Lindqvist",
+      "patient_dob": "07/23/1967",
+      "member_id": "CRH782412611",
+      "payer_name": "Cedar Ridge Health",
+      "provider_name": "Riverside Family Medicine",
+      "provider_npi": "1822156646",
+      "service_date": "10/20/2026",
+      "total_charge": "$145.00",
+      "prior_auth_number": null,
+      "line_items": [
+        {
+          "cpt": "99213",
+          "description": "Office visit, established, low complexity",
+          "units": 1,
+          "charge": "$145.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "J06.9"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Lucas Lindqvist",
+      "member_id": "CRH782412611",
+      "payer_name": "Cedar Ridge Health",
+      "group_number": "GRP-1173",
+      "coverage_start": "01/01/2025",
+      "coverage_end": "10/08/2026"
+    },
+    "clinical_note": {
+      "patient_name": "Lucas Lindqvist",
+      "patient_dob": "07/23/1967",
+      "service_date": "October 20, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-44888",
+      "patient_name": "Lucas Lindqvist",
+      "service_date": "10/20/2026",
+      "total_amount": "$145.00",
+      "line_items": [
+        {
+          "cpt": "99213",
+          "description": "Office visit, established, low complexity",
+          "units": 1,
+          "charge": "$145.00"
+        }
+      ]
+    }
+  },
+  "expected_findings": [
+    "COVERAGE-INACTIVE"
+  ],
+  "expects_ai_review": false
+}

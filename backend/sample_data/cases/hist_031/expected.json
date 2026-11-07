@@ -1,0 +1,55 @@
+{
+  "case_id": "hist_031",
+  "scenario": "missing_invoice",
+  "title": "Itemized invoice wasn't included",
+  "visit": "knee_inj",
+  "patient": "Sofia Nakamura",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-187226",
+      "patient_name": "Sofia Nakamura",
+      "patient_dob": "12/11/1998",
+      "member_id": "NWH115783645",
+      "payer_name": "Northwind Health Plan",
+      "provider_name": "Lakeside Orthopedics",
+      "provider_npi": "1914687318",
+      "service_date": "10/09/2026",
+      "total_charge": "$350.00",
+      "prior_auth_number": null,
+      "line_items": [
+        {
+          "cpt": "99213",
+          "description": "Office visit, established, low complexity",
+          "units": 1,
+          "charge": "$145.00"
+        },
+        {
+          "cpt": "20610",
+          "description": "Injection, major joint",
+          "units": 1,
+          "charge": "$205.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "M17.11"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Sofia Nakamura",
+      "member_id": "NWH115783645",
+      "payer_name": "Northwind Health Plan",
+      "group_number": "GRP-9459",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Sofia Nakamura",
+      "patient_dob": "12/11/1998",
+      "service_date": "October 9, 2026"
+    }
+  },
+  "expected_findings": [
+    "DOC-MISSING-INVOICE"
+  ],
+  "expects_ai_review": false
+}

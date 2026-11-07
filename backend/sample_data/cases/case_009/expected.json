@@ -1,0 +1,73 @@
+{
+  "case_id": "case_009",
+  "scenario": "name_mismatch",
+  "title": "Patient name spelled differently on the invoice",
+  "visit": "knee_scope",
+  "patient": "Victor Sullivan",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-696027",
+      "patient_name": "Victor Sullivan",
+      "patient_dob": "02/19/1989",
+      "member_id": "SCS304472615",
+      "payer_name": "Summit CareShield",
+      "provider_name": "Lakeside Orthopedics",
+      "provider_npi": "1225619133",
+      "service_date": "10/04/2026",
+      "total_charge": "$4,720.00",
+      "prior_auth_number": "PA-4607286",
+      "line_items": [
+        {
+          "cpt": "29881",
+          "description": "Knee arthroscopy with meniscectomy",
+          "units": 1,
+          "charge": "$4,720.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "S83.241A",
+        "M17.11"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Victor Sullivan",
+      "member_id": "SCS304472615",
+      "payer_name": "Summit CareShield",
+      "group_number": "GRP-2314",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Victor Sullivan",
+      "patient_dob": "02/19/1989",
+      "service_date": "October 4, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-16892",
+      "patient_name": "Victor Sullivaa",
+      "service_date": "10/04/2026",
+      "total_amount": "$4,720.00",
+      "line_items": [
+        {
+          "cpt": "29881",
+          "description": "Knee arthroscopy with meniscectomy",
+          "units": 1,
+          "charge": "$4,720.00"
+        }
+      ]
+    },
+    "prior_authorization": {
+      "auth_number": "PA-4607286",
+      "member_id": "SCS304472615",
+      "valid_from": "09/14/2026",
+      "valid_to": "11/13/2026",
+      "approved_cpt_codes": [
+        "29881"
+      ]
+    }
+  },
+  "expected_findings": [
+    "NAME-MISMATCH"
+  ],
+  "expects_ai_review": false
+}

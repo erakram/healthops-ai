@@ -1,0 +1,63 @@
+{
+  "case_id": "case_012",
+  "scenario": "dob_mismatch",
+  "title": "Date of birth differs on the clinical note",
+  "visit": "uri",
+  "patient": "James Whitaker",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-206904",
+      "patient_name": "James Whitaker",
+      "patient_dob": "11/15/1965",
+      "member_id": "SCS616392207",
+      "payer_name": "Summit CareShield",
+      "provider_name": "Riverside Family Medicine",
+      "provider_npi": "1028603912",
+      "service_date": "10/30/2026",
+      "total_charge": "$145.00",
+      "prior_auth_number": null,
+      "line_items": [
+        {
+          "cpt": "99213",
+          "description": "Office visit, established, low complexity",
+          "units": 1,
+          "charge": "$145.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "J06.9"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "James Whitaker",
+      "member_id": "SCS616392207",
+      "payer_name": "Summit CareShield",
+      "group_number": "GRP-8010",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "James Whitaker",
+      "patient_dob": "11/15/1966",
+      "service_date": "October 30, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-18240",
+      "patient_name": "James Whitaker",
+      "service_date": "10/30/2026",
+      "total_amount": "$145.00",
+      "line_items": [
+        {
+          "cpt": "99213",
+          "description": "Office visit, established, low complexity",
+          "units": 1,
+          "charge": "$145.00"
+        }
+      ]
+    }
+  },
+  "expected_findings": [
+    "DOB-MISMATCH"
+  ],
+  "expects_ai_review": false
+}

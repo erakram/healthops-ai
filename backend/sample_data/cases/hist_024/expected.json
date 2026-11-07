@@ -1,0 +1,75 @@
+{
+  "case_id": "hist_024",
+  "scenario": "invalid_npi",
+  "title": "Provider NPI has a typo",
+  "visit": "knee_inj",
+  "patient": "Thomas Ashworth",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-941597",
+      "patient_name": "Thomas Ashworth",
+      "patient_dob": "04/03/1957",
+      "member_id": "NWH746820866",
+      "payer_name": "Northwind Health Plan",
+      "provider_name": "Lakeside Orthopedics",
+      "provider_npi": "1868654812",
+      "service_date": "10/14/2026",
+      "total_charge": "$350.00",
+      "prior_auth_number": null,
+      "line_items": [
+        {
+          "cpt": "99213",
+          "description": "Office visit, established, low complexity",
+          "units": 1,
+          "charge": "$145.00"
+        },
+        {
+          "cpt": "20610",
+          "description": "Injection, major joint",
+          "units": 1,
+          "charge": "$205.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "M17.11"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Thomas Ashworth",
+      "member_id": "NWH746820866",
+      "payer_name": "Northwind Health Plan",
+      "group_number": "GRP-5272",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Thomas Ashworth",
+      "patient_dob": "04/03/1957",
+      "service_date": "October 14, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-21086",
+      "patient_name": "Thomas Ashworth",
+      "service_date": "10/14/2026",
+      "total_amount": "$350.00",
+      "line_items": [
+        {
+          "cpt": "99213",
+          "description": "Office visit, established, low complexity",
+          "units": 1,
+          "charge": "$145.00"
+        },
+        {
+          "cpt": "20610",
+          "description": "Injection, major joint",
+          "units": 1,
+          "charge": "$205.00"
+        }
+      ]
+    }
+  },
+  "expected_findings": [
+    "NPI-INVALID"
+  ],
+  "expects_ai_review": false
+}

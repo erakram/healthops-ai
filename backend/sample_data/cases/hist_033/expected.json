@@ -1,0 +1,85 @@
+{
+  "case_id": "hist_033",
+  "scenario": "note_mismatch",
+  "title": "Clinical note says the chest X-ray was deferred, but it was billed",
+  "visit": "chest",
+  "patient": "Jonah Sato",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-448050",
+      "patient_name": "Jonah Sato",
+      "patient_dob": "09/14/1948",
+      "member_id": "CRH213067079",
+      "payer_name": "Cedar Ridge Health",
+      "provider_name": "Maplewood Cardiology",
+      "provider_npi": "1849874833",
+      "service_date": "10/07/2026",
+      "total_charge": "$411.00",
+      "prior_auth_number": null,
+      "line_items": [
+        {
+          "cpt": "99214",
+          "description": "Office visit, established, moderate complexity",
+          "units": 1,
+          "charge": "$215.00"
+        },
+        {
+          "cpt": "93000",
+          "description": "Electrocardiogram, 12-lead",
+          "units": 1,
+          "charge": "$78.00"
+        },
+        {
+          "cpt": "71046",
+          "description": "Chest X-ray, 2 views",
+          "units": 1,
+          "charge": "$118.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "R07.9"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Jonah Sato",
+      "member_id": "CRH213067079",
+      "payer_name": "Cedar Ridge Health",
+      "group_number": "GRP-9238",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Jonah Sato",
+      "patient_dob": "09/14/1948",
+      "service_date": "October 7, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-48965",
+      "patient_name": "Jonah Sato",
+      "service_date": "10/07/2026",
+      "total_amount": "$411.00",
+      "line_items": [
+        {
+          "cpt": "99214",
+          "description": "Office visit, established, moderate complexity",
+          "units": 1,
+          "charge": "$215.00"
+        },
+        {
+          "cpt": "93000",
+          "description": "Electrocardiogram, 12-lead",
+          "units": 1,
+          "charge": "$78.00"
+        },
+        {
+          "cpt": "71046",
+          "description": "Chest X-ray, 2 views",
+          "units": 1,
+          "charge": "$118.00"
+        }
+      ]
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": true
+}

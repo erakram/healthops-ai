@@ -1,0 +1,71 @@
+{
+  "case_id": "hist_013",
+  "scenario": "clean",
+  "title": "Clean claim, everything matches",
+  "visit": "echo",
+  "patient": "Leah Mbeki",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-673221",
+      "patient_name": "Leah Mbeki",
+      "patient_dob": "09/06/2000",
+      "member_id": "NWH651661457",
+      "payer_name": "Northwind Health Plan",
+      "provider_name": "Maplewood Cardiology",
+      "provider_npi": "1520862172",
+      "service_date": "09/29/2026",
+      "total_charge": "$1,095.00",
+      "prior_auth_number": "PA-1560811",
+      "line_items": [
+        {
+          "cpt": "93306",
+          "description": "Echocardiogram, complete",
+          "units": 1,
+          "charge": "$1,095.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "I10",
+        "R07.9"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Leah Mbeki",
+      "member_id": "NWH651661457",
+      "payer_name": "Northwind Health Plan",
+      "group_number": "GRP-8796",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Leah Mbeki",
+      "patient_dob": "09/06/2000",
+      "service_date": "September 29, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-44239",
+      "patient_name": "Leah Mbeki",
+      "service_date": "09/29/2026",
+      "total_amount": "$1,095.00",
+      "line_items": [
+        {
+          "cpt": "93306",
+          "description": "Echocardiogram, complete",
+          "units": 1,
+          "charge": "$1,095.00"
+        }
+      ]
+    },
+    "prior_authorization": {
+      "auth_number": "PA-1560811",
+      "member_id": "NWH651661457",
+      "valid_from": "09/09/2026",
+      "valid_to": "11/08/2026",
+      "approved_cpt_codes": [
+        "93306"
+      ]
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false
+}

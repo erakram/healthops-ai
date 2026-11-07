@@ -1,0 +1,73 @@
+{
+  "case_id": "case_011",
+  "scenario": "dob_mismatch",
+  "title": "Date of birth differs on the clinical note",
+  "visit": "knee_scope",
+  "patient": "Fatima Osei",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-631046",
+      "patient_name": "Fatima Osei",
+      "patient_dob": "04/10/1998",
+      "member_id": "SCS591711952",
+      "payer_name": "Summit CareShield",
+      "provider_name": "Lakeside Orthopedics",
+      "provider_npi": "1136898727",
+      "service_date": "10/31/2026",
+      "total_charge": "$4,720.00",
+      "prior_auth_number": "PA-4628079",
+      "line_items": [
+        {
+          "cpt": "29881",
+          "description": "Knee arthroscopy with meniscectomy",
+          "units": 1,
+          "charge": "$4,720.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "S83.241A",
+        "M17.11"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Fatima Osei",
+      "member_id": "SCS591711952",
+      "payer_name": "Summit CareShield",
+      "group_number": "GRP-3262",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Fatima Osei",
+      "patient_dob": "04/10/1999",
+      "service_date": "October 31, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-24696",
+      "patient_name": "Fatima Osei",
+      "service_date": "10/31/2026",
+      "total_amount": "$4,720.00",
+      "line_items": [
+        {
+          "cpt": "29881",
+          "description": "Knee arthroscopy with meniscectomy",
+          "units": 1,
+          "charge": "$4,720.00"
+        }
+      ]
+    },
+    "prior_authorization": {
+      "auth_number": "PA-4628079",
+      "member_id": "SCS591711952",
+      "valid_from": "10/11/2026",
+      "valid_to": "12/10/2026",
+      "approved_cpt_codes": [
+        "29881"
+      ]
+    }
+  },
+  "expected_findings": [
+    "DOB-MISMATCH"
+  ],
+  "expects_ai_review": false
+}

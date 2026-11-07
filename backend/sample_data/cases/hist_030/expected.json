@@ -1,0 +1,73 @@
+{
+  "case_id": "hist_030",
+  "scenario": "prior_auth_mismatch",
+  "title": "Authorization covers a different procedure",
+  "visit": "mri_brain",
+  "patient": "Samuel Holloway",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-533865",
+      "patient_name": "Samuel Holloway",
+      "patient_dob": "04/22/1981",
+      "member_id": "SCS568621231",
+      "payer_name": "Summit CareShield",
+      "provider_name": "Harbor Imaging Center",
+      "provider_npi": "1338772357",
+      "service_date": "10/05/2026",
+      "total_charge": "$2,380.00",
+      "prior_auth_number": "PA-9761328",
+      "line_items": [
+        {
+          "cpt": "70553",
+          "description": "MRI brain with and without contrast",
+          "units": 1,
+          "charge": "$2,380.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "G43.909",
+        "R51.9"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Samuel Holloway",
+      "member_id": "SCS568621231",
+      "payer_name": "Summit CareShield",
+      "group_number": "GRP-7239",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Samuel Holloway",
+      "patient_dob": "04/22/1981",
+      "service_date": "October 5, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-22172",
+      "patient_name": "Samuel Holloway",
+      "service_date": "10/05/2026",
+      "total_amount": "$2,380.00",
+      "line_items": [
+        {
+          "cpt": "70553",
+          "description": "MRI brain with and without contrast",
+          "units": 1,
+          "charge": "$2,380.00"
+        }
+      ]
+    },
+    "prior_authorization": {
+      "auth_number": "PA-9761328",
+      "member_id": "SCS568621231",
+      "valid_from": "09/15/2026",
+      "valid_to": "11/14/2026",
+      "approved_cpt_codes": [
+        "72148"
+      ]
+    }
+  },
+  "expected_findings": [
+    "PRIOR-AUTH-MISMATCH"
+  ],
+  "expects_ai_review": false
+}

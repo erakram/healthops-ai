@@ -1,0 +1,75 @@
+{
+  "case_id": "hist_026",
+  "scenario": "coverage_inactive",
+  "title": "Coverage ended before the date of service",
+  "visit": "knee_inj",
+  "patient": "David Sato",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-188237",
+      "patient_name": "David Sato",
+      "patient_dob": "06/11/1989",
+      "member_id": "NWH187744462",
+      "payer_name": "Northwind Health Plan",
+      "provider_name": "Lakeside Orthopedics",
+      "provider_npi": "1167147820",
+      "service_date": "10/12/2026",
+      "total_charge": "$350.00",
+      "prior_auth_number": null,
+      "line_items": [
+        {
+          "cpt": "99213",
+          "description": "Office visit, established, low complexity",
+          "units": 1,
+          "charge": "$145.00"
+        },
+        {
+          "cpt": "20610",
+          "description": "Injection, major joint",
+          "units": 1,
+          "charge": "$205.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "M17.11"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "David Sato",
+      "member_id": "NWH187744462",
+      "payer_name": "Northwind Health Plan",
+      "group_number": "GRP-2610",
+      "coverage_start": "01/01/2025",
+      "coverage_end": "09/20/2026"
+    },
+    "clinical_note": {
+      "patient_name": "David Sato",
+      "patient_dob": "06/11/1989",
+      "service_date": "October 12, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-33636",
+      "patient_name": "David Sato",
+      "service_date": "10/12/2026",
+      "total_amount": "$350.00",
+      "line_items": [
+        {
+          "cpt": "99213",
+          "description": "Office visit, established, low complexity",
+          "units": 1,
+          "charge": "$145.00"
+        },
+        {
+          "cpt": "20610",
+          "description": "Injection, major joint",
+          "units": 1,
+          "charge": "$205.00"
+        }
+      ]
+    }
+  },
+  "expected_findings": [
+    "COVERAGE-INACTIVE"
+  ],
+  "expects_ai_review": false
+}

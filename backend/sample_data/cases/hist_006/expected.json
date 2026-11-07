@@ -1,0 +1,61 @@
+{
+  "case_id": "hist_006",
+  "scenario": "clean",
+  "title": "Clean claim, everything matches",
+  "visit": "uri",
+  "patient": "Ruth Haddad",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-919153",
+      "patient_name": "Ruth Haddad",
+      "patient_dob": "11/02/1970",
+      "member_id": "NWH257059078",
+      "payer_name": "Northwind Health Plan",
+      "provider_name": "Riverside Family Medicine",
+      "provider_npi": "1776209086",
+      "service_date": "10/01/2026",
+      "total_charge": "$145.00",
+      "prior_auth_number": null,
+      "line_items": [
+        {
+          "cpt": "99213",
+          "description": "Office visit, established, low complexity",
+          "units": 1,
+          "charge": "$145.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "J06.9"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Ruth Haddad",
+      "member_id": "NWH257059078",
+      "payer_name": "Northwind Health Plan",
+      "group_number": "GRP-7510",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Ruth Haddad",
+      "patient_dob": "11/02/1970",
+      "service_date": "October 1, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-60570",
+      "patient_name": "Ruth Haddad",
+      "service_date": "10/01/2026",
+      "total_amount": "$145.00",
+      "line_items": [
+        {
+          "cpt": "99213",
+          "description": "Office visit, established, low complexity",
+          "units": 1,
+          "charge": "$145.00"
+        }
+      ]
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false
+}

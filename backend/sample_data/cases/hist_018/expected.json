@@ -1,0 +1,63 @@
+{
+  "case_id": "hist_018",
+  "scenario": "member_id_mismatch",
+  "title": "Member ID on the claim doesn't match the card",
+  "visit": "uri",
+  "patient": "Thomas Thornton",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-831439",
+      "patient_name": "Thomas Thornton",
+      "patient_dob": "08/07/1995",
+      "member_id": "CRH945069579",
+      "payer_name": "Cedar Ridge Health",
+      "provider_name": "Riverside Family Medicine",
+      "provider_npi": "1072037827",
+      "service_date": "10/04/2026",
+      "total_charge": "$145.00",
+      "prior_auth_number": null,
+      "line_items": [
+        {
+          "cpt": "99213",
+          "description": "Office visit, established, low complexity",
+          "units": 1,
+          "charge": "$145.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "J06.9"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Thomas Thornton",
+      "member_id": "CRH945069562",
+      "payer_name": "Cedar Ridge Health",
+      "group_number": "GRP-9493",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Thomas Thornton",
+      "patient_dob": "08/07/1995",
+      "service_date": "October 4, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-53534",
+      "patient_name": "Thomas Thornton",
+      "service_date": "10/04/2026",
+      "total_amount": "$145.00",
+      "line_items": [
+        {
+          "cpt": "99213",
+          "description": "Office visit, established, low complexity",
+          "units": 1,
+          "charge": "$145.00"
+        }
+      ]
+    }
+  },
+  "expected_findings": [
+    "MEMBER-ID-MISMATCH"
+  ],
+  "expects_ai_review": false
+}

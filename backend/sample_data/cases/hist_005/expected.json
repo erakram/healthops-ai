@@ -1,0 +1,70 @@
+{
+  "case_id": "hist_005",
+  "scenario": "clean",
+  "title": "Clean claim, everything matches",
+  "visit": "mri_back",
+  "patient": "Samuel Brennan",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-472451",
+      "patient_name": "Samuel Brennan",
+      "patient_dob": "06/03/1950",
+      "member_id": "NWH197882619",
+      "payer_name": "Northwind Health Plan",
+      "provider_name": "Harbor Imaging Center",
+      "provider_npi": "1728664537",
+      "service_date": "10/09/2026",
+      "total_charge": "$1,575.00",
+      "prior_auth_number": "PA-4088466",
+      "line_items": [
+        {
+          "cpt": "72148",
+          "description": "MRI lumbar spine without contrast",
+          "units": 1,
+          "charge": "$1,575.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "M54.50"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Samuel Brennan",
+      "member_id": "NWH197882619",
+      "payer_name": "Northwind Health Plan",
+      "group_number": "GRP-6043",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Samuel Brennan",
+      "patient_dob": "06/03/1950",
+      "service_date": "October 9, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-60173",
+      "patient_name": "Samuel Brennan",
+      "service_date": "10/09/2026",
+      "total_amount": "$1,575.00",
+      "line_items": [
+        {
+          "cpt": "72148",
+          "description": "MRI lumbar spine without contrast",
+          "units": 1,
+          "charge": "$1,575.00"
+        }
+      ]
+    },
+    "prior_authorization": {
+      "auth_number": "PA-4088466",
+      "member_id": "NWH197882619",
+      "valid_from": "09/19/2026",
+      "valid_to": "11/18/2026",
+      "approved_cpt_codes": [
+        "72148"
+      ]
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false
+}

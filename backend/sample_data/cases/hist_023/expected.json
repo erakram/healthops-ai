@@ -1,0 +1,87 @@
+{
+  "case_id": "hist_023",
+  "scenario": "invalid_npi",
+  "title": "Provider NPI has a typo",
+  "visit": "chest",
+  "patient": "Nadia Castillo",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-639362",
+      "patient_name": "Nadia Castillo",
+      "patient_dob": "10/15/1982",
+      "member_id": "NWH676287238",
+      "payer_name": "Northwind Health Plan",
+      "provider_name": "Maplewood Cardiology",
+      "provider_npi": "1935162708",
+      "service_date": "09/28/2026",
+      "total_charge": "$411.00",
+      "prior_auth_number": null,
+      "line_items": [
+        {
+          "cpt": "99214",
+          "description": "Office visit, established, moderate complexity",
+          "units": 1,
+          "charge": "$215.00"
+        },
+        {
+          "cpt": "93000",
+          "description": "Electrocardiogram, 12-lead",
+          "units": 1,
+          "charge": "$78.00"
+        },
+        {
+          "cpt": "71046",
+          "description": "Chest X-ray, 2 views",
+          "units": 1,
+          "charge": "$118.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "R07.9"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Nadia Castillo",
+      "member_id": "NWH676287238",
+      "payer_name": "Northwind Health Plan",
+      "group_number": "GRP-4174",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Nadia Castillo",
+      "patient_dob": "10/15/1982",
+      "service_date": "September 28, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-44542",
+      "patient_name": "Nadia Castillo",
+      "service_date": "09/28/2026",
+      "total_amount": "$411.00",
+      "line_items": [
+        {
+          "cpt": "99214",
+          "description": "Office visit, established, moderate complexity",
+          "units": 1,
+          "charge": "$215.00"
+        },
+        {
+          "cpt": "93000",
+          "description": "Electrocardiogram, 12-lead",
+          "units": 1,
+          "charge": "$78.00"
+        },
+        {
+          "cpt": "71046",
+          "description": "Chest X-ray, 2 views",
+          "units": 1,
+          "charge": "$118.00"
+        }
+      ]
+    }
+  },
+  "expected_findings": [
+    "NPI-INVALID"
+  ],
+  "expects_ai_review": false
+}

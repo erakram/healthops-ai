@@ -1,0 +1,35 @@
+# Full stack with Postgres:  docker compose up --build   then open http://localhost:3000
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: healthops
+      POSTGRES_PASSWORD: healthops
+      POSTGRES_DB: healthops
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U healthops"]
+      interval: 3s
+      retries: 10
+
+  backend:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql+psycopg://healthops:healthops@db:5432/healthops
+      GROQ_API_KEY: ${GROQ_API_KEY}
+      JWT_SECRET: ${JWT_SECRET:-change-me}
+      STORAGE_DIR: /data/documents
+    volumes: [documents:/data]
+    depends_on:
+      db: { condition: service_healthy }
+
+  frontend:
+    build:
+      context: ./frontend
+      args: { BACKEND_URL: "http://backend:8010" }
+    ports: ["3000:3000"]
+    depends_on: [backend]
+
+volumes:
+  pgdata:
+  documents:

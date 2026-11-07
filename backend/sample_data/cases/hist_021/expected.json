@@ -1,0 +1,75 @@
+{
+  "case_id": "hist_021",
+  "scenario": "name_mismatch",
+  "title": "Patient name spelled differently on the invoice",
+  "visit": "knee_inj",
+  "patient": "Maria Thornton",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-948515",
+      "patient_name": "Maria Thornton",
+      "patient_dob": "07/05/1957",
+      "member_id": "SCS679331329",
+      "payer_name": "Summit CareShield",
+      "provider_name": "Lakeside Orthopedics",
+      "provider_npi": "1316690340",
+      "service_date": "10/22/2026",
+      "total_charge": "$350.00",
+      "prior_auth_number": null,
+      "line_items": [
+        {
+          "cpt": "99213",
+          "description": "Office visit, established, low complexity",
+          "units": 1,
+          "charge": "$145.00"
+        },
+        {
+          "cpt": "20610",
+          "description": "Injection, major joint",
+          "units": 1,
+          "charge": "$205.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "M17.11"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Maria Thornton",
+      "member_id": "SCS679331329",
+      "payer_name": "Summit CareShield",
+      "group_number": "GRP-8584",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Maria Thornton",
+      "patient_dob": "07/05/1957",
+      "service_date": "October 22, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-66740",
+      "patient_name": "Maria Thorntoa",
+      "service_date": "10/22/2026",
+      "total_amount": "$350.00",
+      "line_items": [
+        {
+          "cpt": "99213",
+          "description": "Office visit, established, low complexity",
+          "units": 1,
+          "charge": "$145.00"
+        },
+        {
+          "cpt": "20610",
+          "description": "Injection, major joint",
+          "units": 1,
+          "charge": "$205.00"
+        }
+      ]
+    }
+  },
+  "expected_findings": [
+    "NAME-MISMATCH"
+  ],
+  "expects_ai_review": false
+}

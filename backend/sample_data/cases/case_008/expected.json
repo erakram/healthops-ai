@@ -1,0 +1,73 @@
+{
+  "case_id": "case_008",
+  "scenario": "member_id_mismatch",
+  "title": "Member ID on the claim doesn't match the card",
+  "visit": "echo",
+  "patient": "Ruth Thornton",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-916552",
+      "patient_name": "Ruth Thornton",
+      "patient_dob": "09/28/1989",
+      "member_id": "SCS701621502",
+      "payer_name": "Summit CareShield",
+      "provider_name": "Maplewood Cardiology",
+      "provider_npi": "1719149076",
+      "service_date": "09/29/2026",
+      "total_charge": "$1,095.00",
+      "prior_auth_number": "PA-1586736",
+      "line_items": [
+        {
+          "cpt": "93306",
+          "description": "Echocardiogram, complete",
+          "units": 1,
+          "charge": "$1,095.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "I10",
+        "R07.9"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Ruth Thornton",
+      "member_id": "SCS701621585",
+      "payer_name": "Summit CareShield",
+      "group_number": "GRP-8277",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Ruth Thornton",
+      "patient_dob": "09/28/1989",
+      "service_date": "September 29, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-99536",
+      "patient_name": "Ruth Thornton",
+      "service_date": "09/29/2026",
+      "total_amount": "$1,095.00",
+      "line_items": [
+        {
+          "cpt": "93306",
+          "description": "Echocardiogram, complete",
+          "units": 1,
+          "charge": "$1,095.00"
+        }
+      ]
+    },
+    "prior_authorization": {
+      "auth_number": "PA-1586736",
+      "member_id": "SCS701621502",
+      "valid_from": "09/09/2026",
+      "valid_to": "11/08/2026",
+      "approved_cpt_codes": [
+        "93306"
+      ]
+    }
+  },
+  "expected_findings": [
+    "MEMBER-ID-MISMATCH"
+  ],
+  "expects_ai_review": false
+}

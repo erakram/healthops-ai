@@ -1,0 +1,61 @@
+{
+  "case_id": "case_004",
+  "scenario": "clean",
+  "title": "Clean claim, everything matches",
+  "visit": "pt",
+  "patient": "Daniel Delgado",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-688053",
+      "patient_name": "Daniel Delgado",
+      "patient_dob": "11/08/1970",
+      "member_id": "SCS456907622",
+      "payer_name": "Summit CareShield",
+      "provider_name": "Lakeside Orthopedics",
+      "provider_npi": "1042414254",
+      "service_date": "10/23/2026",
+      "total_charge": "$246.00",
+      "prior_auth_number": null,
+      "line_items": [
+        {
+          "cpt": "97110",
+          "description": "Therapeutic exercise, each 15 min",
+          "units": 3,
+          "charge": "$246.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "M54.50"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Daniel Delgado",
+      "member_id": "SCS456907622",
+      "payer_name": "Summit CareShield",
+      "group_number": "GRP-4536",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Daniel Delgado",
+      "patient_dob": "11/08/1970",
+      "service_date": "October 23, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-69325",
+      "patient_name": "Daniel Delgado",
+      "service_date": "10/23/2026",
+      "total_amount": "$246.00",
+      "line_items": [
+        {
+          "cpt": "97110",
+          "description": "Therapeutic exercise, each 15 min",
+          "units": 3,
+          "charge": "$246.00"
+        }
+      ]
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false
+}

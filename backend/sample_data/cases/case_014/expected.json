@@ -1,0 +1,73 @@
+{
+  "case_id": "case_014",
+  "scenario": "invalid_npi",
+  "title": "Provider NPI has a typo",
+  "visit": "mri_brain",
+  "patient": "Zoe Kowalski",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-983141",
+      "patient_name": "Zoe Kowalski",
+      "patient_dob": "05/01/1950",
+      "member_id": "SCS588800704",
+      "payer_name": "Summit CareShield",
+      "provider_name": "Harbor Imaging Center",
+      "provider_npi": "1228024565",
+      "service_date": "11/03/2026",
+      "total_charge": "$2,380.00",
+      "prior_auth_number": "PA-7278956",
+      "line_items": [
+        {
+          "cpt": "70553",
+          "description": "MRI brain with and without contrast",
+          "units": 1,
+          "charge": "$2,380.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "G43.909",
+        "R51.9"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Zoe Kowalski",
+      "member_id": "SCS588800704",
+      "payer_name": "Summit CareShield",
+      "group_number": "GRP-9530",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Zoe Kowalski",
+      "patient_dob": "05/01/1950",
+      "service_date": "November 3, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-53273",
+      "patient_name": "Zoe Kowalski",
+      "service_date": "11/03/2026",
+      "total_amount": "$2,380.00",
+      "line_items": [
+        {
+          "cpt": "70553",
+          "description": "MRI brain with and without contrast",
+          "units": 1,
+          "charge": "$2,380.00"
+        }
+      ]
+    },
+    "prior_authorization": {
+      "auth_number": "PA-7278956",
+      "member_id": "SCS588800704",
+      "valid_from": "10/14/2026",
+      "valid_to": "12/13/2026",
+      "approved_cpt_codes": [
+        "70553"
+      ]
+    }
+  },
+  "expected_findings": [
+    "NPI-INVALID"
+  ],
+  "expects_ai_review": false
+}

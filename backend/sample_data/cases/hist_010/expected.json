@@ -1,0 +1,71 @@
+{
+  "case_id": "hist_010",
+  "scenario": "clean",
+  "title": "Clean claim, everything matches",
+  "visit": "knee_scope",
+  "patient": "Samuel Fischer",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-472506",
+      "patient_name": "Samuel Fischer",
+      "patient_dob": "09/17/1995",
+      "member_id": "NWH805085161",
+      "payer_name": "Northwind Health Plan",
+      "provider_name": "Lakeside Orthopedics",
+      "provider_npi": "1745729560",
+      "service_date": "11/02/2026",
+      "total_charge": "$4,720.00",
+      "prior_auth_number": "PA-9432238",
+      "line_items": [
+        {
+          "cpt": "29881",
+          "description": "Knee arthroscopy with meniscectomy",
+          "units": 1,
+          "charge": "$4,720.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "S83.241A",
+        "M17.11"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Samuel Fischer",
+      "member_id": "NWH805085161",
+      "payer_name": "Northwind Health Plan",
+      "group_number": "GRP-6916",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Samuel Fischer",
+      "patient_dob": "09/17/1995",
+      "service_date": "November 2, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-37881",
+      "patient_name": "Samuel Fischer",
+      "service_date": "11/02/2026",
+      "total_amount": "$4,720.00",
+      "line_items": [
+        {
+          "cpt": "29881",
+          "description": "Knee arthroscopy with meniscectomy",
+          "units": 1,
+          "charge": "$4,720.00"
+        }
+      ]
+    },
+    "prior_authorization": {
+      "auth_number": "PA-9432238",
+      "member_id": "NWH805085161",
+      "valid_from": "10/13/2026",
+      "valid_to": "12/12/2026",
+      "approved_cpt_codes": [
+        "29881"
+      ]
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false
+}

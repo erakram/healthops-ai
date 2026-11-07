@@ -1,0 +1,73 @@
+{
+  "case_id": "hist_020",
+  "scenario": "name_mismatch",
+  "title": "Patient name spelled differently on the invoice",
+  "visit": "knee_scope",
+  "patient": "Ethan Osei",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-486529",
+      "patient_name": "Ethan Osei",
+      "patient_dob": "06/07/1973",
+      "member_id": "CRH587041406",
+      "payer_name": "Cedar Ridge Health",
+      "provider_name": "Lakeside Orthopedics",
+      "provider_npi": "1568798262",
+      "service_date": "10/16/2026",
+      "total_charge": "$4,720.00",
+      "prior_auth_number": "PA-4093635",
+      "line_items": [
+        {
+          "cpt": "29881",
+          "description": "Knee arthroscopy with meniscectomy",
+          "units": 1,
+          "charge": "$4,720.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "S83.241A",
+        "M17.11"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Ethan Osei",
+      "member_id": "CRH587041406",
+      "payer_name": "Cedar Ridge Health",
+      "group_number": "GRP-1118",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Ethan Osei",
+      "patient_dob": "06/07/1973",
+      "service_date": "October 16, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-64904",
+      "patient_name": "Ethan Osea",
+      "service_date": "10/16/2026",
+      "total_amount": "$4,720.00",
+      "line_items": [
+        {
+          "cpt": "29881",
+          "description": "Knee arthroscopy with meniscectomy",
+          "units": 1,
+          "charge": "$4,720.00"
+        }
+      ]
+    },
+    "prior_authorization": {
+      "auth_number": "PA-4093635",
+      "member_id": "CRH587041406",
+      "valid_from": "09/26/2026",
+      "valid_to": "11/25/2026",
+      "approved_cpt_codes": [
+        "29881"
+      ]
+    }
+  },
+  "expected_findings": [
+    "NAME-MISMATCH"
+  ],
+  "expects_ai_review": false
+}

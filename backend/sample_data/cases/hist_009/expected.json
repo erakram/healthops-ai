@@ -1,0 +1,70 @@
+{
+  "case_id": "hist_009",
+  "scenario": "clean",
+  "title": "Clean claim, everything matches",
+  "visit": "mri_back",
+  "patient": "Marcus Moreau",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-756740",
+      "patient_name": "Marcus Moreau",
+      "patient_dob": "02/21/1965",
+      "member_id": "BWM742034214",
+      "payer_name": "Bluewater Mutual",
+      "provider_name": "Harbor Imaging Center",
+      "provider_npi": "1786095608",
+      "service_date": "10/21/2026",
+      "total_charge": "$1,575.00",
+      "prior_auth_number": "PA-4750738",
+      "line_items": [
+        {
+          "cpt": "72148",
+          "description": "MRI lumbar spine without contrast",
+          "units": 1,
+          "charge": "$1,575.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "M54.50"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Marcus Moreau",
+      "member_id": "BWM742034214",
+      "payer_name": "Bluewater Mutual",
+      "group_number": "GRP-8131",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Marcus Moreau",
+      "patient_dob": "02/21/1965",
+      "service_date": "October 21, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-79588",
+      "patient_name": "Marcus Moreau",
+      "service_date": "10/21/2026",
+      "total_amount": "$1,575.00",
+      "line_items": [
+        {
+          "cpt": "72148",
+          "description": "MRI lumbar spine without contrast",
+          "units": 1,
+          "charge": "$1,575.00"
+        }
+      ]
+    },
+    "prior_authorization": {
+      "auth_number": "PA-4750738",
+      "member_id": "BWM742034214",
+      "valid_from": "10/01/2026",
+      "valid_to": "11/30/2026",
+      "approved_cpt_codes": [
+        "72148"
+      ]
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false
+}

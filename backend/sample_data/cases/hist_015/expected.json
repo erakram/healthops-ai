@@ -1,0 +1,73 @@
+{
+  "case_id": "hist_015",
+  "scenario": "amount_mismatch",
+  "title": "Invoice total differs from the claim total",
+  "visit": "knee_scope",
+  "patient": "Daniel Okafor",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-406835",
+      "patient_name": "Daniel Okafor",
+      "patient_dob": "02/19/1987",
+      "member_id": "SCS214686113",
+      "payer_name": "Summit CareShield",
+      "provider_name": "Lakeside Orthopedics",
+      "provider_npi": "1255627030",
+      "service_date": "10/23/2026",
+      "total_charge": "$4,720.00",
+      "prior_auth_number": "PA-8728481",
+      "line_items": [
+        {
+          "cpt": "29881",
+          "description": "Knee arthroscopy with meniscectomy",
+          "units": 1,
+          "charge": "$4,720.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "S83.241A",
+        "M17.11"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Daniel Okafor",
+      "member_id": "SCS214686113",
+      "payer_name": "Summit CareShield",
+      "group_number": "GRP-6121",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Daniel Okafor",
+      "patient_dob": "02/19/1987",
+      "service_date": "October 23, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-80010",
+      "patient_name": "Daniel Okafor",
+      "service_date": "10/23/2026",
+      "total_amount": "$4,805.00",
+      "line_items": [
+        {
+          "cpt": "29881",
+          "description": "Knee arthroscopy with meniscectomy",
+          "units": 1,
+          "charge": "$4,805.00"
+        }
+      ]
+    },
+    "prior_authorization": {
+      "auth_number": "PA-8728481",
+      "member_id": "SCS214686113",
+      "valid_from": "10/03/2026",
+      "valid_to": "12/02/2026",
+      "approved_cpt_codes": [
+        "29881"
+      ]
+    }
+  },
+  "expected_findings": [
+    "AMOUNT-MISMATCH"
+  ],
+  "expects_ai_review": false
+}

@@ -1,0 +1,73 @@
+{
+  "case_id": "hist_017",
+  "scenario": "amount_mismatch",
+  "title": "Invoice total differs from the claim total",
+  "visit": "echo",
+  "patient": "Aisha Quintero",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-289797",
+      "patient_name": "Aisha Quintero",
+      "patient_dob": "11/27/2001",
+      "member_id": "SCS914714504",
+      "payer_name": "Summit CareShield",
+      "provider_name": "Maplewood Cardiology",
+      "provider_npi": "1630220048",
+      "service_date": "10/02/2026",
+      "total_charge": "$1,095.00",
+      "prior_auth_number": "PA-1055222",
+      "line_items": [
+        {
+          "cpt": "93306",
+          "description": "Echocardiogram, complete",
+          "units": 1,
+          "charge": "$1,095.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "I10",
+        "R07.9"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Aisha Quintero",
+      "member_id": "SCS914714504",
+      "payer_name": "Summit CareShield",
+      "group_number": "GRP-6952",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Aisha Quintero",
+      "patient_dob": "11/27/2001",
+      "service_date": "October 2, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-75952",
+      "patient_name": "Aisha Quintero",
+      "service_date": "10/02/2026",
+      "total_amount": "$1,135.00",
+      "line_items": [
+        {
+          "cpt": "93306",
+          "description": "Echocardiogram, complete",
+          "units": 1,
+          "charge": "$1,135.00"
+        }
+      ]
+    },
+    "prior_authorization": {
+      "auth_number": "PA-1055222",
+      "member_id": "SCS914714504",
+      "valid_from": "09/12/2026",
+      "valid_to": "11/11/2026",
+      "approved_cpt_codes": [
+        "93306"
+      ]
+    }
+  },
+  "expected_findings": [
+    "AMOUNT-MISMATCH"
+  ],
+  "expects_ai_review": false
+}

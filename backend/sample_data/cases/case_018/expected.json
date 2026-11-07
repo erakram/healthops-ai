@@ -1,0 +1,64 @@
+{
+  "case_id": "case_018",
+  "scenario": "prior_auth_missing",
+  "title": "Imaging billed without the prior authorization",
+  "visit": "mri_brain",
+  "patient": "Lucas Gallagher",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-920798",
+      "patient_name": "Lucas Gallagher",
+      "patient_dob": "11/14/1981",
+      "member_id": "CRH538887580",
+      "payer_name": "Cedar Ridge Health",
+      "provider_name": "Harbor Imaging Center",
+      "provider_npi": "1278140474",
+      "service_date": "10/09/2026",
+      "total_charge": "$2,380.00",
+      "prior_auth_number": null,
+      "line_items": [
+        {
+          "cpt": "70553",
+          "description": "MRI brain with and without contrast",
+          "units": 1,
+          "charge": "$2,380.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "G43.909",
+        "R51.9"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Lucas Gallagher",
+      "member_id": "CRH538887580",
+      "payer_name": "Cedar Ridge Health",
+      "group_number": "GRP-8495",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Lucas Gallagher",
+      "patient_dob": "11/14/1981",
+      "service_date": "October 9, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-30230",
+      "patient_name": "Lucas Gallagher",
+      "service_date": "10/09/2026",
+      "total_amount": "$2,380.00",
+      "line_items": [
+        {
+          "cpt": "70553",
+          "description": "MRI brain with and without contrast",
+          "units": 1,
+          "charge": "$2,380.00"
+        }
+      ]
+    }
+  },
+  "expected_findings": [
+    "PRIOR-AUTH-MISSING"
+  ],
+  "expects_ai_review": false
+}

@@ -1,0 +1,62 @@
+{
+  "case_id": "case_022",
+  "scenario": "missing_invoice",
+  "title": "Itemized invoice wasn't included",
+  "visit": "diabetes",
+  "patient": "Daniel Quintero",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-377735",
+      "patient_name": "Daniel Quintero",
+      "patient_dob": "10/18/1957",
+      "member_id": "NWH231626844",
+      "payer_name": "Northwind Health Plan",
+      "provider_name": "Riverside Family Medicine",
+      "provider_npi": "1378827616",
+      "service_date": "11/03/2026",
+      "total_charge": "$292.50",
+      "prior_auth_number": null,
+      "line_items": [
+        {
+          "cpt": "99214",
+          "description": "Office visit, established, moderate complexity",
+          "units": 1,
+          "charge": "$215.00"
+        },
+        {
+          "cpt": "80053",
+          "description": "Comprehensive metabolic panel",
+          "units": 1,
+          "charge": "$62.50"
+        },
+        {
+          "cpt": "36415",
+          "description": "Routine venipuncture",
+          "units": 1,
+          "charge": "$15.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "E11.9",
+        "I10"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Daniel Quintero",
+      "member_id": "NWH231626844",
+      "payer_name": "Northwind Health Plan",
+      "group_number": "GRP-9208",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Daniel Quintero",
+      "patient_dob": "10/18/1957",
+      "service_date": "November 3, 2026"
+    }
+  },
+  "expected_findings": [
+    "DOC-MISSING-INVOICE"
+  ],
+  "expects_ai_review": false
+}

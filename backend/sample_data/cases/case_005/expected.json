@@ -1,0 +1,73 @@
+{
+  "case_id": "case_005",
+  "scenario": "amount_mismatch",
+  "title": "Invoice total differs from the claim total",
+  "visit": "mri_brain",
+  "patient": "Ethan Sato",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-270604",
+      "patient_name": "Ethan Sato",
+      "patient_dob": "07/07/1952",
+      "member_id": "SCS522579600",
+      "payer_name": "Summit CareShield",
+      "provider_name": "Harbor Imaging Center",
+      "provider_npi": "1975717293",
+      "service_date": "10/08/2026",
+      "total_charge": "$2,380.00",
+      "prior_auth_number": "PA-4427271",
+      "line_items": [
+        {
+          "cpt": "70553",
+          "description": "MRI brain with and without contrast",
+          "units": 1,
+          "charge": "$2,380.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "G43.909",
+        "R51.9"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Ethan Sato",
+      "member_id": "SCS522579600",
+      "payer_name": "Summit CareShield",
+      "group_number": "GRP-3251",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Ethan Sato",
+      "patient_dob": "07/07/1952",
+      "service_date": "October 8, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-96810",
+      "patient_name": "Ethan Sato",
+      "service_date": "10/08/2026",
+      "total_amount": "$2,500.00",
+      "line_items": [
+        {
+          "cpt": "70553",
+          "description": "MRI brain with and without contrast",
+          "units": 1,
+          "charge": "$2,500.00"
+        }
+      ]
+    },
+    "prior_authorization": {
+      "auth_number": "PA-4427271",
+      "member_id": "SCS522579600",
+      "valid_from": "09/18/2026",
+      "valid_to": "11/17/2026",
+      "approved_cpt_codes": [
+        "70553"
+      ]
+    }
+  },
+  "expected_findings": [
+    "AMOUNT-MISMATCH"
+  ],
+  "expects_ai_review": false
+}
