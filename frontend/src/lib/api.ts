@@ -4,7 +4,7 @@
 export type Role = "intake" | "biller" | "admin";
 export type ClaimStatus =
   | "received" | "extracting" | "validating" | "needs_review" | "ready"
-  | "approved" | "rejected" | "submitted" | "failed";
+  | "approved" | "rejected" | "submitted" | "paid" | "denied" | "appealed" | "closed" | "failed";
 export type Risk = "low" | "medium" | "high";
 export type Severity = "critical" | "high" | "medium" | "low";
 
@@ -81,7 +81,92 @@ export interface ClaimDetail extends ClaimSummary {
   events: ClaimEvent[];
   agent_runs: { agent: string; model: string; input_tokens: number; output_tokens: number; latency_ms: number; at: string }[];
   submission: { payer_reference: string; at: string } | null;
+  submissions: { payer_reference: string; frequency: string; at: string }[];
+  remittances: Remittance[];
+  denials: DenialSummary[];
+  financials: {
+    billed: number | null; allowed: number; paid: number; patient_responsibility: number;
+    recovered: number; written_off: number;
+  } | null;
   schema: FieldSchema;
+}
+
+/* ---------- Remittances, denials and appeals ---------- */
+
+export interface Adjustment { group: string; code: string; amount: number }
+export interface RemitLine {
+  cpt: string; modifiers: string[]; charge: number; paid: number; units: number; service_date: string | null;
+  allowed: number | null; adjustments: Adjustment[]; remarks: string[];
+}
+export interface RemitClaim {
+  claim_number: string; status_code: string; status: string; charge: number; paid: number;
+  patient_responsibility: number; payer_control_number: string; frequency: string;
+  patient: { last?: string; first?: string; member_id?: string }; service_date: string | null;
+  adjustments: Adjustment[]; lines: RemitLine[];
+}
+export interface Remittance {
+  id: number; kind: "original" | "corrected" | "appeal" | "imported"; payer_name: string; trace_number: string;
+  paid: number; patient_responsibility: number; received_at: string; claim: RemitClaim;
+  payment: { amount: number; method: string; date: string | null; trace?: string }; warnings: string[];
+}
+
+export type DenialStatus =
+  | "triage" | "open" | "appeal_sent" | "resubmitted" | "upheld" | "overturned"
+  | "paid_on_resubmission" | "patient_billed" | "written_off" | "superseded";
+export type DenialAction = "appeal" | "corrected_claim" | "bill_patient" | "write_off" | "manual_review";
+
+export interface DenialSummary {
+  id: number; claim_id: number; claim_number: string; patient_name: string | null; payer_name: string | null;
+  service_date: string | null; code: string; group: string; group_label: string | null; reason: string;
+  remarks: { code: string; text: string }[]; category: string; category_label: string; amount: number;
+  lines: { cpt: string; modifiers: string[]; charge: number; amount: number }[];
+  status: DenialStatus; status_label: string; recommended_action: DenialAction | null; recommended_label: string | null;
+  action_taken: string | null; deadline: string | null; days_left: number | null; win_probability: number | null;
+  expected_recovery: number | null; recovered: number; policy_id: string | null; appeal_status: AppealStatus | null;
+  created_at: string; closed_at: string | null;
+}
+
+export interface Criterion {
+  id: string; text: string; met: boolean; model_said_met?: boolean; quote: string; explanation?: string;
+  evidence?: Evidence | null;
+}
+export interface Citation { source: string; label: string; quote: string; verified: boolean; evidence: Evidence | null }
+export interface Paragraph {
+  kind: "argument" | "request"; text: string; citations: Citation[]; dropped_citations?: number;
+  source_index?: number | null; edited?: boolean;
+}
+export type AppealStatus = "drafting" | "draft" | "sent" | "overturned" | "upheld" | "failed";
+export interface Appeal {
+  id: number; status: AppealStatus;
+  draft: {
+    paragraphs?: Paragraph[]; removed?: { text: string; reason: string }[]; attachments?: string[];
+    stats?: { citations: number; verified_citations: number; citation_rate: number | null; paragraphs: number;
+              removed_paragraphs: number; invented_fact_paragraphs: number };
+    header?: { date: string; from: string; to: string; subject: string; reference: [string, string][];
+               salutation: string; closing: string; signature: string };
+    decision?: { satisfied: string[]; missing: string[] }; historical?: boolean; error?: string;
+  };
+  letter: { paragraphs?: Paragraph[]; attachments?: string[] };
+  edited_by: string | null; sent_by: string | null; sent_at: string | null; decided_at: string | null;
+  outcome_reason: string | null;
+}
+export interface Policy {
+  id: string; title: string; kind: string; cpt_codes: string[]; carc_codes: string[]; body: string;
+  criteria: { id: string; text: string }[];
+}
+export interface DenialDetail extends DenialSummary {
+  triage: {
+    category?: string; action?: DenialAction; reasons?: string[]; deadline?: string | null; policy_id?: string | null;
+    retrieval?: { id: string; title: string; score: number; matched: string[] }[]; criteria?: Criterion[];
+    summary?: string; fix?: { cpt: string; add_modifier: string } | null;
+  };
+  claim: ClaimSummary; documents: DocumentInfo[]; remittance: Remittance; remittances: Remittance[];
+  appeal: Appeal | null; policy: Policy | null; letter_text: string | null; events: ClaimEvent[];
+  agent_runs: { agent: string; model: string; input_tokens: number; output_tokens: number; latency_ms: number }[];
+  other_denials: DenialSummary[]; actions: Record<DenialAction, string>;
+}
+export interface DenialsSummary {
+  open: number; open_amount: number; expected_recovery: number; due_soon: number; waiting: number; recovered: number;
 }
 
 export interface Dashboard {
@@ -105,6 +190,12 @@ export interface Dashboard {
   top_findings: { code: string; count: number }[];
   agents: { agent: string; calls: number; tokens: number; avg_latency_ms: number }[];
   recent: { claim_id: number; claim_number: string; type: string; actor: string; message: string; at: string }[];
+  revenue: {
+    billed: number; paid: number; patient_responsibility: number; denial_rate: number | null; denied_amount: number;
+    open_denials: number; open_amount: number; expected_recovery: number; due_soon: number; recovered: number;
+    written_off: number; appeals_sent: number; appeal_win_rate: number | null;
+    by_reason: { code: string; category: string; count: number; amount: number }[];
+  };
 }
 
 export interface AuditEntry {
@@ -119,7 +210,10 @@ export interface AuditEntry {
   prev_hash: string;
 }
 
-export interface SampleCase { case_id: string; title: string; scenario: string; patient: string; files: string[] }
+export interface SampleCase {
+  case_id: string; title: string; scenario: string; patient: string; files: string[];
+  stage: "intake" | "after_submission";
+}
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -175,6 +269,27 @@ export const api = {
   retry: (id: number) => request<ClaimDetail>(`/api/claims/${id}/retry`, { method: "POST" }),
 
   dashboard: () => request<Dashboard>("/api/dashboard"),
+
+  denials: (view: "open" | "waiting" | "closed" | "all" = "open") => request<DenialSummary[]>(`/api/denials?view=${view}`),
+  denialsSummary: () => request<DenialsSummary>("/api/denials/summary"),
+  denial: (id: number) => request<DenialDetail>(`/api/denials/${id}`),
+  denialAction: (id: number, action: "write_off" | "bill_patient" | "corrected_claim" | "draft_appeal", note?: string) =>
+    request<DenialDetail>(`/api/denials/${id}/action`, json({ action, note })),
+  saveAppeal: (id: number, paragraphs: { source_index: number | null; text: string }[]) =>
+    request<DenialDetail>(`/api/appeals/${id}`, { ...json({ paragraphs }), method: "PUT" }),
+  sendAppeal: (id: number, paragraphs: { source_index: number | null; text: string }[]) =>
+    request<DenialDetail>(`/api/appeals/${id}/send`, json({ paragraphs })),
+  importRemittance: (file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return request<{ matched: number; unknown_claims: string[]; remittances: Remittance[] }>("/api/remittances/import",
+      { method: "POST", body: form });
+  },
+  remittanceRaw: async (id: number) => {
+    const res = await fetch(`/api/remittances/${id}/raw`, { credentials: "same-origin" });
+    if (!res.ok) throw new ApiError(res.status, res.statusText);
+    return res.text();
+  },
   audit: () => request<AuditEntry[]>("/api/audit"),
   verifyAudit: () => request<{ ok: boolean; entries: number; broken_at: number | null }>("/api/audit/verify"),
 };

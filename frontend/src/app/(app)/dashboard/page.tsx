@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Activity, AlertTriangle, Bot, Clock3, Cpu, Send, ShieldAlert, Sparkles, Timer } from "lucide-react";
+import { Activity, AlertTriangle, ArrowRight, Bot, CircleDollarSign, Clock3, Cpu, Gavel, Percent, Scale, Send, ShieldAlert, Sparkles, Timer } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -49,6 +49,8 @@ function DashboardBody({ data }: { data: Dashboard }) {
           format={(v) => (k.avg_processing_seconds == null ? "—" : `${v.toFixed(1)}s`)}
           foot={k.avg_processing_seconds == null ? "Process a claim to measure" : <>average across {k.ai_calls} agent calls</>} />
       </div>
+
+      <Revenue data={data} />
 
       <div className="grid gap-5 xl:grid-cols-3">
         {/* Throughput */}
@@ -98,7 +100,7 @@ function DashboardBody({ data }: { data: Dashboard }) {
             <h3 className="font-medium text-white">Pipeline</h3>
             <p className="mb-5 text-xs text-slate-400">{k.total_claims} claims · {highRisk} high risk</p>
             <div className="space-y-3.5">
-              {(["extracting", "validating", "needs_review", "ready", "submitted", "rejected", "failed"] as ClaimStatus[]).map((s, i) => {
+              {(["validating", "needs_review", "ready", "submitted", "paid", "denied", "appealed", "rejected", "failed"] as ClaimStatus[]).map((s, i) => {
                 const n = data.by_status[s] ?? 0;
                 const pct = k.total_claims ? (n / k.total_claims) * 100 : 0;
                 return (
@@ -208,6 +210,63 @@ function DashboardBody({ data }: { data: Dashboard }) {
           </Panel>
         </motion.div>
       </div>
+    </motion.div>
+  );
+}
+
+function Revenue({ data }: { data: Dashboard }) {
+  const r = data.revenue;
+  const maxReason = r.by_reason[0]?.amount || 1;
+  return (
+    <motion.div variants={stagger.item}>
+      <Panel className="p-6">
+        <div className="pointer-events-none absolute -left-24 -bottom-24 size-72 rounded-full bg-gradient-to-tr from-emerald-500/10 to-transparent blur-3xl" />
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <div className="flex items-center gap-2"><CircleDollarSign className="size-4 text-emerald-300" /><h3 className="font-medium text-white">Revenue recovery</h3></div>
+            <p className="text-xs text-slate-400">After submission: what payers paid, denied, and what the denial agents got back</p>
+          </div>
+          <Link href="/denials" className="group flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-teal-200 ring-1 ring-teal-400/25 transition hover:bg-teal-400/10">
+            Work the denials <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
+          </Link>
+        </div>
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            {[
+              { icon: CircleDollarSign, label: "Paid by payers", value: r.paid, fmt: (v: number) => money(v, true), foot: `of ${money(r.billed, true)} billed`, tone: "text-emerald-300" },
+              { icon: Percent, label: "Denial rate", value: r.denial_rate ?? 0, fmt: (v: number) => (r.denial_rate == null ? "—" : `${v.toFixed(1)}%`), foot: `${money(r.denied_amount, true)} denied`, tone: "text-orange-300" },
+              { icon: Scale, label: "Open denials", value: r.open_denials, fmt: undefined, foot: `${money(r.expected_recovery, true)} expected back`, tone: "text-violet-300" },
+              { icon: Gavel, label: "Recovered", value: r.recovered, fmt: (v: number) => money(v, true), foot: r.appeal_win_rate == null ? "no appeals decided yet" : `${r.appeal_win_rate}% of appeals won`, tone: "text-teal-300" },
+            ].map((s) => (
+              <div key={s.label} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+                <s.icon className={cn("mb-2 size-4", s.tone)} />
+                <AnimatedNumber value={s.value} format={s.fmt} className="block text-2xl font-semibold tracking-tight text-white" />
+                <p className="text-xs text-slate-400">{s.label}</p>
+                <p className="mt-1 text-[11px] text-slate-500">{s.foot}</p>
+              </div>
+            ))}
+          </div>
+          <div>
+            <p className="mb-2 text-xs font-medium text-slate-400">Denied dollars by reason code</p>
+            <div className="space-y-2.5">
+              {r.by_reason.slice(0, 6).map((row, i) => (
+                <div key={row.code}>
+                  <div className="mb-1 flex justify-between text-xs">
+                    <span className="font-mono text-slate-300">{row.code} <span className="font-sans text-slate-500">· {row.category.replace("_", " ")}</span></span>
+                    <span className="tabular-nums text-slate-400">{money(row.amount, true)} · {row.count}</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full bg-white/[0.04]">
+                    <motion.div initial={{ width: 0 }} animate={{ width: `${(row.amount / maxReason) * 100}%` }}
+                      transition={{ delay: 0.3 + i * 0.07, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+                      className="h-full rounded-full bg-gradient-to-r from-orange-400/80 to-violet-400/70" />
+                  </div>
+                </div>
+              ))}
+              {!r.by_reason.length && <p className="text-sm text-slate-500">No denials yet.</p>}
+            </div>
+          </div>
+        </div>
+      </Panel>
     </motion.div>
   );
 }

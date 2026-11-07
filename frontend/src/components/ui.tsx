@@ -50,7 +50,8 @@ export function AnimatedNumber({ value, format = (v) => Math.round(v).toLocaleSt
   useEffect(() => {
     if (inView) mv.set(value);
   }, [inView, value, mv]);
-  return <motion.span ref={ref} className={cn("tabular-nums", className)}>{text}</motion.span>;
+  // The value animates on the client anyway; server and browser ICU can format the first frame differently.
+  return <motion.span ref={ref} suppressHydrationWarning className={cn("tabular-nums", className)}>{text}</motion.span>;
 }
 
 /* ---------- Buttons ---------- */
@@ -93,8 +94,12 @@ export const STATUS_META: Record<ClaimStatus, { label: string; tone: string; dot
   needs_review: { label: "Needs review", tone: "text-amber-200 bg-amber-400/10 ring-amber-400/25", dot: "bg-amber-400" },
   ready: { label: "Ready to approve", tone: "text-teal-200 bg-teal-400/10 ring-teal-400/25", dot: "bg-teal-400" },
   approved: { label: "Approved", tone: "text-emerald-200 bg-emerald-400/10 ring-emerald-400/25", dot: "bg-emerald-400", live: true },
-  submitted: { label: "Submitted", tone: "text-emerald-200 bg-emerald-400/10 ring-emerald-400/25", dot: "bg-emerald-400" },
+  submitted: { label: "With payer", tone: "text-sky-200 bg-sky-400/10 ring-sky-400/25", dot: "bg-sky-400", live: true },
   rejected: { label: "Rejected", tone: "text-rose-200 bg-rose-400/10 ring-rose-400/25", dot: "bg-rose-400" },
+  paid: { label: "Paid", tone: "text-emerald-100 bg-emerald-400/15 ring-emerald-300/30", dot: "bg-emerald-300" },
+  denied: { label: "Denied", tone: "text-orange-200 bg-orange-400/10 ring-orange-400/30", dot: "bg-orange-400" },
+  appealed: { label: "Appeal pending", tone: "text-violet-200 bg-violet-400/10 ring-violet-400/25", dot: "bg-violet-400", live: true },
+  closed: { label: "Closed", tone: "text-slate-300 bg-slate-400/10 ring-slate-400/20", dot: "bg-slate-500" },
   failed: { label: "Failed", tone: "text-rose-200 bg-rose-500/15 ring-rose-400/30", dot: "bg-rose-500" },
 };
 

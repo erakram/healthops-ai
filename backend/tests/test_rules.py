@@ -65,3 +65,20 @@ def test_extractor_unwraps_codes_returned_as_json_strings():
 
     result = extract_document(OneShot(), pdf, 1)
     assert [c["code"] for c in result.fields["diagnosis_codes"]["value"]] == [code]
+
+
+def test_reviewer_ignores_a_heading_as_evidence():
+    """Seen live: the model flagged a correct diagnosis code and quoted only the section heading."""
+    from app.agents.reviewer import review_claim
+    from app.core.llm import LLMResult
+
+    case = next(c for c in CASES if c["scenario"] == "note_mismatch")
+    note = parse_pdf(f"{case['path']}/clinical_note.pdf")
+
+    class Heading:
+        def complete_json(self, system, user, model=None):
+            return LLMResult({"issues": [{"title": "Code mismatch", "severity": "medium", "detail": "x",
+                                          "quote": "Assessment and plan"}]}, "fake", 1, 1, 1)
+
+    result = review_claim(_record(case), [], Heading(), (1, note))
+    assert result.dropped_ai_findings == 1 and not [f for f in result.findings if f.source == "ai"]

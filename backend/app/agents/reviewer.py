@@ -14,6 +14,7 @@ from app.verticals.healthcare.prompts import REVIEW_SYSTEM
 from app.verticals.healthcare.rules import RuleFinding, run_rules
 
 ALLOWED_AI_SEVERITIES = {"medium", "low"}
+MIN_QUOTE_WORDS = 4  # a heading ("Assessment and plan") isn't evidence
 
 
 @dataclass
@@ -44,7 +45,8 @@ def review_claim(record: dict, existing_claims: list[dict], llm: LLM | None,
     for issue in result.data.get("issues") or []:
         if not isinstance(issue, dict):
             continue
-        hit = locate(note_pdf, issue.get("quote") or "")
+        quote = str(issue.get("quote") or "")
+        hit = locate(note_pdf, quote) if len(quote.split()) >= MIN_QUOTE_WORDS else None
         if not hit or issue.get("severity") not in ALLOWED_AI_SEVERITIES:
             dropped += 1
             continue

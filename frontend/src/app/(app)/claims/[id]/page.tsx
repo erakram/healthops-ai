@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AlertOctagon, ArrowLeft, Ban, CheckCircle2, Clock3, Cpu, FileStack, History, RotateCcw, ShieldAlert, Sparkles } from "lucide-react";
+import { AlertOctagon, ArrowLeft, ArrowRight, Ban, CheckCircle2, CircleDollarSign, Clock3, Cpu, FileStack, History, RotateCcw, ShieldAlert, Sparkles } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { use, useState } from "react";
@@ -12,11 +12,13 @@ import { DocumentViewer } from "@/components/claim/document-viewer";
 import { ExtractedFields } from "@/components/claim/fields";
 import { Findings } from "@/components/claim/findings";
 import { Lifecycle } from "@/components/claim/lifecycle";
+import { ActionChip, CodeBadge, DenialStatusPill } from "@/components/denials/bits";
 import { Button, Panel, RiskBadge, Skeleton, StatusPill } from "@/components/ui";
 import { api, type ClaimDetail, type Evidence } from "@/lib/api";
 import { cn, money, shortDate, timeAgo } from "@/lib/utils";
 
 const PROCESSING = new Set(["received", "extracting", "validating", "approved"]);
+const WAITING_ON_PAYER = new Set(["submitted", "appealed"]);
 
 export default function ClaimPage({ params }: { params: Promise<{ id: string }> }) {
   const id = Number(use(params).id);
@@ -24,7 +26,8 @@ export default function ClaimPage({ params }: { params: Promise<{ id: string }> 
     queryKey: ["claim", id],
     queryFn: () => api.claim(id),
     // Live events refresh this instantly; polling is the fallback while agents work.
-    refetchInterval: (q) => (q.state.data && PROCESSING.has(q.state.data.status) ? 1500 : 30_000),
+    refetchInterval: (q) => (q.state.data && PROCESSING.has(q.state.data.status) ? 1500
+      : q.state.data && WAITING_ON_PAYER.has(q.state.data.status) ? 3000 : 30_000),
   });
   if (!claim) return <ClaimSkeleton />;
   return <ClaimView claim={claim} />;
@@ -113,6 +116,14 @@ function ClaimView({ claim }: { claim: ClaimDetail }) {
       </div>
 
       <Panel glow={false} className="p-5"><Lifecycle status={claim.status} /></Panel>
+
+      {claim.status === "submitted" && !claim.remittances.length && (
+        <div className="flex items-center gap-3 rounded-2xl border border-sky-400/20 bg-sky-500/[0.06] p-4 text-sm text-sky-100">
+          <span className="relative flex size-2.5"><span className="absolute inline-flex size-full animate-pulse-ring rounded-full bg-sky-400" /><span className="relative size-2.5 rounded-full bg-sky-400" /></span>
+          With {claim.payer_name ?? "the payer"}. Their 835 remittance will arrive here.
+        </div>
+      )}
+      {claim.financials && <Payment claim={claim} />}
 
       {/* Agent console while processing (and briefly after, for context) */}
       <AnimatePresence>
@@ -213,6 +224,49 @@ function ClaimView({ claim }: { claim: ClaimDetail }) {
         </div>
       </div>
     </div>
+  );
+}
+
+function Payment({ claim }: { claim: ClaimDetail }) {
+  const f = claim.financials!;
+  const billed = f.billed || 1;
+  const parts = [
+    { label: "Paid by payer", value: f.paid, bar: "bg-gradient-to-r from-emerald-400 to-teal-300", text: "text-emerald-300" },
+    { label: "Patient owes", value: f.patient_responsibility, bar: "bg-amber-300", text: "text-amber-200" },
+    { label: "Written off", value: f.written_off, bar: "bg-slate-500", text: "text-slate-300" },
+  ];
+  return (
+    <Panel className="p-6">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2"><CircleDollarSign className="size-4 text-emerald-300" /><h2 className="font-medium text-white">Payment</h2>
+          <span className="text-xs text-slate-500">· from {claim.remittances.length} remittance{claim.remittances.length === 1 ? "" : "s"} (835)</span></div>
+        {f.recovered > 0 && <span className="rounded-lg bg-emerald-400/10 px-2 py-1 text-xs text-emerald-200 ring-1 ring-emerald-400/25">+{money(f.recovered)} recovered by the denial agents</span>}
+      </div>
+      <div className="grid gap-4 sm:grid-cols-4">
+        <div><p className="text-xs text-slate-500">Billed</p><p className="text-xl font-semibold tabular-nums text-white">{money(f.billed)}</p></div>
+        <div><p className="text-xs text-slate-500">Allowed under contract</p><p className="text-xl font-semibold tabular-nums text-slate-200">{money(f.allowed)}</p></div>
+        {parts.slice(0, 2).map((p) => <div key={p.label}><p className="text-xs text-slate-500">{p.label}</p><p className={cn("text-xl font-semibold tabular-nums", p.text)}>{money(p.value)}</p></div>)}
+      </div>
+      <div className="mt-4 flex h-2.5 overflow-hidden rounded-full bg-white/[0.05]">
+        {parts.map((p, i) => (
+          <motion.div key={p.label} title={`${p.label}: ${money(p.value)}`} className={cn("h-full", p.bar)}
+            initial={{ width: 0 }} animate={{ width: `${Math.max(0, (p.value / billed) * 100)}%` }} transition={{ delay: 0.2 + i * 0.15, duration: 0.9, ease: [0.16, 1, 0.3, 1] }} />
+        ))}
+      </div>
+      <p className="mt-1.5 text-[11px] text-slate-500">The rest of the billed amount is the contractual adjustment (CO-45) or still in dispute.</p>
+      {claim.denials.length > 0 && (
+        <div className="mt-4 space-y-1.5">
+          {claim.denials.map((d) => (
+            <Link key={d.id} href={`/denials/${d.id}`} className="group flex items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3 transition hover:border-white/15">
+              <CodeBadge code={d.code} />
+              <div className="min-w-0 flex-1"><p className="truncate text-sm text-slate-200">{d.reason}</p><p className="text-xs text-slate-500">{money(d.amount)} · CPT {d.lines.map((l) => l.cpt).join(", ")}</p></div>
+              {d.status === "open" ? <ActionChip action={d.recommended_action} /> : <DenialStatusPill status={d.status} label={d.status_label} />}
+              <ArrowRight className="size-4 text-slate-600 transition group-hover:translate-x-0.5 group-hover:text-slate-300" />
+            </Link>
+          ))}
+        </div>
+      )}
+    </Panel>
   );
 }
 

@@ -127,29 +127,39 @@ export function UploadDialog({ open, onClose }: { open: boolean; onClose: () => 
                   <FlaskConical className="size-4 text-violet-300" />
                   <p className="text-sm font-medium text-white">Or try a synthetic packet</p>
                 </div>
-                <div className="max-h-[340px] space-y-1.5 overflow-y-auto pr-1">
-                  {shown.map((s, i) => (
-                    <motion.button
-                      key={s.case_id}
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: i * 0.03 }}
-                      disabled={sample.isPending}
-                      onClick={() => sample.mutate(s.case_id)}
-                      className="group flex w-full items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2.5 text-left transition hover:border-teal-400/30 hover:bg-teal-400/[0.04]"
-                    >
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm text-slate-100">{s.title}</p>
-                        <p className="text-xs text-slate-500">{s.patient} · {s.files.length} documents</p>
+                <div className="max-h-[400px] space-y-4 overflow-y-auto pr-1">
+                  {([["intake", "Problems the agents catch before submission"], ["after_submission", "Clean claims the payer will answer (denials & appeals)"]] as const).map(([stage, heading]) => (
+                    <div key={stage}>
+                      <p className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-500">{heading}</p>
+                      <div className="space-y-1.5">
+                        {shown.filter((s) => (s.stage ?? "intake") === stage).map((s, i) => (
+                          <motion.button
+                            key={s.case_id}
+                            initial={{ opacity: 0, y: 6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: i * 0.03 }}
+                            disabled={sample.isPending}
+                            onClick={() => sample.mutate(s.case_id)}
+                            className="group flex w-full items-center gap-3 rounded-xl border border-white/[0.06] bg-white/[0.02] px-3 py-2.5 text-left transition hover:border-teal-400/30 hover:bg-teal-400/[0.04]"
+                          >
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm text-slate-100">{s.title}</p>
+                              <p className="text-xs text-slate-500">{s.patient} · {s.files.length} documents</p>
+                            </div>
+                            {sample.isPending && sample.variables === s.case_id ? (
+                              <span className="size-4 animate-spin rounded-full border-2 border-teal-300 border-t-transparent" />
+                            ) : (
+                              <span className={cn("rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide", stage === "after_submission"
+                                ? (s.scenario === "paid_clean" ? "text-emerald-300 bg-emerald-400/10" : "text-orange-300 bg-orange-400/10")
+                                : SCENARIO_TONE[s.scenario] ?? "text-amber-300 bg-amber-400/10")}>
+                                {stage === "after_submission" ? (s.scenario === "paid_clean" ? "paid" : "denial")
+                                  : s.scenario === "clean" ? "clean" : s.scenario === "note_mismatch" ? "AI catch" : s.scenario === "prompt_injection" ? "attack" : "issue"}
+                              </span>
+                            )}
+                          </motion.button>
+                        ))}
                       </div>
-                      {sample.isPending && sample.variables === s.case_id ? (
-                        <span className="size-4 animate-spin rounded-full border-2 border-teal-300 border-t-transparent" />
-                      ) : (
-                        <span className={cn("rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide", SCENARIO_TONE[s.scenario] ?? "text-amber-300 bg-amber-400/10")}>
-                          {s.scenario === "clean" ? "clean" : s.scenario === "note_mismatch" ? "AI catch" : s.scenario === "prompt_injection" ? "attack" : "issue"}
-                        </span>
-                      )}
-                    </motion.button>
+                    </div>
                   ))}
                 </div>
               </div>

@@ -12,6 +12,7 @@ export const money = (v: number | null | undefined, compact = false) =>
         style: "currency",
         currency: "USD",
         notation: compact ? "compact" : "standard",
+        minimumFractionDigits: compact ? 0 : 2,
         maximumFractionDigits: compact ? 1 : 2,
       }).format(v);
 

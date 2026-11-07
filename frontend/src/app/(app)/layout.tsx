@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { FileStack, LayoutDashboard, LogOut, Menu, ScrollText, X } from "lucide-react";
+import { FileStack, LayoutDashboard, LogOut, Menu, Scale, ScrollText, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -15,7 +15,8 @@ import { cn } from "@/lib/utils";
 
 const NAV = [
   { href: "/dashboard", label: "Command center", icon: LayoutDashboard },
-  { href: "/claims", label: "Claims", icon: FileStack, badge: true },
+  { href: "/claims", label: "Claims", icon: FileStack, badge: "claims" as const },
+  { href: "/denials", label: "Denials", icon: Scale, badge: "denials" as const },
   { href: "/audit", label: "Audit trail", icon: ScrollText, roles: ["biller", "admin"] },
 ];
 
@@ -29,6 +30,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     queryFn: () => api.claims({ status: "needs_review,ready" }),
     refetchInterval: 30_000,
   });
+  const { data: denials } = useQuery({ queryKey: ["denials", "summary"], queryFn: api.denialsSummary, refetchInterval: 30_000 });
+  const badges = { claims: waiting?.length ?? 0, denials: denials?.open ?? 0 };
   const connected = useLiveEvents((event) => {
     if (event.type === "claim.updated" && event.status === "needs_review") toast.message("A claim needs review", {
       description: "The agents finished and found issues.",
@@ -55,10 +58,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               {active && <motion.span layoutId="nav-bar" className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full bg-gradient-to-b from-teal-300 to-violet-400" />}
               <item.icon className="relative size-[18px]" />
               <span className="relative flex-1">{item.label}</span>
-              {item.badge && !!waiting?.length && (
-                <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }}
-                  className="relative rounded-full bg-amber-400/15 px-2 py-0.5 text-[11px] font-semibold text-amber-200 ring-1 ring-amber-400/30">
-                  {waiting.length}
+              {item.badge && !!badges[item.badge] && (
+                <motion.span key={badges[item.badge]} initial={{ scale: 0 }} animate={{ scale: 1 }}
+                  className={cn("relative rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1",
+                    item.badge === "denials" ? "bg-orange-400/15 text-orange-200 ring-orange-400/30" : "bg-amber-400/15 text-amber-200 ring-amber-400/30")}>
+                  {badges[item.badge]}
                 </motion.span>
               )}
             </Link>

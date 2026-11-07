@@ -20,6 +20,7 @@ from app.models import AgentRun, Appeal, AuditLog, Claim, ClaimEvent, Denial, Fi
 router = APIRouter(prefix="/api", tags=["insights"])
 
 IN_PROGRESS = {Status.RECEIVED, Status.EXTRACTING, Status.VALIDATING}
+SENT = {Status.SUBMITTED, Status.PAID, Status.DENIED, Status.APPEALED, Status.CLOSED}
 
 
 def _day(value: datetime) -> str:
@@ -39,7 +40,8 @@ def dashboard(db: Session = Depends(get_db), _: User = Depends(current_user)):
     days = [(today - timedelta(days=i)).isoformat() for i in range(13, -1, -1)]
     received = Counter(_day(c.created_at) for c in claims)
     submitted = Counter(_day(e.at) for e in db.scalars(
-        select(ClaimEvent).where(ClaimEvent.type.in_(("transition", "decision")))) if (e.data or {}).get("to") == Status.SUBMITTED)
+        select(ClaimEvent).where(ClaimEvent.type.in_(("transition", "decision"))))
+        if (e.data or {}).get("to") == Status.SUBMITTED and (e.data or {}).get("from") == Status.APPROVED)
 
     runs = db.scalars(select(AgentRun)).all()
     agents: dict[str, dict] = {}
@@ -60,11 +62,11 @@ def dashboard(db: Session = Depends(get_db), _: User = Depends(current_user)):
             "total_claims": len(claims),
             "awaiting_review": len(awaiting),
             "in_progress": sum(by_status[s] for s in IN_PROGRESS),
-            "submitted": by_status[Status.SUBMITTED],
+            "submitted": sum(by_status[s] for s in SENT),
             "rejected": by_status[Status.REJECTED],
             "failed": by_status[Status.FAILED],
             "clean_rate": round(100 * sum(1 for c in processed if c.id not in serious_claims) / len(processed), 1) if processed else None,
-            "billed_submitted": round(sum(c.total_charge or 0 for c in claims if c.status == Status.SUBMITTED), 2),
+            "billed_submitted": round(sum(c.total_charge or 0 for c in claims if c.status in SENT), 2),
             "value_at_risk": round(sum(c.total_charge or 0 for c in awaiting if c.risk == "high"), 2),
             "avg_processing_seconds": round(sum(timed) / len(timed), 1) if timed else None,
             "ai_calls": len(runs),
