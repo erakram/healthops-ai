@@ -47,4 +47,5 @@ app.include_router(denials.router)
 
 @app.get("/api/health")
 def health():
-    return {"ok": True, "llm_configured": settings.groq_api_key is not None}
+    return {"ok": True, "llm_configured": settings.llm_api_key is not None,
+            "provider": settings.llm_provider, "model": settings.review_model}

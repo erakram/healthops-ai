@@ -28,7 +28,7 @@ from types import SimpleNamespace
 from app.agents.appeals import draft_appeal
 from app.agents.denials import denial_groups, triage_denial
 from app.config import settings
-from app.core.llm import GroqLLM, RateLimited
+from app.core.llm import RateLimited, make_llm
 from app.documents.pdf import parse_pdf
 from app.revenue import payer_claim
 from app.verticals.healthcare import payer
@@ -154,10 +154,10 @@ def main() -> None:
     parser.add_argument("--model", help="override the model")
     parser.add_argument("--pause", type=float, default=1.0, help="seconds between cases (free-tier rate limits)")
     args = parser.parse_args()
-    if not settings.groq_api_key:
-        raise SystemExit("Set GROQ_API_KEY to run evals against the real model.")
+    if not settings.llm_api_key:
+        raise SystemExit(f"Set {settings.llm_key_name} to run evals against the real model.")
     model = args.model or settings.review_model
-    llm = GroqLLM(settings.groq_api_key, model, settings.request_timeout, settings.max_retries)
+    llm = make_llm(model)
     cases = list_cases("den_")
     if args.cases:
         wanted = set(args.cases.split(","))
@@ -186,7 +186,7 @@ def main() -> None:
         print(line)
         time.sleep(args.pause)
 
-    summary = {**summarize(results), "model": model}
+    summary = {**summarize(results), "model": model, "provider": settings.llm_provider}
     REPORTS.mkdir(exist_ok=True)
     path = REPORTS / f"denials-{datetime.now():%Y%m%d-%H%M%S}.json"
     path.write_text(json.dumps({"summary": summary, "cases": results}, indent=2))

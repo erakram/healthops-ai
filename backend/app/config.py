@@ -15,9 +15,12 @@ BACKEND_ROOT = Path(__file__).resolve().parent.parent
 class Settings:
     database_url: str  # sqlite locally, postgres in docker / on Render
     storage_dir: Path  # uploaded documents live here
+    llm_provider: str  # anthropic | groq
+    anthropic_api_key: str | None
     groq_api_key: str | None
-    extraction_model: str  # reads documents: fast and cheap is fine
-    review_model: str  # looks for inconsistencies: benefits from a stronger model
+    extraction_model: str  # reads documents
+    review_model: str  # review, triage and appeals
+    claude_effort: str  # low | medium | high | xhigh | max (Claude only)
     request_timeout: float  # seconds per LLM request
     max_retries: int  # LLM retries on rate limits, timeouts and 5xx errors
     job_max_attempts: int  # a failed pipeline step is retried this many times
@@ -29,11 +32,19 @@ class Settings:
 
     @classmethod
     def from_env(cls) -> "Settings":
-        default_model = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
+        anthropic_key = os.getenv("ANTHROPIC_API_KEY") or None
+        groq_key = os.getenv("GROQ_API_KEY") or None
+        # Claude when its key is present, unless LLM_PROVIDER says otherwise.
+        provider = (os.getenv("LLM_PROVIDER") or ("anthropic" if anthropic_key or not groq_key else "groq")).lower()
+        default_model = os.getenv("LLM_MODEL") or (
+            "claude-opus-5-5" if provider == "anthropic" else os.getenv("GROQ_MODEL", "openai/gpt-oss-120b"))
         return cls(
+            llm_provider=provider,
+            anthropic_api_key=anthropic_key,
+            claude_effort=os.getenv("CLAUDE_EFFORT", "medium"),
             database_url=os.getenv("DATABASE_URL", f"sqlite:///{BACKEND_ROOT / 'data' / 'healthops.db'}"),
             storage_dir=Path(os.getenv("STORAGE_DIR", BACKEND_ROOT / "data" / "documents")),
-            groq_api_key=os.getenv("GROQ_API_KEY") or None,
+            groq_api_key=groq_key,
             extraction_model=os.getenv("EXTRACTION_MODEL", default_model),
             review_model=os.getenv("REVIEW_MODEL", default_model),
             request_timeout=float(os.getenv("REQUEST_TIMEOUT", "60")),
@@ -45,6 +56,15 @@ class Settings:
             max_upload_mb=float(os.getenv("MAX_UPLOAD_MB", "10")),
             payer_delay_seconds=float(os.getenv("PAYER_DELAY_SECONDS", "6")),
         )
+
+
+    @property
+    def llm_api_key(self) -> str | None:
+        return self.anthropic_api_key if self.llm_provider == "anthropic" else self.groq_api_key
+
+    @property
+    def llm_key_name(self) -> str:
+        return "ANTHROPIC_API_KEY" if self.llm_provider == "anthropic" else "GROQ_API_KEY"
 
 
 settings = Settings.from_env()

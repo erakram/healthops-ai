@@ -14,7 +14,7 @@ Measures, per run:
   - tokens and latency
 
 Writes evals/reports/<timestamp>.json and prints a summary table.
-This calls the LLM provider for real; it needs GROQ_API_KEY.
+This calls the LLM provider for real; it needs ANTHROPIC_API_KEY (Claude) or GROQ_API_KEY.
 """
 
 import argparse
@@ -27,7 +27,7 @@ from pathlib import Path
 from app.agents.extraction import extract_document
 from app.agents.reviewer import review_claim
 from app.config import settings
-from app.core.llm import GroqLLM, RateLimited
+from app.core.llm import RateLimited, make_llm
 from app.documents.pdf import parse_pdf
 from app.verticals.healthcare.rules import RuleFinding
 from app.verticals.healthcare.samples import FILE_KINDS, list_cases
@@ -138,11 +138,11 @@ def main() -> None:
     parser.add_argument("--model", help="override both extraction and review model")
     parser.add_argument("--pause", type=float, default=1.0, help="seconds between cases (free-tier rate limits)")
     args = parser.parse_args()
-    if not settings.groq_api_key:
-        raise SystemExit("Set GROQ_API_KEY to run evals against the real model.")
+    if not settings.llm_api_key:
+        raise SystemExit(f"Set {settings.llm_key_name} to run evals against the real model.")
 
     model = args.model or settings.extraction_model
-    llm = GroqLLM(settings.groq_api_key, model, settings.request_timeout, settings.max_retries)
+    llm = make_llm(model)
     cases = list_cases("case_")
     if args.cases:
         wanted = set(args.cases.split(","))
@@ -172,7 +172,7 @@ def main() -> None:
         time.sleep(args.pause)
 
     ok = [r for r in results if "error" not in r]
-    summary = {**summarize(ok), "errors": len(results) - len(ok), "model": model}
+    summary = {**summarize(ok), "errors": len(results) - len(ok), "model": model, "provider": settings.llm_provider}
     REPORTS.mkdir(exist_ok=True)
     path = REPORTS / f"{datetime.now():%Y%m%d-%H%M%S}.json"
     path.write_text(json.dumps({"summary": summary, "cases": results}, indent=2))

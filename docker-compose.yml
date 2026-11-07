@@ -16,7 +16,8 @@ services:
     build: ./backend
     environment:
       DATABASE_URL: postgresql+psycopg://healthops:healthops@db:5432/healthops
-      GROQ_API_KEY: ${GROQ_API_KEY}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
       JWT_SECRET: ${JWT_SECRET:-change-me}
       STORAGE_DIR: /data/documents
     volumes: [documents:/data]

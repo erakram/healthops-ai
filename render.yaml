@@ -9,8 +9,10 @@ services:
     plan: free
     healthCheckPath: /api/health
     envVars:
-      - key: GROQ_API_KEY
+      - key: ANTHROPIC_API_KEY
         sync: false  # Render asks for the value; it's never stored in the repo
+      - key: GROQ_API_KEY
+        sync: false  # optional alternative provider
       - key: JWT_SECRET
         generateValue: true
       - key: DATABASE_URL

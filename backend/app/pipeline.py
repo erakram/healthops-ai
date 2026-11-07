@@ -40,7 +40,7 @@ def _record_run(db: Session, claim: Claim, agent: str, result: LLMResult | None)
 
 def handle_extract(db: Session, claim: Claim, llm: LLM | None, _payload: dict | None = None) -> None:
     if llm is None:
-        raise LLMError("No LLM configured: set GROQ_API_KEY to process uploaded claims")
+        raise LLMError(f"No LLM configured: set {settings.llm_key_name} to process uploaded claims")
     if claim.status != Status.EXTRACTING:
         transition(db, claim, Status.EXTRACTING, SYSTEM, "Document Agent started")
 

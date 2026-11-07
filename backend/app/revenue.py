@@ -309,7 +309,7 @@ def handle_draft_appeal(db: Session, claim: Claim, llm: LLM | None, payload: dic
         return
     denial = appeal.denial
     if llm is None:
-        appeal.status, appeal.draft = "failed", {"error": "No LLM configured: set GROQ_API_KEY to draft appeals"}
+        appeal.status, appeal.draft = "failed", {"error": f"No LLM configured: set {settings.llm_key_name} to draft appeals"}
         db.commit()
         _publish(denial)
         return

@@ -37,7 +37,7 @@ payer ─► 835 remittance ─► Denial Triage Agent ─► Appeal Agent ─�
 
 ## Stack
 
-- **Backend:** Python, FastAPI, SQLAlchemy (SQLite locally, Postgres in Docker/Render), PyMuPDF, Groq (`openai/gpt-oss-120b` by default) behind a small provider adapter
+- **Backend:** Python, FastAPI, SQLAlchemy (SQLite locally, Postgres in Docker/Render), PyMuPDF, Claude (`claude-opus-5-5`, via the Anthropic SDK) or Groq (`openai/gpt-oss-120b`) behind a small provider adapter
 - **Frontend:** Next.js 15 (App Router), React 19, Tailwind 4, Motion, TanStack Query, Recharts
 - **Live updates:** server-sent events from the worker to the UI
 - **Denials:** X12 835 writer/parser, CARC/RARC catalog, BM25 policy search (no extra dependencies)
@@ -59,7 +59,7 @@ healthops-ai/
 │   ├── scripts/generate_samples.py   synthetic packets with planted problems + answer keys
 │   ├── evals/run_evals.py            intake agents vs. the answer keys, with the real model
 │   ├── evals/run_denial_evals.py     denial agents vs. the den_* answer keys
-│   └── tests/                        151 tests, offline (fake LLM)
+│   └── tests/                        155 tests, offline (fake LLM)
 ├── frontend/                Next.js app
 └── docker-compose.yml       Postgres + API + web
 ```
@@ -69,13 +69,13 @@ form is, so a second vertical (insurance underwriting, legal intake) is a new pa
 
 ## Run it
 
-**Requirements:** Python 3.12+, Node 20+, a free [Groq API key](https://console.groq.com/keys).
+**Requirements:** Python 3.12+, Node 20+, and an [Anthropic API key](https://platform.claude.com/settings/keys) (or a free [Groq key](https://console.groq.com/keys)). Claude is used whenever `ANTHROPIC_API_KEY` is set; `LLM_PROVIDER=groq` forces Groq.
 
 ```bash
 # backend
 cd backend
 python -m venv .venv && .venv/bin/pip install -r requirements.txt
-cp .env.example .env            # add GROQ_API_KEY
+cp .env.example .env            # add ANTHROPIC_API_KEY (or GROQ_API_KEY)
 .venv/bin/python -m scripts.generate_samples   # only if sample_data/ is missing
 .venv/bin/uvicorn app.main:app --port 8010
 ```
@@ -94,7 +94,7 @@ Good ones to show: *Clinical note says the chest X-ray was deferred* (only the A
 payer's 835 arrives, triage checks the note against the policy, and an appeal is drafted for you to send.
 The **Denials** page also has seeded history to work, including corrected claims.
 
-**With Docker:** `GROQ_API_KEY=... docker compose up --build`, then http://localhost:3000.
+**With Docker:** `ANTHROPIC_API_KEY=... docker compose up --build`, then http://localhost:3000.
 
 ## Test and evaluate
 
@@ -120,4 +120,4 @@ planted problems are found: each one caught, nothing else flagged.
 - The payer is a mock: deterministic rules and a synthetic policy library, not a real payer's edits.
 - No 837 (claim) file is written yet; the payer receives a JSON claim. 835 is real X12.
 - No schema migrations (Alembic) yet.
-- Groq's free tier allows ~8k tokens/minute, about one claim per minute. Jobs wait and resume automatically.
+- On Groq's free tier (~8k tokens/minute, 200k/day) about one claim per minute fits. Jobs wait out rate limits and resume automatically on either provider.

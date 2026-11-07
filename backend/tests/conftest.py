@@ -8,6 +8,7 @@ os.environ["DATABASE_URL"] = f"sqlite:///{_tmp / 'test.db'}"
 os.environ["STORAGE_DIR"] = str(_tmp / "documents")
 os.environ["SEED_DEMO_DATA"] = "true"
 os.environ["GROQ_API_KEY"] = ""
+os.environ["ANTHROPIC_API_KEY"] = ""
 os.environ["JOB_MAX_ATTEMPTS"] = "1"
 os.environ["PAYER_DELAY_SECONDS"] = "0"
 
