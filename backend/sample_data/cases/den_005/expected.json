@@ -1,0 +1,81 @@
+{
+  "case_id": "den_005",
+  "scenario": "auth_not_on_file",
+  "title": "Payer can't find the prior authorization the packet has",
+  "visit": "mri_brain",
+  "patient": "Hannah Moreau",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-787614",
+      "patient_name": "Hannah Moreau",
+      "patient_dob": "02/28/1952",
+      "member_id": "BWM746686848",
+      "payer_name": "Bluewater Mutual",
+      "provider_name": "Harbor Imaging Center",
+      "provider_npi": "1989409077",
+      "service_date": "10/10/2026",
+      "total_charge": "$2,380.00",
+      "prior_auth_number": "PA-7573063",
+      "line_items": [
+        {
+          "cpt": "70553",
+          "description": "MRI brain with and without contrast",
+          "units": 1,
+          "charge": "$2,380.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "G43.909",
+        "R51.9"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Hannah Moreau",
+      "member_id": "BWM746686848",
+      "payer_name": "Bluewater Mutual",
+      "group_number": "GRP-4011",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Hannah Moreau",
+      "patient_dob": "02/28/1952",
+      "service_date": "October 10, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-78710",
+      "patient_name": "Hannah Moreau",
+      "service_date": "10/10/2026",
+      "total_amount": "$2,380.00",
+      "line_items": [
+        {
+          "cpt": "70553",
+          "description": "MRI brain with and without contrast",
+          "units": 1,
+          "charge": "$2,380.00"
+        }
+      ]
+    },
+    "prior_authorization": {
+      "auth_number": "PA-7573063",
+      "member_id": "BWM746686848",
+      "valid_from": "09/20/2026",
+      "valid_to": "11/19/2026",
+      "approved_cpt_codes": [
+        "70553"
+      ]
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "denial": {
+    "remit_status": "4",
+    "codes": [
+      "CO-197"
+    ],
+    "category": "authorization",
+    "action": "appeal",
+    "policy_id": "UM-0197",
+    "appeal_should_win": true
+  }
+}

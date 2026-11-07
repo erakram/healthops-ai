@@ -9,6 +9,7 @@ os.environ["STORAGE_DIR"] = str(_tmp / "documents")
 os.environ["SEED_DEMO_DATA"] = "true"
 os.environ["GROQ_API_KEY"] = ""
 os.environ["JOB_MAX_ATTEMPTS"] = "1"
+os.environ["PAYER_DELAY_SECONDS"] = "0"
 
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
@@ -19,7 +20,12 @@ from tests.fake_llm import FakeLLM  # noqa: E402
 
 @pytest.fixture(scope="session")
 def fake_llm():
-    return FakeLLM(review_issues=[{
+    return FakeLLM(appeal_extra=[
+        {"kind": "argument", "text": "The patient was also seen on 03/14/2019 for the same problem.",  # invented date
+         "citations": [{"source": "clinical_note", "quote": "Patient seen on 03/14/2019"}]},
+        {"kind": "argument", "text": "Guidelines strongly support this treatment.",  # quote isn't in any source
+         "citations": [{"source": "policy", "quote": "this treatment is always covered for every member"}]},
+    ], review_issues=[{
         "title": "Chest X-ray billed but deferred", "severity": "medium",
         "detail": "The note says the chest X-ray was deferred, but CPT 71046 is billed.",
         "quote": "Chest X-ray was deferred as symptoms are improving.",

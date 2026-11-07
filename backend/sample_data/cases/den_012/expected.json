@@ -1,0 +1,90 @@
+{
+  "case_id": "den_012",
+  "scenario": "bundling_mod25",
+  "title": "Office visit bundled into a same-day injection; needs modifier 25",
+  "visit": "tpi",
+  "patient": "Elena Kowalski",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-668982",
+      "patient_name": "Elena Kowalski",
+      "patient_dob": "09/02/1978",
+      "member_id": "BWM424949055",
+      "payer_name": "Bluewater Mutual",
+      "provider_name": "Riverside Family Medicine",
+      "provider_npi": "1928309388",
+      "service_date": "09/30/2026",
+      "total_charge": "$380.00",
+      "prior_auth_number": null,
+      "line_items": [
+        {
+          "cpt": "99214",
+          "description": "Office visit, established, moderate complexity",
+          "units": 1,
+          "charge": "$215.00"
+        },
+        {
+          "cpt": "20552",
+          "description": "Trigger point injection, 1-2 muscles",
+          "units": 1,
+          "charge": "$165.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "E11.9",
+        "M79.18"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Elena Kowalski",
+      "member_id": "BWM424949055",
+      "payer_name": "Bluewater Mutual",
+      "group_number": "GRP-9798",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Elena Kowalski",
+      "patient_dob": "09/02/1978",
+      "service_date": "September 30, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-22555",
+      "patient_name": "Elena Kowalski",
+      "service_date": "09/30/2026",
+      "total_amount": "$380.00",
+      "line_items": [
+        {
+          "cpt": "99214",
+          "description": "Office visit, established, moderate complexity",
+          "units": 1,
+          "charge": "$215.00"
+        },
+        {
+          "cpt": "20552",
+          "description": "Trigger point injection, 1-2 muscles",
+          "units": 1,
+          "charge": "$165.00"
+        }
+      ]
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "denial": {
+    "remit_status": "1",
+    "codes": [
+      "CO-97"
+    ],
+    "category": "coding_bundling",
+    "action": "corrected_claim",
+    "policy_id": "RP-0025",
+    "corrected_should_pay": true,
+    "criteria": {
+      "C1": true
+    },
+    "criteria_quotes": {
+      "C1": "The diabetes evaluation was separately identifiable from the injection."
+    }
+  }
+}

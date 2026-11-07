@@ -13,9 +13,9 @@ from sqlalchemy.orm import Session
 from app.api.serializers import iso
 from app.core import audit, events
 from app.core.auth import current_user, require_role
-from app.core.workflow import Status
+from app.core.workflow import DENIAL_OPEN, Status
 from app.db import get_db
-from app.models import AgentRun, AuditLog, Claim, ClaimEvent, Finding, User
+from app.models import AgentRun, Appeal, AuditLog, Claim, ClaimEvent, Denial, Finding, Remittance, User
 
 router = APIRouter(prefix="/api", tags=["insights"])
 
@@ -52,6 +52,7 @@ def dashboard(db: Session = Depends(get_db), _: User = Depends(current_user)):
         a["avg_latency_ms"] = round(a.pop("latency_ms") / a["calls"])
     timed = [c.processed_seconds for c in claims if c.processed_seconds]
 
+    revenue = _revenue(db, today)
     recent = db.execute(select(ClaimEvent, Claim.number).join(Claim, Claim.id == ClaimEvent.claim_id)
                         .order_by(ClaimEvent.id.desc()).limit(14)).all()
     return {
@@ -74,8 +75,44 @@ def dashboard(db: Session = Depends(get_db), _: User = Depends(current_user)):
         "by_risk": dict(Counter(c.risk for c in claims if c.risk)),
         "top_findings": [{"code": code, "count": n} for code, n in Counter(code for _, code, _ in finding_rows).most_common(8)],
         "agents": sorted(agents.values(), key=lambda a: -a["calls"]),
+        "revenue": revenue,
         "recent": [{"claim_id": e.claim_id, "claim_number": number, "type": e.type, "actor": e.actor,
                     "message": e.message, "at": iso(e.at)} for e, number in recent],
+    }
+
+
+def _revenue(db: Session, today) -> dict:
+    remits = db.scalars(select(Remittance)).all()
+    denials = db.scalars(select(Denial)).all()
+    appeals = db.scalars(select(Appeal)).all()
+    adjudicated = {r.claim_id for r in remits if r.kind in ("original", "imported")}
+    denied_claims = {d.claim_id for d in denials if d.group_code != "PR"}
+    open_ = [d for d in denials if d.status in DENIAL_OPEN]
+    decided = [a for a in appeals if a.status in ("overturned", "upheld")]
+    billed = sum(c.total_charge or 0 for c in db.scalars(select(Claim).where(Claim.id.in_(adjudicated))))
+    by_reason: dict[str, dict] = {}
+    for d in denials:
+        if d.group_code == "PR":
+            continue
+        row = by_reason.setdefault(f"{d.group_code}-{d.reason_code}", {"code": f"{d.group_code}-{d.reason_code}",
+                                                                      "category": d.category, "count": 0, "amount": 0.0})
+        row["count"] += 1
+        row["amount"] = round(row["amount"] + d.amount, 2)
+    return {
+        "billed": round(billed, 2),
+        "paid": round(sum(r.paid for r in remits), 2),
+        "patient_responsibility": round(sum(d.amount for d in denials if d.group_code == "PR"), 2),
+        "denial_rate": round(100 * len(denied_claims) / len(adjudicated), 1) if adjudicated else None,
+        "denied_amount": round(sum(d.amount for d in denials if d.group_code != "PR"), 2),
+        "open_denials": len(open_),
+        "open_amount": round(sum(d.amount for d in open_), 2),
+        "expected_recovery": round(sum(d.expected_recovery or 0 for d in open_), 2),
+        "due_soon": sum(1 for d in open_ if d.deadline and (datetime.fromisoformat(d.deadline).date() - today).days <= 14),
+        "recovered": round(sum(d.recovered for d in denials), 2),
+        "written_off": round(sum(d.amount for d in denials if d.status == "written_off"), 2),
+        "appeals_sent": sum(1 for a in appeals if a.sent_at),
+        "appeal_win_rate": round(100 * sum(a.status == "overturned" for a in decided) / len(decided), 1) if decided else None,
+        "by_reason": sorted(by_reason.values(), key=lambda r: -r["amount"]),
     }
 
 

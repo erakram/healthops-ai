@@ -1,0 +1,81 @@
+{
+  "case_id": "den_008",
+  "scenario": "med_necessity_supported",
+  "title": "Epidural injection denied as not medically necessary, note supports it",
+  "visit": "esi_supported",
+  "patient": "David Sullivan",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-820377",
+      "patient_name": "David Sullivan",
+      "patient_dob": "12/15/1986",
+      "member_id": "SCS172253474",
+      "payer_name": "Summit CareShield",
+      "provider_name": "Northgate Spine and Pain",
+      "provider_npi": "1311590396",
+      "service_date": "10/26/2026",
+      "total_charge": "$1,250.00",
+      "prior_auth_number": null,
+      "line_items": [
+        {
+          "cpt": "64483",
+          "description": "Transforaminal epidural injection, lumbar",
+          "units": 1,
+          "charge": "$1,250.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "M54.16"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "David Sullivan",
+      "member_id": "SCS172253474",
+      "payer_name": "Summit CareShield",
+      "group_number": "GRP-9304",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "David Sullivan",
+      "patient_dob": "12/15/1986",
+      "service_date": "October 26, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-24515",
+      "patient_name": "David Sullivan",
+      "service_date": "10/26/2026",
+      "total_amount": "$1,250.00",
+      "line_items": [
+        {
+          "cpt": "64483",
+          "description": "Transforaminal epidural injection, lumbar",
+          "units": 1,
+          "charge": "$1,250.00"
+        }
+      ]
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "denial": {
+    "remit_status": "4",
+    "codes": [
+      "CO-50"
+    ],
+    "category": "medical_necessity",
+    "action": "appeal",
+    "policy_id": "MP-2041",
+    "appeal_should_win": true,
+    "criteria": {
+      "C1": true,
+      "C2": true,
+      "C3": true
+    },
+    "criteria_quotes": {
+      "C1": "low back pain radiating down the left leg to the foot",
+      "C2": "Symptoms persisted despite 8 weeks of physical therapy and daily anti-inflammatory medication.",
+      "C3": "MRI of the lumbar spine shows a left L5-S1 disc herniation with compression of the S1 nerve root."
+    }
+  }
+}

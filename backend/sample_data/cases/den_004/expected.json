@@ -1,0 +1,95 @@
+{
+  "case_id": "den_004",
+  "scenario": "deductible",
+  "title": "Part of the allowed amount goes to the patient's deductible",
+  "visit": "diabetes",
+  "patient": "Daniel Thornton",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-836529",
+      "patient_name": "Daniel Thornton",
+      "patient_dob": "07/10/1987",
+      "member_id": "NWH620480440",
+      "payer_name": "Northwind Health Plan",
+      "provider_name": "Riverside Family Medicine",
+      "provider_npi": "1787770878",
+      "service_date": "10/19/2026",
+      "total_charge": "$292.50",
+      "prior_auth_number": null,
+      "line_items": [
+        {
+          "cpt": "99214",
+          "description": "Office visit, established, moderate complexity",
+          "units": 1,
+          "charge": "$215.00"
+        },
+        {
+          "cpt": "80053",
+          "description": "Comprehensive metabolic panel",
+          "units": 1,
+          "charge": "$62.50"
+        },
+        {
+          "cpt": "36415",
+          "description": "Routine venipuncture",
+          "units": 1,
+          "charge": "$15.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "E11.9",
+        "I10"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Daniel Thornton",
+      "member_id": "NWH620480440",
+      "payer_name": "Northwind Health Plan",
+      "group_number": "GRP-7195",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Daniel Thornton",
+      "patient_dob": "07/10/1987",
+      "service_date": "October 19, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-73407",
+      "patient_name": "Daniel Thornton",
+      "service_date": "10/19/2026",
+      "total_amount": "$292.50",
+      "line_items": [
+        {
+          "cpt": "99214",
+          "description": "Office visit, established, moderate complexity",
+          "units": 1,
+          "charge": "$215.00"
+        },
+        {
+          "cpt": "80053",
+          "description": "Comprehensive metabolic panel",
+          "units": 1,
+          "charge": "$62.50"
+        },
+        {
+          "cpt": "36415",
+          "description": "Routine venipuncture",
+          "units": 1,
+          "charge": "$15.00"
+        }
+      ]
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "denial": {
+    "remit_status": "1",
+    "codes": [
+      "PR-1"
+    ],
+    "category": "patient_responsibility",
+    "action": "bill_patient",
+    "policy_id": "PR-0001"
+  }
+}

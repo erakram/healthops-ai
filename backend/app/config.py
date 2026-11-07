@@ -25,6 +25,7 @@ class Settings:
     session_hours: int
     seed_demo_data: bool  # demo users + sample claim history on first start
     max_upload_mb: float
+    payer_delay_seconds: float  # how long the mock payer takes to answer (days, in real life)
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -42,6 +43,7 @@ class Settings:
             session_hours=int(os.getenv("SESSION_HOURS", "12")),
             seed_demo_data=os.getenv("SEED_DEMO_DATA", "true").lower() == "true",
             max_upload_mb=float(os.getenv("MAX_UPLOAD_MB", "10")),
+            payer_delay_seconds=float(os.getenv("PAYER_DELAY_SECONDS", "6")),
         )
 
 

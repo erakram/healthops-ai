@@ -1,0 +1,80 @@
+{
+  "case_id": "den_006",
+  "scenario": "auth_not_on_file",
+  "title": "Payer can't find the prior authorization the packet has",
+  "visit": "mri_back",
+  "patient": "James Haddad",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-746401",
+      "patient_name": "James Haddad",
+      "patient_dob": "09/08/1991",
+      "member_id": "SCS205420496",
+      "payer_name": "Summit CareShield",
+      "provider_name": "Harbor Imaging Center",
+      "provider_npi": "1343760223",
+      "service_date": "09/30/2026",
+      "total_charge": "$1,575.00",
+      "prior_auth_number": "PA-2910786",
+      "line_items": [
+        {
+          "cpt": "72148",
+          "description": "MRI lumbar spine without contrast",
+          "units": 1,
+          "charge": "$1,575.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "M54.50"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "James Haddad",
+      "member_id": "SCS205420496",
+      "payer_name": "Summit CareShield",
+      "group_number": "GRP-7761",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "James Haddad",
+      "patient_dob": "09/08/1991",
+      "service_date": "September 30, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-12610",
+      "patient_name": "James Haddad",
+      "service_date": "09/30/2026",
+      "total_amount": "$1,575.00",
+      "line_items": [
+        {
+          "cpt": "72148",
+          "description": "MRI lumbar spine without contrast",
+          "units": 1,
+          "charge": "$1,575.00"
+        }
+      ]
+    },
+    "prior_authorization": {
+      "auth_number": "PA-2910786",
+      "member_id": "SCS205420496",
+      "valid_from": "09/10/2026",
+      "valid_to": "11/09/2026",
+      "approved_cpt_codes": [
+        "72148"
+      ]
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "denial": {
+    "remit_status": "4",
+    "codes": [
+      "CO-197"
+    ],
+    "category": "authorization",
+    "action": "appeal",
+    "policy_id": "UM-0197",
+    "appeal_should_win": true
+  }
+}

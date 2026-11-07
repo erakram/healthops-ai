@@ -9,14 +9,14 @@ from pydantic import BaseModel
 from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session, selectinload
 
-from app.api.serializers import claim_detail, claim_summary
+from app.api.serializers import claim_detail, claim_summary, iso
 from app.config import settings
 from app.core import audit
 from app.core.auth import current_user, require_role
 from app.core.workflow import AWAITING_HUMAN, InvalidTransition, Status, enqueue, transition
 from app.db import get_db
 from app.documents.pdf import render_page_png
-from app.models import AgentRun, Claim, ClaimEvent, Correction, Document, Finding, Submission, User
+from app.models import AgentRun, Claim, ClaimEvent, Correction, Denial, Document, Finding, Remittance, Submission, User
 from app.verticals.healthcare.samples import get_case, list_cases
 from app.verticals.healthcare.schema import DOCUMENT_TYPES, normalize_value
 
@@ -33,9 +33,27 @@ def _load_claim(db: Session, claim_id: int) -> Claim:
 
 
 def _detail(db: Session, claim: Claim) -> dict:
+    from app.api.denials import denial_summary, remittance_json
+
     runs = db.scalars(select(AgentRun).where(AgentRun.claim_id == claim.id).order_by(AgentRun.id)).all()
-    submission = db.scalar(select(Submission).where(Submission.claim_id == claim.id))
-    return claim_detail(claim, runs, submission)
+    submissions = db.scalars(select(Submission).where(Submission.claim_id == claim.id).order_by(Submission.id)).all()
+    remits = db.scalars(select(Remittance).where(Remittance.claim_id == claim.id).order_by(Remittance.id)).all()
+    denials = db.scalars(select(Denial).where(Denial.claim_id == claim.id).order_by(Denial.id)).all()
+    detail = claim_detail(claim, runs, submissions[0] if submissions else None)
+    allowed = sum(l.get("allowed") or 0 for r in remits for l in r.parsed["claim"]["lines"])
+    detail["submissions"] = [{"payer_reference": s.payer_reference, "frequency": s.frequency, "at": iso(s.at)}
+                             for s in submissions]
+    detail["remittances"] = [remittance_json(r) for r in remits]
+    detail["denials"] = [denial_summary(d) for d in denials]
+    detail["financials"] = {
+        "billed": claim.total_charge, "allowed": round(allowed, 2),
+        "paid": round(sum(r.paid for r in remits), 2),
+        "patient_responsibility": round(sum(d.amount for d in denials if d.group_code == "PR"
+                                            or d.status == "patient_billed"), 2),
+        "recovered": round(sum(d.recovered for d in denials), 2),
+        "written_off": round(sum(d.amount for d in denials if d.status == "written_off"), 2),
+    } if remits else None
+    return detail
 
 
 def _new_claim(db: Session, user: User, source: str) -> Claim:
@@ -98,15 +116,18 @@ async def create_claim(files: list[UploadFile] = File(...), db: Session = Depend
 
 @router.get("/samples")
 def samples(_: User = Depends(current_user)):
+    """case_* packets show problems before submission; den_* are clean claims the payer
+    will deny (or pay) after submission, for the denials workflow."""
     return [{"case_id": c["case_id"], "title": c["title"], "scenario": c["scenario"], "patient": c["patient"],
-             "files": c["files"]} for c in list_cases("case_")]
+             "files": c["files"], "stage": "after_submission" if c["case_id"].startswith("den_") else "intake"}
+            for c in list_cases("case_") + list_cases("den_")]
 
 
 @router.post("/samples/{case_id}/load", status_code=201)
 def load_sample(case_id: str, db: Session = Depends(get_db), user: User = Depends(require_role("intake", "biller"))):
     """Create a claim from a sample packet and run it through the real pipeline."""
     case = get_case(case_id)
-    if not case or not case_id.startswith("case_"):
+    if not case or not case_id.startswith(("case_", "den_")):
         raise HTTPException(404, "Sample not found")
     claim = _new_claim(db, user, "sample")
     folder = settings.storage_dir / f"claim_{claim.id}"

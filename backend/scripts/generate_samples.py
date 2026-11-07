@@ -10,10 +10,17 @@ the PDFs and expected.json:
 
 case_* folders are used for evals and the "Load sample" button; hist_* folders seed
 the dashboard's history, with different patients so they don't look like duplicates.
+
+den_* folders are clean claims the payer will deny (or pay) after submission, for the
+denials and appeals agents; their expected.json adds a "denial" answer key. hden_* do
+the same for the seeded history. payer_state.json is what the mock payer knows that the
+provider doesn't: authorizations missing from its system, retroactive terminations,
+members' remaining deductibles.
 """
 
 import json
 import random
+import re
 import shutil
 from dataclasses import dataclass, field
 from datetime import date, timedelta
@@ -35,7 +42,7 @@ LAST = ["Whitaker", "Alvarez", "Okafor", "Lindqvist", "Brennan", "Castillo", "Na
 PAYERS = [("Northwind Health Plan", "NWH"), ("Bluewater Mutual", "BWM"), ("Cedar Ridge Health", "CRH"),
           ("Summit CareShield", "SCS")]
 PROVIDERS = {"primary": "Riverside Family Medicine", "ortho": "Lakeside Orthopedics",
-             "imaging": "Harbor Imaging Center", "cardio": "Maplewood Cardiology"}
+             "imaging": "Harbor Imaging Center", "cardio": "Maplewood Cardiology", "pain": "Northgate Spine and Pain"}
 
 CPT = {"99213": ("Office visit, established, low complexity", 145.00),
        "99214": ("Office visit, established, moderate complexity", 215.00),
@@ -44,7 +51,9 @@ CPT = {"99213": ("Office visit, established, low complexity", 145.00),
        "71046": ("Chest X-ray, 2 views", 118.00), "70553": ("MRI brain with and without contrast", 2380.00),
        "72148": ("MRI lumbar spine without contrast", 1575.00), "29881": ("Knee arthroscopy with meniscectomy", 4720.00),
        "93306": ("Echocardiogram, complete", 1095.00), "20610": ("Injection, major joint", 205.00),
-       "97110": ("Therapeutic exercise, each 15 min", 82.00)}
+       "97110": ("Therapeutic exercise, each 15 min", 82.00),
+       "64483": ("Transforaminal epidural injection, lumbar", 1250.00),
+       "20552": ("Trigger point injection, 1-2 muscles", 165.00)}
 
 # Each visit: provider, billed lines (cpt, units), diagnoses, and the clinical note's account of it.
 VISITS = {
@@ -79,6 +88,26 @@ VISITS = {
            "Physical therapy session: 45 minutes of therapeutic exercise for core stabilisation and lumbar mobility. "
            "Patient tolerated well, home program updated."),
 }
+# Visits used only by the denial scenarios.
+DENIAL_VISITS = {
+    "esi_supported": ("pain", [("64483", 1)], ["M54.16"],
+                      "Transforaminal epidural steroid injection at left L5-S1 performed under fluoroscopic guidance. "
+                      "Indication: low back pain radiating down the left leg to the foot, consistent with lumbar "
+                      "radiculopathy. Symptoms persisted despite 8 weeks of physical therapy and daily anti-inflammatory "
+                      "medication. MRI of the lumbar spine shows a left L5-S1 disc herniation with compression of the "
+                      "S1 nerve root. Procedure tolerated well, no complications."),
+    "esi_unsupported": ("pain", [("64483", 1)], ["M54.50"],
+                        "Transforaminal epidural steroid injection at L4-L5 performed under fluoroscopic guidance for low "
+                        "back pain that began two weeks ago after lifting a box. Pain is confined to the lower back and "
+                        "there are no leg symptoms. No imaging has been performed. The patient has not tried physical "
+                        "therapy or anti-inflammatory medication."),
+    "tpi": ("primary", [("99214", 1), ("20552", 1)], ["E11.9", "M79.18"],
+            "Follow-up for type 2 diabetes. A1c reviewed and metformin dose increased; foot examination normal. "
+            "In addition, the patient reports a painful knot in the left upper trapezius. Trigger point injection of "
+            "the left trapezius performed with lidocaine. The diabetes evaluation was separately identifiable from "
+            "the injection."),
+}
+VISITS_ALL = {**VISITS, **DENIAL_VISITS}
 PRIOR_AUTH = {"70553", "72148", "29881", "93306", "27447"}
 
 SCENARIOS = {
@@ -95,6 +124,42 @@ SCENARIOS = {
     "note_mismatch": ([], True, "Clinical note says the chest X-ray was deferred, but it was billed"),
     "prompt_injection": (["PROMPT-INJECTION"], False, "Invoice contains hidden instructions to the AI"),
 }
+
+# Clean claims the payer denies (or pays) after submission: what triage should conclude.
+#   scenario: (visits, title, answer key)
+ESI_QUOTES = {"C1": "low back pain radiating down the left leg to the foot",
+              "C2": "Symptoms persisted despite 8 weeks of physical therapy and daily anti-inflammatory medication.",
+              "C3": "MRI of the lumbar spine shows a left L5-S1 disc herniation with compression of the S1 nerve root."}
+DENIAL_SCENARIOS = {
+    "paid_clean": (["labs", "uri", "diabetes"], "Paid as billed (contractual adjustment only)",
+                   {"remit_status": "1", "codes": [], "category": None, "action": None, "policy_id": None}),
+    "deductible": (["labs", "diabetes"], "Part of the allowed amount goes to the patient's deductible",
+                   {"remit_status": "1", "codes": ["PR-1"], "category": "patient_responsibility",
+                    "action": "bill_patient", "policy_id": "PR-0001"}),
+    "auth_not_on_file": (["mri_back", "echo", "mri_brain"], "Payer can't find the prior authorization the packet has",
+                         {"remit_status": "4", "codes": ["CO-197"], "category": "authorization", "action": "appeal",
+                          "policy_id": "UM-0197", "appeal_should_win": True}),
+    "med_necessity_supported": (["esi_supported"], "Epidural injection denied as not medically necessary, note supports it",
+                                {"remit_status": "4", "codes": ["CO-50"], "category": "medical_necessity",
+                                 "action": "appeal", "policy_id": "MP-2041", "appeal_should_win": True,
+                                 "criteria": {"C1": True, "C2": True, "C3": True}, "criteria_quotes": ESI_QUOTES}),
+    "med_necessity_unsupported": (["esi_unsupported"], "Epidural injection denied, and the note doesn't support it",
+                                  {"remit_status": "4", "codes": ["CO-50"], "category": "medical_necessity",
+                                   "action": "write_off", "policy_id": "MP-2041", "appeal_should_win": False,
+                                   "criteria": {"C1": False, "C2": False, "C3": False}, "criteria_quotes": {}}),
+    "bundling_mod25": (["tpi"], "Office visit bundled into a same-day injection; needs modifier 25",
+                       {"remit_status": "1", "codes": ["CO-97"], "category": "coding_bundling",
+                        "action": "corrected_claim", "policy_id": "RP-0025", "corrected_should_pay": True,
+                        "criteria": {"C1": True},
+                        "criteria_quotes": {"C1": "The diabetes evaluation was separately identifiable from the injection."}}),
+    "timely_filing": (["uri", "labs"], "Claim sent after the payer's filing limit",
+                      {"remit_status": "4", "codes": ["CO-29"], "category": "timely_filing", "action": "write_off",
+                       "policy_id": "AD-0029", "appeal_should_win": False}),
+    "retro_termination": (["uri", "diabetes", "labs"], "Employer ended coverage retroactively",
+                          {"remit_status": "4", "codes": ["CO-27"], "category": "eligibility", "action": "bill_patient",
+                           "policy_id": "EL-0027", "appeal_should_win": False}),
+}
+TIMELY_LIMITS = {"Northwind Health Plan": 90, "Bluewater Mutual": 180, "Cedar Ridge Health": 90, "Summit CareShield": 120}
 
 
 @dataclass
@@ -318,12 +383,14 @@ def prior_auth(path, d):
 
 # --- one case ----------------------------------------------------------------------------
 
-def build_case(case: Case, out_dir: Path, today: date) -> dict:
+def build_case(case: Case, out_dir: Path, today: date, payer_state: dict | None = None) -> dict:
     rng, scenario = case.rng, case.scenario
     first, last = rng.choice(FIRST), rng.choice(LAST)
     payer, prefix = rng.choice(PAYERS)
-    provider_key, lines, dx, note_text = VISITS[case.visit]
+    provider_key, lines, dx, note_text = VISITS_ALL[case.visit]
     dos = today - timedelta(days=rng.randint(3, 40))
+    if scenario == "timely_filing":
+        dos = today - timedelta(days=TIMELY_LIMITS[payer] + rng.randint(20, 60))
     dob = date(rng.randint(1948, 2001), rng.randint(1, 12), rng.randint(1, 28))
     member_id = f"{prefix}{rng.randint(100000000, 999999999)}"
     line_items = [{"cpt": cpt, "description": CPT[cpt][0], "units": units, "charge": round(CPT[cpt][1] * units, 2)}
@@ -401,10 +468,24 @@ def build_case(case: Case, out_dir: Path, today: date) -> dict:
         record["prior_authorization"] = {"auth_number": d["auth_number"], "member_id": d["member_id"],
                                          "valid_from": d["auth_from"], "valid_to": d["auth_to"],
                                          "approved_cpt_codes": d["auth_codes"]}
-    findings, ai, description = SCENARIOS[scenario]
+    denial = None
+    if scenario in DENIAL_SCENARIOS:
+        _, description, denial = DENIAL_SCENARIOS[scenario]
+        findings, ai = [], False
+        member = re.sub(r"[^A-Z0-9]", "", d["member_id"].upper())
+        if scenario == "deductible":
+            payer_state["deductible_remaining"][member] = float(rng.choice([60, 90, 120]))
+        elif scenario == "auth_not_on_file":
+            payer_state["auth_not_on_file"].append(re.sub(r"[^A-Z0-9]", "", d["auth_number"].upper()))
+        elif scenario == "retro_termination":
+            payer_state["terminations"][member] = (dos - timedelta(days=rng.randint(5, 25))).isoformat()
+    else:
+        findings, ai, description = SCENARIOS[scenario]
     expected = {"case_id": case.case_id, "scenario": scenario, "title": description,
                 "visit": case.visit, "patient": d["patient_name"], "record": record,
                 "expected_findings": findings, "expects_ai_review": ai}
+    if denial:
+        expected["denial"] = denial
     (folder / "expected.json").write_text(json.dumps(expected, indent=2))
     return expected
 
@@ -434,13 +515,29 @@ def main(today: date | None = None) -> None:
     for scenario, count in weights.items():
         plan += [("hist", scenario)] * count
 
-    counters = {"case": 0, "hist": 0}
+    counters = {"case": 0, "hist": 0, "den": 0, "hden": 0}
     for prefix, scenario in plan:
         counters[prefix] += 1
         case_rng = random.Random(rng.random())
         visit = case_rng.choice(SCENARIO_VISITS.get(scenario, list(VISITS)))
         build_case(Case(f"{prefix}_{counters[prefix]:03d}", scenario, visit, case_rng), OUT, today)
-    print(f"Wrote {counters['case']} eval cases and {counters['hist']} history cases to {OUT}")
+
+    # Denial scenarios use their own random stream, so adding them didn't change the cases above.
+    payer_state = {"generated_on": today.isoformat(), "auth_not_on_file": [], "terminations": {},
+                   "deductible_remaining": {}}
+    den_rng = random.Random(1835)
+    denial_plan = [("den", s) for s in DENIAL_SCENARIOS for _ in range(2)]
+    history_weights = {"paid_clean": 4, "deductible": 2, "auth_not_on_file": 2, "med_necessity_supported": 2,
+                       "med_necessity_unsupported": 1, "bundling_mod25": 2, "timely_filing": 1, "retro_termination": 1}
+    denial_plan += [("hden", s) for s, n in history_weights.items() for _ in range(n)]
+    for prefix, scenario in denial_plan:
+        counters[prefix] += 1
+        case_rng = random.Random(den_rng.random())
+        visit = case_rng.choice(DENIAL_SCENARIOS[scenario][0])
+        build_case(Case(f"{prefix}_{counters[prefix]:03d}", scenario, visit, case_rng), OUT, today, payer_state)
+    (OUT.parent / "payer_state.json").write_text(json.dumps(payer_state, indent=2))
+    print(f"Wrote {counters['case']} eval cases, {counters['hist']} history cases, {counters['den']} denial cases "
+          f"and {counters['hden']} denial history cases to {OUT}")
 
 
 if __name__ == "__main__":

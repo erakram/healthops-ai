@@ -1,0 +1,95 @@
+{
+  "case_id": "hden_006",
+  "scenario": "deductible",
+  "title": "Part of the allowed amount goes to the patient's deductible",
+  "visit": "diabetes",
+  "patient": "Priya Larkin",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-214365",
+      "patient_name": "Priya Larkin",
+      "patient_dob": "03/18/1959",
+      "member_id": "SCS886641621",
+      "payer_name": "Summit CareShield",
+      "provider_name": "Riverside Family Medicine",
+      "provider_npi": "1151605502",
+      "service_date": "09/28/2026",
+      "total_charge": "$292.50",
+      "prior_auth_number": null,
+      "line_items": [
+        {
+          "cpt": "99214",
+          "description": "Office visit, established, moderate complexity",
+          "units": 1,
+          "charge": "$215.00"
+        },
+        {
+          "cpt": "80053",
+          "description": "Comprehensive metabolic panel",
+          "units": 1,
+          "charge": "$62.50"
+        },
+        {
+          "cpt": "36415",
+          "description": "Routine venipuncture",
+          "units": 1,
+          "charge": "$15.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "E11.9",
+        "I10"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Priya Larkin",
+      "member_id": "SCS886641621",
+      "payer_name": "Summit CareShield",
+      "group_number": "GRP-5624",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Priya Larkin",
+      "patient_dob": "03/18/1959",
+      "service_date": "September 28, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-95443",
+      "patient_name": "Priya Larkin",
+      "service_date": "09/28/2026",
+      "total_amount": "$292.50",
+      "line_items": [
+        {
+          "cpt": "99214",
+          "description": "Office visit, established, moderate complexity",
+          "units": 1,
+          "charge": "$215.00"
+        },
+        {
+          "cpt": "80053",
+          "description": "Comprehensive metabolic panel",
+          "units": 1,
+          "charge": "$62.50"
+        },
+        {
+          "cpt": "36415",
+          "description": "Routine venipuncture",
+          "units": 1,
+          "charge": "$15.00"
+        }
+      ]
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "denial": {
+    "remit_status": "1",
+    "codes": [
+      "PR-1"
+    ],
+    "category": "patient_responsibility",
+    "action": "bill_patient",
+    "policy_id": "PR-0001"
+  }
+}

@@ -1,0 +1,81 @@
+{
+  "case_id": "hden_007",
+  "scenario": "auth_not_on_file",
+  "title": "Payer can't find the prior authorization the packet has",
+  "visit": "mri_brain",
+  "patient": "Jonah Delgado",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-896320",
+      "patient_name": "Jonah Delgado",
+      "patient_dob": "04/06/1996",
+      "member_id": "BWM515058090",
+      "payer_name": "Bluewater Mutual",
+      "provider_name": "Harbor Imaging Center",
+      "provider_npi": "1123884094",
+      "service_date": "10/21/2026",
+      "total_charge": "$2,380.00",
+      "prior_auth_number": "PA-7651122",
+      "line_items": [
+        {
+          "cpt": "70553",
+          "description": "MRI brain with and without contrast",
+          "units": 1,
+          "charge": "$2,380.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "G43.909",
+        "R51.9"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Jonah Delgado",
+      "member_id": "BWM515058090",
+      "payer_name": "Bluewater Mutual",
+      "group_number": "GRP-7878",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Jonah Delgado",
+      "patient_dob": "04/06/1996",
+      "service_date": "October 21, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-59963",
+      "patient_name": "Jonah Delgado",
+      "service_date": "10/21/2026",
+      "total_amount": "$2,380.00",
+      "line_items": [
+        {
+          "cpt": "70553",
+          "description": "MRI brain with and without contrast",
+          "units": 1,
+          "charge": "$2,380.00"
+        }
+      ]
+    },
+    "prior_authorization": {
+      "auth_number": "PA-7651122",
+      "member_id": "BWM515058090",
+      "valid_from": "10/01/2026",
+      "valid_to": "11/30/2026",
+      "approved_cpt_codes": [
+        "70553"
+      ]
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "denial": {
+    "remit_status": "4",
+    "codes": [
+      "CO-197"
+    ],
+    "category": "authorization",
+    "action": "appeal",
+    "policy_id": "UM-0197",
+    "appeal_should_win": true
+  }
+}

@@ -38,7 +38,7 @@ def _record_run(db: Session, claim: Claim, agent: str, result: LLMResult | None)
                         output_tokens=result.output_tokens, latency_ms=result.latency_ms))
 
 
-def handle_extract(db: Session, claim: Claim, llm: LLM | None) -> None:
+def handle_extract(db: Session, claim: Claim, llm: LLM | None, _payload: dict | None = None) -> None:
     if llm is None:
         raise LLMError("No LLM configured: set GROQ_API_KEY to process uploaded claims")
     if claim.status != Status.EXTRACTING:
@@ -105,7 +105,7 @@ def _other_claims_for_duplicates(db: Session, claim: Claim) -> list[dict]:
     return others
 
 
-def handle_validate(db: Session, claim: Claim, llm: LLM | None) -> None:
+def handle_validate(db: Session, claim: Claim, llm: LLM | None, _payload: dict | None = None) -> None:
     record = {k: v for k, v in (claim.extracted or {}).items() if not k.startswith("_")}
     note_doc = next((d for d in claim.documents if d.kind == "clinical_note"), None)
     note = (note_doc.id, parse_pdf(note_doc.path)) if note_doc else None
@@ -142,21 +142,38 @@ def handle_validate(db: Session, claim: Claim, llm: LLM | None) -> None:
                else "Only minor notes, ready for approval" if findings else "No issues found, ready for approval")
 
 
-def handle_submit(db: Session, claim: Claim, _llm: LLM | None) -> None:
-    """Mock payer submission. The unique key means a retried job reuses the first submission."""
-    key = f"submit:{claim.id}"
+def handle_submit(db: Session, claim: Claim, _llm: LLM | None, payload: dict | None = None) -> None:
+    """Send the claim to the (mock) payer. The idempotency key means a retried job reuses the
+    first submission. The payer answers later with an 835 (the "remit" job)."""
+    from app.revenue import payer_claim
+
+    payload = payload or {}
+    frequency = payload.get("frequency", "1")
+    key = payload.get("key") or f"submit:{claim.id}"
     submission = db.scalar(select(Submission).where(Submission.idempotency_key == key))
     if not submission:
-        submission = Submission(claim_id=claim.id, idempotency_key=key, payer_reference=f"PYR-{secrets.token_hex(4).upper()}")
+        submission = Submission(claim_id=claim.id, idempotency_key=key, frequency=frequency,
+                                payer_reference=f"PYR-{secrets.token_hex(4).upper()}",
+                                payload=payer_claim(claim, frequency, payload.get("modifiers")))
         db.add(submission)
         try:
             db.commit()
         except IntegrityError:
             db.rollback()
             submission = db.scalar(select(Submission).where(Submission.idempotency_key == key))
-        audit.record(db, SYSTEM, "claim.submitted", "claim", claim.number, {"payer_reference": submission.payer_reference})
-    log_step(db, claim, SYSTEM, f"Submitted to {claim.payer_name or 'payer'}, reference {submission.payer_reference}")
-    transition(db, claim, Status.SUBMITTED, SYSTEM, f"Accepted by payer gateway ({submission.payer_reference})")
+        audit.record(db, SYSTEM, "claim.submitted", "claim", claim.number,
+                     {"payer_reference": submission.payer_reference, "frequency": frequency})
+    label = "Corrected claim (frequency 7)" if frequency == "7" else "Claim"
+    log_step(db, claim, SYSTEM, f"{label} sent to {claim.payer_name or 'payer'}, reference {submission.payer_reference}")
+    if claim.status != Status.SUBMITTED:
+        transition(db, claim, Status.SUBMITTED, SYSTEM, f"Accepted by payer gateway ({submission.payer_reference})")
+    enqueue(db, "remit", claim, key=f"remit:{submission.id}", payload={"submission_id": submission.id},
+            delay_seconds=settings.payer_delay_seconds)
 
 
-HANDLERS = {"extract": handle_extract, "validate": handle_validate, "submit": handle_submit}
+def _all_handlers() -> dict:
+    from app import revenue
+    return {"extract": handle_extract, "validate": handle_validate, "submit": handle_submit, **revenue.HANDLERS}
+
+
+HANDLERS = _all_handlers()

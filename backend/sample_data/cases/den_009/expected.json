@@ -1,0 +1,77 @@
+{
+  "case_id": "den_009",
+  "scenario": "med_necessity_unsupported",
+  "title": "Epidural injection denied, and the note doesn't support it",
+  "visit": "esi_unsupported",
+  "patient": "Priya Thornton",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-573449",
+      "patient_name": "Priya Thornton",
+      "patient_dob": "05/26/1997",
+      "member_id": "NWH270589832",
+      "payer_name": "Northwind Health Plan",
+      "provider_name": "Northgate Spine and Pain",
+      "provider_npi": "1401851344",
+      "service_date": "09/30/2026",
+      "total_charge": "$1,250.00",
+      "prior_auth_number": null,
+      "line_items": [
+        {
+          "cpt": "64483",
+          "description": "Transforaminal epidural injection, lumbar",
+          "units": 1,
+          "charge": "$1,250.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "M54.50"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Priya Thornton",
+      "member_id": "NWH270589832",
+      "payer_name": "Northwind Health Plan",
+      "group_number": "GRP-5209",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Priya Thornton",
+      "patient_dob": "05/26/1997",
+      "service_date": "September 30, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-67900",
+      "patient_name": "Priya Thornton",
+      "service_date": "09/30/2026",
+      "total_amount": "$1,250.00",
+      "line_items": [
+        {
+          "cpt": "64483",
+          "description": "Transforaminal epidural injection, lumbar",
+          "units": 1,
+          "charge": "$1,250.00"
+        }
+      ]
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "denial": {
+    "remit_status": "4",
+    "codes": [
+      "CO-50"
+    ],
+    "category": "medical_necessity",
+    "action": "write_off",
+    "policy_id": "MP-2041",
+    "appeal_should_win": false,
+    "criteria": {
+      "C1": false,
+      "C2": false,
+      "C3": false
+    },
+    "criteria_quotes": {}
+  }
+}

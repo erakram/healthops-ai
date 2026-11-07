@@ -1,0 +1,107 @@
+[
+  {
+    "id": "MP-2041",
+    "title": "Lumbar epidural steroid injections",
+    "kind": "medical",
+    "cpt_codes": ["64483", "64484", "62323"],
+    "carc_codes": ["50"],
+    "body": "Transforaminal and interlaminar epidural steroid injections of the lumbar spine are considered medically necessary for the treatment of lumbar radicular pain when all of the criteria below are documented in the medical record. Injections for axial low back pain without radicular symptoms are not covered. Records must be submitted with any request for reconsideration of a medical necessity denial.",
+    "criteria": [
+      {"id": "C1", "text": "Radicular pain (pain radiating into the leg, sciatica or radiculopathy) is documented.",
+       "pattern": "radiat\\w*|radicul\\w*|sciatica"},
+      {"id": "C2", "text": "At least 4 weeks of conservative therapy (physical therapy, medication or activity modification) have failed.",
+       "pattern": "(\\d+)\\s+weeks?\\s+of\\s+(?:physical therapy|conservative|nsaid|medication)", "min_number": 4},
+      {"id": "C3", "text": "Imaging (MRI or CT) shows nerve root involvement such as disc herniation, stenosis or compression.",
+       "pattern": "(?:mri|ct)\\b[^.]{0,120}(?:herniation|stenosis|compression)"}
+    ]
+  },
+  {
+    "id": "MP-1180",
+    "title": "Advanced imaging of the lumbar spine (MRI and CT)",
+    "kind": "medical",
+    "cpt_codes": ["72148", "72149", "72158", "72131"],
+    "carc_codes": ["50"],
+    "body": "MRI of the lumbar spine is medically necessary for low back pain persisting beyond six weeks of conservative treatment, or sooner when red flags are present such as progressive neurological deficit, suspected infection, malignancy or cauda equina syndrome. Prior authorization is required.",
+    "criteria": [
+      {"id": "C1", "text": "Low back pain persisting beyond six weeks of conservative treatment, or a documented red flag.",
+       "pattern": "(?:six|6)\\s+weeks|red flag|neurological deficit|cauda equina"}
+    ]
+  },
+  {
+    "id": "MP-1310",
+    "title": "Knee arthroscopy and meniscectomy",
+    "kind": "medical",
+    "cpt_codes": ["29880", "29881"],
+    "carc_codes": ["50"],
+    "body": "Arthroscopic meniscectomy is covered for a symptomatic meniscal tear with mechanical symptoms such as locking or catching, confirmed by imaging or examination. Arthroscopic debridement for osteoarthritis alone is not medically necessary. Prior authorization is required.",
+    "criteria": [
+      {"id": "C1", "text": "A meniscal tear is documented.", "pattern": "menisc\\w*\\s+tear|tear of the (?:medial|lateral) meniscus"}
+    ]
+  },
+  {
+    "id": "MP-0930",
+    "title": "Transthoracic echocardiography",
+    "kind": "medical",
+    "cpt_codes": ["93306", "93307", "93308"],
+    "carc_codes": ["50"],
+    "body": "A complete transthoracic echocardiogram is covered for evaluation of chest pain of suspected cardiac origin, heart failure symptoms, murmurs, or long-standing hypertension with suspected structural heart disease. Repeat studies within one year require a change in clinical status. Prior authorization is required.",
+    "criteria": [
+      {"id": "C1", "text": "A cardiac indication such as chest pain, heart failure or hypertension is documented.",
+       "pattern": "chest pain|heart failure|hypertension|murmur"}
+    ]
+  },
+  {
+    "id": "RP-0025",
+    "title": "Modifier 25: significant, separately identifiable evaluation and management service",
+    "kind": "coding",
+    "cpt_codes": ["99212", "99213", "99214", "99215", "20552", "20553", "20610", "11721"],
+    "carc_codes": ["97"],
+    "body": "An evaluation and management (E/M) service billed on the same day as a minor procedure is bundled into the procedure unless the E/M is significant and separately identifiable from the usual pre-procedure evaluation. When the record documents a separate problem that was evaluated and managed, the E/M line may be billed with modifier 25 on a corrected claim (frequency code 7). Bundling edits follow the national correct coding pairs, with the procedure as the column one code.",
+    "bundling_pairs": [["20552", "99214"], ["20552", "99213"], ["20553", "99214"], ["11721", "99213"]],
+    "criteria": [
+      {"id": "C1", "text": "The record documents a problem evaluated and managed separately from the procedure.",
+       "pattern": "separately identifiable|separate (?:problem|condition|evaluation)|in addition, the patient"}
+    ]
+  },
+  {
+    "id": "UM-0197",
+    "title": "Prior authorization requirements and reconsideration",
+    "kind": "administrative",
+    "cpt_codes": ["70553", "72148", "29881", "93306", "27447"],
+    "carc_codes": ["197", "198"],
+    "body": "Advanced imaging, elective surgery and echocardiography require prior authorization before the date of service. Claims without an authorization on file deny with reason 197. If an authorization was issued but not linked to the claim, the provider may request reconsideration with a copy of the authorization determination showing the authorization number, approved procedure codes and validity dates that include the date of service.",
+    "criteria": [
+      {"id": "A1", "text": "An approved authorization number issued for this member.", "pattern": "authorization number"},
+      {"id": "A2", "text": "The authorization's validity dates include the date of service and it approves the billed procedure.", "pattern": "valid (?:from|to)"}
+    ]
+  },
+  {
+    "id": "AD-0029",
+    "title": "Timely filing limits",
+    "kind": "administrative",
+    "cpt_codes": [],
+    "carc_codes": ["29"],
+    "body": "Claims must be received within the timely filing limit counted from the date of service: 90 days for Northwind Health Plan and Cedar Ridge Health, 120 days for Summit CareShield and 180 days for Bluewater Mutual. Late claims deny with reason 29 and the amount may not be billed to the member. Timely filing denials are overturned only with proof that the claim was first received within the limit, such as a clearinghouse acceptance report or a payer acknowledgement.",
+    "criteria": [
+      {"id": "T1", "text": "Proof the original claim was accepted within the filing limit.", "pattern": "acceptance report|acknowledg\\w*"}
+    ]
+  },
+  {
+    "id": "EL-0027",
+    "title": "Eligibility and retroactive termination of coverage",
+    "kind": "administrative",
+    "cpt_codes": [],
+    "carc_codes": ["27"],
+    "body": "Services after the member's coverage termination date are not covered and deny with reason 27. Employers may terminate coverage retroactively, so an insurance card does not prove coverage on the date of service. The provider should verify other coverage with the patient; if there is none, the member may be billed. These denials are not overturned on appeal unless the payer's eligibility record was wrong.",
+    "criteria": []
+  },
+  {
+    "id": "PR-0001",
+    "title": "Member cost sharing: deductible, coinsurance and copayment",
+    "kind": "administrative",
+    "cpt_codes": [],
+    "carc_codes": ["1", "2", "3"],
+    "body": "The allowed amount is first applied to the member's remaining annual deductible (reason 1), then coinsurance (reason 2) or copayment (reason 3). These amounts are the member's responsibility and are billed to the patient by the provider. They are not denials and are not appealable.",
+    "criteria": []
+  }
+]

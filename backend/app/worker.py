@@ -19,6 +19,7 @@ from app.core.workflow import (TRANSITIONS, Status, claim_next_job, defer_job, f
 from app.db import SessionLocal
 from app.models import Claim, Job
 from app.pipeline import HANDLERS
+from app.revenue import give_up
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +32,7 @@ def run_one(llm: LLM | None) -> bool:
             return False
         claim = db.get(Claim, job.claim_id)
         try:
-            HANDLERS[job.kind](db, claim, llm)
+            HANDLERS[job.kind](db, claim, llm, job.payload or {})
             finish_job(db, job)
         except RateLimited as exc:
             db.rollback()
@@ -47,6 +48,9 @@ def run_one(llm: LLM | None) -> bool:
             claim = db.get(Claim, job.claim_id)
             if retrying:
                 log_step(db, claim, "Workflow Engine", f"Step '{job.kind}' failed, retrying ({message[:160]})")
+            elif job.kind in ("triage", "draft_appeal"):
+                give_up(db, job.kind, job.payload or {}, message)
+                log_step(db, claim, "Workflow Engine", f"Step '{job.kind}' failed: {message[:300]}")
             elif Status.FAILED in TRANSITIONS[Status(claim.status)]:
                 transition(db, claim, Status.FAILED, "Workflow Engine", f"Step '{job.kind}' failed: {message[:300]}")
         return True

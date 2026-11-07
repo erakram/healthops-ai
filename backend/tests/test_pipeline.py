@@ -37,8 +37,9 @@ def test_problem_claim_goes_to_review_then_approval_submits_once(client):
     assert client.post(f"/api/claims/{claim['id']}/decision", json={"action": "approve"}).status_code == 403
     login(client, "biller")
     assert client.post(f"/api/claims/{claim['id']}/decision", json={"action": "approve"}).status_code == 200
-    claim = _wait(client, claim["id"], {"submitted"})
+    claim = _wait(client, claim["id"], {"submitted", "paid", "denied"})
     assert claim["submission"]["payer_reference"].startswith("PYR-")
+    assert len(claim["submissions"]) == 1
     assert client.get("/api/audit/verify").json()["ok"]
 
 

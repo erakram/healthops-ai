@@ -1,0 +1,68 @@
+{
+  "case_id": "hden_003",
+  "scenario": "paid_clean",
+  "title": "Paid as billed (contractual adjustment only)",
+  "visit": "uri",
+  "patient": "Marcus Brennan",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-587109",
+      "patient_name": "Marcus Brennan",
+      "patient_dob": "02/19/1967",
+      "member_id": "SCS774352775",
+      "payer_name": "Summit CareShield",
+      "provider_name": "Riverside Family Medicine",
+      "provider_npi": "1681616672",
+      "service_date": "10/15/2026",
+      "total_charge": "$145.00",
+      "prior_auth_number": null,
+      "line_items": [
+        {
+          "cpt": "99213",
+          "description": "Office visit, established, low complexity",
+          "units": 1,
+          "charge": "$145.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "J06.9"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Marcus Brennan",
+      "member_id": "SCS774352775",
+      "payer_name": "Summit CareShield",
+      "group_number": "GRP-7475",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Marcus Brennan",
+      "patient_dob": "02/19/1967",
+      "service_date": "October 15, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-44526",
+      "patient_name": "Marcus Brennan",
+      "service_date": "10/15/2026",
+      "total_amount": "$145.00",
+      "line_items": [
+        {
+          "cpt": "99213",
+          "description": "Office visit, established, low complexity",
+          "units": 1,
+          "charge": "$145.00"
+        }
+      ]
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "denial": {
+    "remit_status": "1",
+    "codes": [],
+    "category": null,
+    "action": null,
+    "policy_id": null
+  }
+}

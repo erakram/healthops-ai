@@ -118,8 +118,9 @@ class Job(Base):
     __tablename__ = "jobs"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    kind: Mapped[str] = mapped_column(String(20))  # extract | validate | submit
+    kind: Mapped[str] = mapped_column(String(20))  # extract | validate | submit | remit | triage | draft_appeal | appeal_decision
     claim_id: Mapped[int] = mapped_column(ForeignKey("claims.id"), index=True)
+    payload: Mapped[dict] = mapped_column(JSON, default=dict)  # e.g. {"denial_id": 3}
     idempotency_key: Mapped[str] = mapped_column(String(100), unique=True)
     status: Mapped[str] = mapped_column(String(20), default="queued", index=True)  # queued | running | done | failed
     attempts: Mapped[int] = mapped_column(Integer, default=0)
@@ -145,16 +146,91 @@ class AgentRun(Base):
 
 
 class Submission(Base):
-    """A claim sent to the (mock) payer. Unique per claim, so a retried job can't submit twice."""
+    """A claim sent to the (mock) payer. The idempotency key ("submit:<claim>:<frequency>:<n>")
+    means a retried job can't send the same claim twice. Frequency 1 is the original claim,
+    7 a replacement (corrected) claim."""
 
     __tablename__ = "submissions"
-    __table_args__ = (UniqueConstraint("claim_id"),)
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    claim_id: Mapped[int] = mapped_column(ForeignKey("claims.id"))
+    claim_id: Mapped[int] = mapped_column(ForeignKey("claims.id"), index=True)
     idempotency_key: Mapped[str] = mapped_column(String(100), unique=True)
     payer_reference: Mapped[str] = mapped_column(String(40))
+    frequency: Mapped[str] = mapped_column(String(1), default="1")
+    payload: Mapped[dict] = mapped_column(JSON, default=dict)  # exactly what the payer received
     at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class Remittance(Base):
+    """An 835 from a payer, kept verbatim. `parsed` is what our parser read from it, so what
+    the UI shows can always be traced back to the raw segments."""
+
+    __tablename__ = "remittances"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    claim_id: Mapped[int | None] = mapped_column(ForeignKey("claims.id"), index=True)
+    kind: Mapped[str] = mapped_column(String(20))  # original | corrected | appeal | imported
+    payer_name: Mapped[str] = mapped_column(String(200))
+    trace_number: Mapped[str] = mapped_column(String(60))
+    raw: Mapped[str] = mapped_column(Text)
+    parsed: Mapped[dict] = mapped_column(JSON, default=dict)
+    paid: Mapped[float] = mapped_column(Float, default=0)
+    patient_responsibility: Mapped[float] = mapped_column(Float, default=0)
+    received_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class Denial(Base):
+    """One adjustment on a remittance that someone has to act on: a payer denial, or a
+    patient balance to bill. Grouped per claim, remittance and reason code."""
+
+    __tablename__ = "denials"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    claim_id: Mapped[int] = mapped_column(ForeignKey("claims.id"), index=True)
+    remittance_id: Mapped[int] = mapped_column(ForeignKey("remittances.id"))
+    group_code: Mapped[str] = mapped_column(String(2))  # CO | PR | OA | PI
+    reason_code: Mapped[str] = mapped_column(String(10))  # CARC
+    remark_codes: Mapped[list] = mapped_column(JSON, default=list)  # RARC
+    lines: Mapped[list] = mapped_column(JSON, default=list)  # [{cpt, modifiers, charge, amount}]
+    amount: Mapped[float] = mapped_column(Float)  # adjusted amount in dispute
+    category: Mapped[str] = mapped_column(String(30))
+    status: Mapped[str] = mapped_column(String(30), index=True)  # see core/denials.py
+    recommended_action: Mapped[str | None] = mapped_column(String(30))
+    action_taken: Mapped[str | None] = mapped_column(String(30))
+    deadline: Mapped[str | None] = mapped_column(String(10))  # ISO date the action must happen by
+    win_probability: Mapped[float | None] = mapped_column(Float)
+    expected_recovery: Mapped[float | None] = mapped_column(Float)
+    recovered: Mapped[float] = mapped_column(Float, default=0)
+    policy_id: Mapped[str | None] = mapped_column(String(20))
+    triage: Mapped[dict] = mapped_column(JSON, default=dict)  # reasoning, criteria checks, retrieval
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+    closed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    claim: Mapped[Claim] = relationship()
+    remittance: Mapped[Remittance] = relationship()
+
+
+class Appeal(Base):
+    """An appeal letter for one denial: the agent's draft (every paragraph with its verified
+    citations), what the biller changed, and the payer's decision."""
+
+    __tablename__ = "appeals"
+    __table_args__ = (UniqueConstraint("denial_id"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    denial_id: Mapped[int] = mapped_column(ForeignKey("denials.id"))
+    status: Mapped[str] = mapped_column(String(20))  # drafting | draft | sent | overturned | upheld
+    draft: Mapped[dict] = mapped_column(JSON, default=dict)  # {paragraphs, removed, stats}
+    letter: Mapped[dict] = mapped_column(JSON, default=dict)  # final paragraphs as sent
+    edited_by: Mapped[str | None] = mapped_column(String(200))
+    sent_by: Mapped[str | None] = mapped_column(String(200))
+    sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    outcome_reason: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+    denial: Mapped[Denial] = relationship()
 
 
 class AuditLog(Base):

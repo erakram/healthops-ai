@@ -4,6 +4,10 @@
     needs_review | ready -> approved | rejected      (a person decides; agents never do)
     needs_review | ready -> validating              (after a reviewer corrects a field)
     approved -> submitted                            (sent to the payer)
+    submitted -> paid | denied                       (the payer's 835 arrives)
+    denied -> appealed -> paid | denied              (appeal overturned or upheld)
+    denied -> submitted                              (corrected claim sent)
+    denied -> paid | closed                          (balance billed or written off)
     any agent step -> failed -> extracting           (retry)
 
 Each step of the pipeline is a Job. Jobs are claimed from the database, so a claim
@@ -31,6 +35,10 @@ class Status(StrEnum):
     APPROVED = "approved"
     REJECTED = "rejected"
     SUBMITTED = "submitted"
+    PAID = "paid"
+    DENIED = "denied"
+    APPEALED = "appealed"
+    CLOSED = "closed"
     FAILED = "failed"
 
 
@@ -43,8 +51,29 @@ TRANSITIONS: dict[Status, set[Status]] = {
     Status.APPROVED: {Status.SUBMITTED, Status.FAILED},
     Status.FAILED: {Status.EXTRACTING, Status.VALIDATING, Status.APPROVED},
     Status.REJECTED: set(),
-    Status.SUBMITTED: set(),
+    Status.SUBMITTED: {Status.PAID, Status.DENIED, Status.CLOSED},
+    Status.DENIED: {Status.APPEALED, Status.SUBMITTED, Status.PAID, Status.CLOSED},
+    Status.APPEALED: {Status.PAID, Status.DENIED, Status.CLOSED},
+    Status.PAID: {Status.DENIED},  # a later remittance can take a payment back
+    Status.CLOSED: set(),
 }
+
+
+class DenialStatus(StrEnum):
+    TRIAGE = "triage"  # agents are analysing it
+    OPEN = "open"  # waiting for a person to act on the recommendation
+    APPEAL_SENT = "appeal_sent"
+    RESUBMITTED = "resubmitted"  # corrected claim sent
+    UPHELD = "upheld"  # appeal lost: write off or escalate
+    OVERTURNED = "overturned"
+    PAID_ON_RESUBMISSION = "paid_on_resubmission"
+    PATIENT_BILLED = "patient_billed"
+    WRITTEN_OFF = "written_off"
+    SUPERSEDED = "superseded"  # replaced by the remittance for a corrected claim
+
+
+DENIAL_OPEN = {DenialStatus.TRIAGE, DenialStatus.OPEN, DenialStatus.UPHELD}
+DENIAL_WAITING = {DenialStatus.APPEAL_SENT, DenialStatus.RESUBMITTED}
 
 AWAITING_HUMAN = {Status.NEEDS_REVIEW, Status.READY}
 
@@ -73,9 +102,11 @@ def log_step(db: Session, claim: Claim, agent: str, message: str, **data) -> Non
     events.publish("claim.step", claim_id=claim.id, agent=agent, message=message)
 
 
-def enqueue(db: Session, kind: str, claim: Claim, key: str | None = None) -> Job | None:
+def enqueue(db: Session, kind: str, claim: Claim, key: str | None = None, payload: dict | None = None,
+            delay_seconds: float = 0) -> Job | None:
     """Queue a pipeline step. Returns None if a job with this key already exists."""
-    job = Job(kind=kind, claim_id=claim.id, idempotency_key=key or f"{kind}:{claim.id}")
+    job = Job(kind=kind, claim_id=claim.id, idempotency_key=key or f"{kind}:{claim.id}", payload=payload or {},
+              run_after=datetime.now(timezone.utc) + timedelta(seconds=delay_seconds))
     db.add(job)
     try:
         db.commit()
