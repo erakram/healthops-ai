@@ -265,6 +265,48 @@ export interface AuthsSummary {
 
 export interface AuthSample { case_id: string; title: string; scenario: string; patient: string; files: string[]; has_addendum: boolean }
 
+/* ---------- Medical coding ---------- */
+
+export type EncStatus = "received" | "reading" | "coding" | "review" | "coded" | "billed" | "failed";
+export interface CodeHit { code: string; description: string; score: number | null }
+export interface SuggestedDx {
+  code: string; description: string; documented: string | null; quote: string | null; evidence: Evidence | null;
+  reason: string | null; candidates: CodeHit[];
+}
+export interface CptLine { code: string; modifiers: string[]; units: number }
+export interface SuggestedPx extends CptLine {
+  description: string; documented: string | null; quote: string | null; evidence: Evidence | null; reason: string | null;
+  candidates: CodeHit[];
+}
+export interface CodingEdit {
+  code: string; severity: "high" | "medium" | "low"; target: string; title: string; detail: string;
+  fix: { replace?: string; add_modifier?: string; remove?: string; units?: number } | null;
+}
+export interface MdmElement { level?: string; quote?: string; reason?: string; evidence?: Evidence | null }
+export interface EncounterSummary {
+  id: number; number: string; status: EncStatus; status_label: string; source: string; patient_name: string | null;
+  payer_name: string | null; provider_name: string | null; service_date: string | null; codes: string[]; edits: number;
+  agreed: boolean | null; changes: number; claim_id: number | null; coded_by: string | null; coded_at: string | null;
+  created_at: string;
+}
+export interface EncounterDetail extends EncounterSummary {
+  suggestion: {
+    diagnoses?: SuggestedDx[]; procedures?: SuggestedPx[]; edits?: CodingEdit[];
+    em?: { code: string; patient_status: string; mdm_level: string; time_minutes: number | null; time_code: string | null;
+           basis: string; explanation: string } | null;
+    documented?: { visit?: { type?: string; patient_status?: string; evidence?: Evidence | null };
+                   time?: { value?: number | null; quote?: string; evidence?: Evidence | null };
+                   mdm?: Record<"problems" | "data" | "risk", MdmElement>;
+                   separate_em?: { documented?: boolean; quote?: string; evidence?: Evidence | null } };
+    stats?: { diagnoses: number; procedures: number; rejected_choices: number; grounded: number; quotes: number };
+  };
+  final: { icd?: { code: string; description: string }[]; cpt?: (CptLine & { description: string })[]; edits?: CodingEdit[];
+           changes?: { kind: string; change: string; code: string }[]; reason?: string | null; agreed?: boolean };
+  documents: DocumentInfo[]; events: ClaimEvent[];
+  agent_runs: { agent: string; model: string; input_tokens: number; output_tokens: number; latency_ms: number }[];
+}
+export interface CodingSample { case_id: string; title: string; scenario: string; patient: string; files: string[] }
+
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
     super(message);
@@ -357,6 +399,26 @@ export const api = {
     request<AuthDetail>(`/api/authorizations/${id}/submit`, json({ paragraphs, note })),
   withdrawAuthorization: (id: number, note: string) => request<AuthDetail>(`/api/authorizations/${id}/withdraw`, json({ note })),
   retryAuthorization: (id: number) => request<AuthDetail>(`/api/authorizations/${id}/retry`, { method: "POST" }),
+
+  encounters: (view: "open" | "done" | "all" = "open") => request<EncounterSummary[]>(`/api/encounters?view=${view}`),
+  encountersSummary: () => request<{ review: number; coded: number; billed: number; agreement_rate: number | null; edits_raised: number }>("/api/encounters/summary"),
+  encounter: (id: number) => request<EncounterDetail>(`/api/encounters/${id}`),
+  codingSamples: () => request<CodingSample[]>("/api/coding-samples"),
+  loadCodingSample: (caseId: string) => request<EncounterSummary>(`/api/coding-samples/${caseId}/load`, { method: "POST" }),
+  createEncounter: (files: File[]) => {
+    const form = new FormData();
+    files.forEach((f) => form.append("files", f));
+    return request<EncounterSummary>("/api/encounters", { method: "POST", body: form });
+  },
+  searchIcd10: (q: string) => request<CodeHit[]>(`/api/codes/icd10?q=${encodeURIComponent(q)}`),
+  cptList: () => request<{ code: string; description: string; price: number; max_units: number; em: boolean }[]>("/api/codes/cpt"),
+  checkCodes: (id: number, icd: string[], cpt: CptLine[]) =>
+    request<{ problems: string[]; edits: CodingEdit[]; changes: { kind: string; change: string; code: string }[] }>(`/api/encounters/${id}/check`, json({ icd, cpt })),
+  finalizeCodes: (id: number, icd: string[], cpt: CptLine[], reason?: string) =>
+    request<EncounterDetail>(`/api/encounters/${id}/finalize`, json({ icd, cpt, reason })),
+  reopenEncounter: (id: number) => request<EncounterDetail>(`/api/encounters/${id}/reopen`, { method: "POST" }),
+  createClaimFromEncounter: (id: number) => request<EncounterDetail & { claim_number: string }>(`/api/encounters/${id}/claim`, { method: "POST" }),
+  retryEncounter: (id: number) => request<EncounterDetail>(`/api/encounters/${id}/retry`, { method: "POST" }),
 
   remittanceRaw: async (id: number) => {
     const res = await fetch(`/api/remittances/${id}/raw`, { credentials: "same-origin" });

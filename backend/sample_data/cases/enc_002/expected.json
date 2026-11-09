@@ -1,0 +1,77 @@
+{
+  "case_id": "enc_002",
+  "scenario": "uri_low",
+  "title": "Cold symptoms, low complexity visit",
+  "visit": "uri_low",
+  "patient": "Priya Iverson",
+  "record": {
+    "clinical_note": {
+      "patient_name": "Priya Iverson",
+      "patient_dob": "09/22/1948",
+      "service_date": "November 1, 2026",
+      "provider_name": "Riverside Family Medicine",
+      "provider_npi": "1531464000"
+    },
+    "insurance_card": {
+      "member_name": "Priya Iverson",
+      "member_id": "CRH552123478",
+      "payer_name": "Cedar Ridge Health",
+      "group_number": "GRP-7591",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "coding": {
+    "visit": {
+      "type": "office_visit",
+      "patient_status": "established",
+      "quote": "Established patient office visit for sore throat and congestion."
+    },
+    "time_minutes": {
+      "value": 22,
+      "quote": "Total time on the date of the encounter: 22 minutes."
+    },
+    "mdm": {
+      "problems": {
+        "level": "low",
+        "quote": "Acute upper respiratory infection, uncomplicated."
+      },
+      "data": {
+        "level": "minimal",
+        "quote": ""
+      },
+      "risk": {
+        "level": "low",
+        "quote": "Supportive care with over-the-counter acetaminophen and saline nasal spray."
+      }
+    },
+    "diagnoses": [
+      {
+        "condition": "Acute upper respiratory infection",
+        "search": "acute upper respiratory infection",
+        "quote": "Acute upper respiratory infection, uncomplicated.",
+        "code": "J06.9"
+      }
+    ],
+    "procedures": [],
+    "separate_em": {
+      "documented": false,
+      "quote": ""
+    },
+    "expected": {
+      "icd": [
+        "J06.9"
+      ],
+      "cpt": [
+        {
+          "code": "99213",
+          "modifiers": [],
+          "units": 1
+        }
+      ],
+      "em": "99213"
+    }
+  }
+}

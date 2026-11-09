@@ -1,0 +1,85 @@
+{
+  "case_id": "hcod_005",
+  "scenario": "knee_left_procedure",
+  "title": "Left knee injection only",
+  "visit": "knee_left_procedure",
+  "patient": "Ethan Sullivan",
+  "record": {
+    "clinical_note": {
+      "patient_name": "Ethan Sullivan",
+      "patient_dob": "05/08/1990",
+      "service_date": "November 1, 2026",
+      "provider_name": "Lakeside Orthopedics",
+      "provider_npi": "1722389370"
+    },
+    "insurance_card": {
+      "member_name": "Ethan Sullivan",
+      "member_id": "CRH781755102",
+      "payer_name": "Cedar Ridge Health",
+      "group_number": "GRP-1321",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "coding": {
+    "visit": {
+      "type": "procedure_only",
+      "patient_status": "established",
+      "quote": "Procedure visit for a scheduled knee injection. No other problems addressed."
+    },
+    "time_minutes": {
+      "value": null,
+      "quote": ""
+    },
+    "mdm": {
+      "problems": {
+        "level": "minimal",
+        "quote": ""
+      },
+      "data": {
+        "level": "minimal",
+        "quote": ""
+      },
+      "risk": {
+        "level": "minimal",
+        "quote": ""
+      }
+    },
+    "diagnoses": [
+      {
+        "condition": "Primary osteoarthritis of the left knee",
+        "search": "unilateral primary osteoarthritis left knee",
+        "quote": "Primary osteoarthritis of the left knee.",
+        "code": "M17.12"
+      }
+    ],
+    "procedures": [
+      {
+        "service": "Knee joint injection",
+        "search": "injection major joint knee",
+        "quote": "Corticosteroid injection into the left knee joint performed under sterile technique.",
+        "code": "20610",
+        "units": 1
+      }
+    ],
+    "separate_em": {
+      "documented": false,
+      "quote": ""
+    },
+    "expected": {
+      "icd": [
+        "M17.12"
+      ],
+      "cpt": [
+        {
+          "code": "20610",
+          "modifiers": [],
+          "units": 1
+        }
+      ],
+      "em": null
+    }
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "case_id": "hcod_004",
+  "scenario": "knee_injection_mod25",
+  "title": "Knee injection plus a separate diabetes visit (modifier 25)",
+  "visit": "knee_injection_mod25",
+  "patient": "Ethan Larkin",
+  "record": {
+    "clinical_note": {
+      "patient_name": "Ethan Larkin",
+      "patient_dob": "04/21/1999",
+      "service_date": "October 31, 2026",
+      "provider_name": "Lakeside Orthopedics",
+      "provider_npi": "1739879595"
+    },
+    "insurance_card": {
+      "member_name": "Ethan Larkin",
+      "member_id": "SCS909527394",
+      "payer_name": "Summit CareShield",
+      "group_number": "GRP-6139",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "coding": {
+    "visit": {
+      "type": "office_visit",
+      "patient_status": "established",
+      "quote": "Established patient office visit for right knee pain and diabetes follow-up."
+    },
+    "time_minutes": {
+      "value": 25,
+      "quote": "Total time on the date of the encounter: 25 minutes."
+    },
+    "mdm": {
+      "problems": {
+        "level": "low",
+        "quote": "Type 2 diabetes mellitus without complications, stable."
+      },
+      "data": {
+        "level": "minimal",
+        "quote": ""
+      },
+      "risk": {
+        "level": "moderate",
+        "quote": "Continue metformin at the current prescription dose."
+      }
+    },
+    "diagnoses": [
+      {
+        "condition": "Primary osteoarthritis of the right knee",
+        "search": "unilateral primary osteoarthritis right knee",
+        "quote": "Primary osteoarthritis of the right knee with worsening pain on stairs.",
+        "code": "M17.11"
+      },
+      {
+        "condition": "Type 2 diabetes mellitus without complications",
+        "search": "type 2 diabetes mellitus without complications",
+        "quote": "Type 2 diabetes mellitus without complications, stable.",
+        "code": "E11.9"
+      }
+    ],
+    "procedures": [
+      {
+        "service": "Knee joint injection",
+        "search": "injection major joint knee",
+        "quote": "Corticosteroid injection into the right knee joint performed under sterile technique.",
+        "code": "20610",
+        "units": 1
+      }
+    ],
+    "separate_em": {
+      "documented": true,
+      "quote": "The diabetes follow-up was a separate, significant problem addressed in addition to the knee injection."
+    },
+    "expected": {
+      "icd": [
+        "M17.11",
+        "E11.9"
+      ],
+      "cpt": [
+        {
+          "code": "99213",
+          "modifiers": [
+            "25"
+          ],
+          "units": 1
+        },
+        {
+          "code": "20610",
+          "modifiers": [],
+          "units": 1
+        }
+      ],
+      "em": "99213"
+    }
+  }
+}

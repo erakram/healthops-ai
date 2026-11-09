@@ -1,0 +1,85 @@
+{
+  "case_id": "enc_016",
+  "scenario": "cerumen",
+  "title": "Ear wax removal, right ear",
+  "visit": "cerumen",
+  "patient": "Robert Fischer",
+  "record": {
+    "clinical_note": {
+      "patient_name": "Robert Fischer",
+      "patient_dob": "03/27/1952",
+      "service_date": "November 7, 2026",
+      "provider_name": "Riverside Family Medicine",
+      "provider_npi": "1051228199"
+    },
+    "insurance_card": {
+      "member_name": "Robert Fischer",
+      "member_id": "NWH370326862",
+      "payer_name": "Northwind Health Plan",
+      "group_number": "GRP-5223",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "coding": {
+    "visit": {
+      "type": "procedure_only",
+      "patient_status": "established",
+      "quote": "Procedure visit for blocked hearing in the right ear."
+    },
+    "time_minutes": {
+      "value": null,
+      "quote": ""
+    },
+    "mdm": {
+      "problems": {
+        "level": "minimal",
+        "quote": ""
+      },
+      "data": {
+        "level": "minimal",
+        "quote": ""
+      },
+      "risk": {
+        "level": "minimal",
+        "quote": ""
+      }
+    },
+    "diagnoses": [
+      {
+        "condition": "Impacted cerumen, right ear",
+        "search": "impacted cerumen right ear",
+        "quote": "Impacted cerumen of the right ear.",
+        "code": "H61.21"
+      }
+    ],
+    "procedures": [
+      {
+        "service": "Cerumen removal",
+        "search": "removal impacted cerumen instruments one ear",
+        "quote": "Removal of impacted cerumen from the right ear using a curette under direct visualization.",
+        "code": "69210",
+        "units": 1
+      }
+    ],
+    "separate_em": {
+      "documented": false,
+      "quote": ""
+    },
+    "expected": {
+      "icd": [
+        "H61.21"
+      ],
+      "cpt": [
+        {
+          "code": "69210",
+          "modifiers": [],
+          "units": 1
+        }
+      ],
+      "em": null
+    }
+  }
+}

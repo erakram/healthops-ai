@@ -375,6 +375,73 @@ def seed_authorizations(db: Session, now: datetime, rng: random.Random) -> int:
     return len(cases)
 
 
+def seed_encounters(db: Session, now: datetime, rng: random.Random) -> int:
+    """Coding history from the hcod_* cases: the real code search, E/M rules and checks, with the
+    answer key standing in for the model. Most are coded; the newest two wait for a coder."""
+    from app.agents.coding import code_encounter
+    from app.coding import EncStatus
+    from app.models import Encounter, EncounterEvent
+    from app.verticals.healthcare.codesets import icd10
+    from app.verticals.healthcare.samples import coding_reply
+
+    cases = list_cases("hcod_")
+    every = list_cases("")
+
+    class AnswerKeyCoder:
+        def complete_json(self, system, user, model=None):
+            return LLMResult(coding_reply(every, system, user), "answer-key", 0, 0, 0)
+
+    for index, case in enumerate(cases):
+        created = now - timedelta(days=1 + (len(cases) - index) * 1.5, hours=rng.randint(0, 6))
+        enc = Encounter(number=f"ENC-{49000 + index}", status=EncStatus.RECEIVED, source="demo-history",
+                        case_id=case["case_id"], created_at=created, updated_at=created)
+        db.add(enc)
+        db.flush()
+        parsed = {}
+        for filename in case["files"]:
+            pdf = parse_pdf(f"{case['path']}/{filename}")
+            doc = Document(encounter_id=enc.id, filename=filename, path=f"{case['path']}/{filename}",
+                           kind=FILE_KINDS.get(filename), pages=pdf.pages, text=pdf.text)
+            db.add(doc)
+            db.flush()
+            parsed[doc.kind] = (doc.id, pdf)
+        record = truth_to_extracted(case["record"], parsed)
+        for kind, (doc_id, _) in parsed.items():
+            db.get(Document, doc_id).fields = record.get(kind, {})
+        enc.extracted = record
+        value = lambda doc, name: ((record.get(doc) or {}).get(name) or {}).get("value")  # noqa: E731
+        enc.patient_name, enc.payer_name = value("clinical_note", "patient_name"), value("insurance_card", "payer_name")
+        enc.provider_name, enc.service_date = value("clinical_note", "provider_name"), value("clinical_note", "service_date")
+        result = code_encounter(AnswerKeyCoder(), parsed["clinical_note"])
+        enc.suggestion = result.as_json()
+        steps = [(created, "transition", "biller@healthops.demo", "Received 2 document(s)"),
+                 (created + timedelta(seconds=20), "step", "Coding Agent",
+                  "Suggested " + ", ".join([d["code"] for d in result.diagnoses] + [p["code"] for p in result.procedures]))]
+        if index >= len(cases) - 2:
+            enc.status = EncStatus.REVIEW
+        else:
+            icd = [d["code"] for d in result.diagnoses]
+            cpt = [{"code": p["code"], "modifiers": p["modifiers"], "units": p["units"], "description": p["description"]}
+                   for p in result.procedures]
+            changes, reason = [], None
+            if index == 1:  # one coder added a secondary diagnosis
+                extra = "Z79.84" if "Z79.84" in icd10() else None
+                if extra and extra not in icd:
+                    icd.append(extra)
+                    changes, reason = [{"kind": "icd", "change": "added", "code": extra}], "Long-term oral hypoglycemic use documented"
+            enc.final = {"icd": [{"code": c, "description": icd10()[c]} for c in icd], "cpt": cpt, "edits": [],
+                         "changes": changes, "reason": reason, "agreed": not changes}
+            enc.status, enc.coded_by = EncStatus.CODED, "biller@healthops.demo"
+            enc.coded_at = created + timedelta(hours=rng.randint(1, 20))
+            steps.append((enc.coded_at, "decision", "biller@healthops.demo",
+                          "Sam Rivera approved the codes" + (f" with 1 change: {reason}" if changes else ", unchanged")))
+        enc.updated_at = steps[-1][0]
+        for when, kind, actor, message in steps:
+            db.add(EncounterEvent(encounter_id=enc.id, type=kind, actor=actor, message=message, at=when))
+    db.commit()
+    return len(cases)
+
+
 def seed_history(db: Session) -> int:
     if db.scalar(select(func.count(Claim.id))):
         return 0
@@ -409,8 +476,10 @@ def seed_history(db: Session) -> int:
         created += 1
     db.commit()
     authorizations = seed_authorizations(db, now, rng)
+    encounters = seed_encounters(db, now, rng)
     if created:
         audit.record(db, "system", "demo.seeded", "system", "history",
                      {"claims": created, "remittances": db.scalar(select(func.count(Remittance.id))),
-                      "denials": db.scalar(select(func.count(Denial.id))), "authorizations": authorizations})
+                      "denials": db.scalar(select(func.count(Denial.id))), "authorizations": authorizations,
+                      "encounters": encounters})
     return created

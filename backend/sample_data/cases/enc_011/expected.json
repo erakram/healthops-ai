@@ -1,0 +1,85 @@
+{
+  "case_id": "enc_011",
+  "scenario": "hand_laceration",
+  "title": "Hand laceration repair (7th character)",
+  "visit": "hand_laceration",
+  "patient": "Maria Lindqvist",
+  "record": {
+    "clinical_note": {
+      "patient_name": "Maria Lindqvist",
+      "patient_dob": "01/14/1989",
+      "service_date": "October 30, 2026",
+      "provider_name": "Bayview Urgent Care",
+      "provider_npi": "1704777410"
+    },
+    "insurance_card": {
+      "member_name": "Maria Lindqvist",
+      "member_id": "SCS468330715",
+      "payer_name": "Summit CareShield",
+      "group_number": "GRP-6704",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "coding": {
+    "visit": {
+      "type": "procedure_only",
+      "patient_status": "new",
+      "quote": "Procedure visit for a cut to the hand sustained today."
+    },
+    "time_minutes": {
+      "value": null,
+      "quote": ""
+    },
+    "mdm": {
+      "problems": {
+        "level": "minimal",
+        "quote": ""
+      },
+      "data": {
+        "level": "minimal",
+        "quote": ""
+      },
+      "risk": {
+        "level": "minimal",
+        "quote": ""
+      }
+    },
+    "diagnoses": [
+      {
+        "condition": "Laceration of right hand without foreign body, initial encounter",
+        "search": "laceration without foreign body right hand initial encounter",
+        "quote": "Laceration of the right palm, 2 cm, superficial, without foreign body, initial encounter for this injury.",
+        "code": "S61.411A"
+      }
+    ],
+    "procedures": [
+      {
+        "service": "Simple wound repair",
+        "search": "simple repair superficial wound 2.5 cm or less",
+        "quote": "Simple repair of the 2 cm superficial wound with sutures after irrigation.",
+        "code": "12001",
+        "units": 1
+      }
+    ],
+    "separate_em": {
+      "documented": false,
+      "quote": ""
+    },
+    "expected": {
+      "icd": [
+        "S61.411A"
+      ],
+      "cpt": [
+        {
+          "code": "12001",
+          "modifiers": [],
+          "units": 1
+        }
+      ],
+      "em": null
+    }
+  }
+}

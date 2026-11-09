@@ -1,0 +1,90 @@
+{
+  "case_id": "enc_005",
+  "scenario": "new_chest_pain",
+  "title": "New patient with chest pain and an ECG",
+  "visit": "new_chest_pain",
+  "patient": "Marcus Osei",
+  "record": {
+    "clinical_note": {
+      "patient_name": "Marcus Osei",
+      "patient_dob": "01/10/1977",
+      "service_date": "October 30, 2026",
+      "provider_name": "Maplewood Cardiology",
+      "provider_npi": "1379877594"
+    },
+    "insurance_card": {
+      "member_name": "Marcus Osei",
+      "member_id": "BWM156530933",
+      "payer_name": "Bluewater Mutual",
+      "group_number": "GRP-5007",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "coding": {
+    "visit": {
+      "type": "office_visit",
+      "patient_status": "new",
+      "quote": "New patient office visit for chest pain."
+    },
+    "time_minutes": {
+      "value": 48,
+      "quote": "Total time on the date of the encounter: 48 minutes."
+    },
+    "mdm": {
+      "problems": {
+        "level": "moderate",
+        "quote": "Chest pain, cause not yet determined, uncertain prognosis."
+      },
+      "data": {
+        "level": "low",
+        "quote": "Lipid panel ordered."
+      },
+      "risk": {
+        "level": "moderate",
+        "quote": "Started prescription aspirin 81 mg daily pending stress testing."
+      }
+    },
+    "diagnoses": [
+      {
+        "condition": "Chest pain",
+        "search": "chest pain unspecified",
+        "quote": "Chest pain, cause not yet determined, uncertain prognosis.",
+        "code": "R07.9"
+      }
+    ],
+    "procedures": [
+      {
+        "service": "Electrocardiogram",
+        "search": "electrocardiogram 12-lead with interpretation and report",
+        "quote": "12-lead ECG performed in clinic and independently interpreted by me",
+        "code": "93000",
+        "units": 1
+      }
+    ],
+    "separate_em": {
+      "documented": false,
+      "quote": ""
+    },
+    "expected": {
+      "icd": [
+        "R07.9"
+      ],
+      "cpt": [
+        {
+          "code": "99204",
+          "modifiers": [],
+          "units": 1
+        },
+        {
+          "code": "93000",
+          "modifiers": [],
+          "units": 1
+        }
+      ],
+      "em": "99204"
+    }
+  }
+}

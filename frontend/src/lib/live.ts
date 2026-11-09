@@ -4,10 +4,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 
 export interface LiveEvent {
-  type: "claim.updated" | "claim.step" | "denial.updated" | "auth.updated" | "auth.step";
+  type: "claim.updated" | "claim.step" | "denial.updated" | "auth.updated" | "auth.step" | "encounter.updated" | "encounter.step";
   claim_id?: number;
   denial_id?: number;
   authorization_id?: number;
+  encounter_id?: number;
   status?: string;
   agent?: string;
   message?: string;
@@ -29,6 +30,12 @@ export function useLiveEvents(onEvent?: (event: LiveEvent) => void) {
     source.onerror = () => setConnected(false);
     source.onmessage = (message) => {
       const event = JSON.parse(message.data) as LiveEvent;
+      if (event.encounter_id) {
+        queryClient.invalidateQueries({ queryKey: ["encounter", event.encounter_id] });
+        if (event.type === "encounter.updated") queryClient.invalidateQueries({ queryKey: ["encounters"] });
+        handler.current?.(event);
+        return;
+      }
       if (event.authorization_id) {
         queryClient.invalidateQueries({ queryKey: ["auth", event.authorization_id] });
         if (event.type === "auth.updated") queryClient.invalidateQueries({ queryKey: ["auths"] });

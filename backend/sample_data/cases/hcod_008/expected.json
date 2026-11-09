@@ -1,0 +1,85 @@
+{
+  "case_id": "hcod_008",
+  "scenario": "cerumen",
+  "title": "Ear wax removal, right ear",
+  "visit": "cerumen",
+  "patient": "Samuel Lindqvist",
+  "record": {
+    "clinical_note": {
+      "patient_name": "Samuel Lindqvist",
+      "patient_dob": "03/20/1950",
+      "service_date": "November 1, 2026",
+      "provider_name": "Riverside Family Medicine",
+      "provider_npi": "1563641319"
+    },
+    "insurance_card": {
+      "member_name": "Samuel Lindqvist",
+      "member_id": "BWM395077468",
+      "payer_name": "Bluewater Mutual",
+      "group_number": "GRP-4743",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "coding": {
+    "visit": {
+      "type": "procedure_only",
+      "patient_status": "established",
+      "quote": "Procedure visit for blocked hearing in the right ear."
+    },
+    "time_minutes": {
+      "value": null,
+      "quote": ""
+    },
+    "mdm": {
+      "problems": {
+        "level": "minimal",
+        "quote": ""
+      },
+      "data": {
+        "level": "minimal",
+        "quote": ""
+      },
+      "risk": {
+        "level": "minimal",
+        "quote": ""
+      }
+    },
+    "diagnoses": [
+      {
+        "condition": "Impacted cerumen, right ear",
+        "search": "impacted cerumen right ear",
+        "quote": "Impacted cerumen of the right ear.",
+        "code": "H61.21"
+      }
+    ],
+    "procedures": [
+      {
+        "service": "Cerumen removal",
+        "search": "removal impacted cerumen instruments one ear",
+        "quote": "Removal of impacted cerumen from the right ear using a curette under direct visualization.",
+        "code": "69210",
+        "units": 1
+      }
+    ],
+    "separate_em": {
+      "documented": false,
+      "quote": ""
+    },
+    "expected": {
+      "icd": [
+        "H61.21"
+      ],
+      "cpt": [
+        {
+          "code": "69210",
+          "modifiers": [],
+          "units": 1
+        }
+      ],
+      "em": null
+    }
+  }
+}

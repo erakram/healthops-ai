@@ -11,6 +11,10 @@ the PDFs and expected.json:
 case_* folders are used for evals and the "Load sample" button; hist_* folders seed
 the dashboard's history, with different patients so they don't look like duplicates.
 
+enc_* folders are outpatient encounters to code (the visit note and the insurance card); their
+expected.json has a "coding" answer key with the correct ICD-10-CM and CPT codes. hcod_* do
+the same for the seeded history.
+
 pa_* folders are orders for imaging or procedures that may need prior authorization (a
 service order, a clinical note, the insurance card; some have an addendum note in extra/
 that supplies missing documentation); their expected.json has a "pa" answer key. hpa_*
@@ -47,7 +51,8 @@ LAST = ["Whitaker", "Alvarez", "Okafor", "Lindqvist", "Brennan", "Castillo", "Na
 PAYERS = [("Northwind Health Plan", "NWH"), ("Bluewater Mutual", "BWM"), ("Cedar Ridge Health", "CRH"),
           ("Summit CareShield", "SCS")]
 PROVIDERS = {"primary": "Riverside Family Medicine", "ortho": "Lakeside Orthopedics",
-             "imaging": "Harbor Imaging Center", "cardio": "Maplewood Cardiology", "pain": "Northgate Spine and Pain"}
+             "imaging": "Harbor Imaging Center", "cardio": "Maplewood Cardiology", "pain": "Northgate Spine and Pain",
+             "urgent": "Bayview Urgent Care"}
 
 CPT = {"99213": ("Office visit, established, low complexity", 145.00),
        "99214": ("Office visit, established, moderate complexity", 215.00),
@@ -264,7 +269,7 @@ def paragraph(c: canvas.Canvas, x, y, text, width_chars=95, size=10, leading=14)
 # --- documents ---------------------------------------------------------------------------
 
 def claim_form(path, d, variant):
-    c = canvas.Canvas(str(path), pagesize=letter)
+    c = canvas.Canvas(str(path), pagesize=letter, invariant=1)
     header(c, "HEALTH INSURANCE CLAIM FORM", "Professional services claim - synthetic training document, not a real claim")
     w, h = letter
     x, y, full = 0.6 * inch, h - 120, w - 1.2 * inch
@@ -299,7 +304,7 @@ def claim_form(path, d, variant):
 
 
 def invoice(path, d, injection=False):
-    c = canvas.Canvas(str(path), pagesize=letter)
+    c = canvas.Canvas(str(path), pagesize=letter, invariant=1)
     header(c, d["provider_name"], "Itemized statement of services", colors.HexColor("#1e3a8a"))
     w, h = letter
     x, y = 0.6 * inch, h - 110
@@ -326,7 +331,7 @@ def invoice(path, d, injection=False):
 
 
 def insurance_card(path, d):
-    c = canvas.Canvas(str(path), pagesize=(3.6 * inch, 2.3 * inch))
+    c = canvas.Canvas(str(path), pagesize=(3.6 * inch, 2.3 * inch), invariant=1)
     w, h = 3.6 * inch, 2.3 * inch
     c.setFillColor(colors.HexColor("#0e7490"))
     c.roundRect(4, 4, w - 8, h - 8, 12, fill=1, stroke=0)
@@ -348,7 +353,7 @@ def insurance_card(path, d):
 
 
 def clinical_note(path, d):
-    c = canvas.Canvas(str(path), pagesize=letter)
+    c = canvas.Canvas(str(path), pagesize=letter, invariant=1)
     header(c, "Clinical Visit Note", d["provider_name"], colors.HexColor("#334155"))
     w, h = letter
     x, y = 0.6 * inch, h - 110
@@ -368,7 +373,7 @@ def clinical_note(path, d):
 
 
 def prior_auth(path, d):
-    c = canvas.Canvas(str(path), pagesize=letter)
+    c = canvas.Canvas(str(path), pagesize=letter, invariant=1)
     header(c, f"{d['payer_name']} - Prior Authorization", "Utilization management determination", colors.HexColor("#7c3aed"))
     w, h = letter
     x, y = 0.6 * inch, h - 110
@@ -547,7 +552,7 @@ ORDER_POLICY = {"72148": "MP-1180", "29881": "MP-1310", "93306": "MP-0930", "705
 
 
 def service_order(path, d):
-    c = canvas.Canvas(str(path), pagesize=letter)
+    c = canvas.Canvas(str(path), pagesize=letter, invariant=1)
     header(c, "SERVICE ORDER", "Outpatient imaging and procedure order - synthetic training document", colors.HexColor("#b45309"))
     w, h = letter
     x, y, full = 0.6 * inch, h - 120, w - 1.2 * inch
@@ -575,7 +580,7 @@ def service_order(path, d):
 
 
 def addendum_note(path, d, text):
-    c = canvas.Canvas(str(path), pagesize=letter)
+    c = canvas.Canvas(str(path), pagesize=letter, invariant=1)
     header(c, "Clinical Note Addendum", d["provider_name"], colors.HexColor("#475569"))
     w, h = letter
     x, y = 0.6 * inch, h - 110
@@ -644,6 +649,198 @@ def build_order_case(case_id: str, scenario: str, order: str, rng: random.Random
     return expected
 
 
+# --- encounters to code ------------------------------------------------------------------------
+
+def _em(problems, data, risk):
+    return {"problems": problems, "data": data, "risk": risk}
+
+
+# scenario: provider, patient status, visit type, time, sections, answer key
+ENCOUNTERS = {
+    "uri_low": dict(
+        provider="primary", status="established", visit="office_visit", minutes=22, title="Cold symptoms, low complexity visit",
+        sections=[("Visit", "Established patient office visit for sore throat and congestion."),
+                  ("History", "Sore throat, nasal congestion and mild cough for three days. No fever at home."),
+                  ("Exam", "Afebrile. Mild pharyngeal erythema without exudate. Lungs clear to auscultation."),
+                  ("Assessment and plan", "Acute upper respiratory infection, uncomplicated. Supportive care with "
+                                          "over-the-counter acetaminophen and saline nasal spray. Return if fever develops.")],
+        mdm=_em(("low", "Acute upper respiratory infection, uncomplicated."), ("minimal", ""),
+                ("low", "Supportive care with over-the-counter acetaminophen and saline nasal spray.")),
+        diagnoses=[("Acute upper respiratory infection", "acute upper respiratory infection",
+                    "Acute upper respiratory infection, uncomplicated.", "J06.9")],
+        procedures=[], separate=None, em="99213"),
+    "chronic_moderate": dict(
+        provider="primary", status="established", visit="office_visit", minutes=32, title="Diabetes and blood pressure follow-up",
+        sections=[("Visit", "Established patient office visit for diabetes and hypertension follow-up."),
+                  ("History", "Checks glucose at home, fasting readings 140 to 160. No hypoglycemia. Taking metformin "
+                              "and lisinopril daily."),
+                  ("Data", "Reviewed last A1c of 7.9 percent. Venous blood drawn in clinic by venipuncture. Comprehensive "
+                           "metabolic panel run on the in-office analyzer."),
+                  ("Assessment and plan", "Type 2 diabetes mellitus without complications, above goal. Metformin dose "
+                                          "increased to 1000 mg twice daily. Essential hypertension, controlled on "
+                                          "lisinopril; continue current dose.")],
+        mdm=_em(("moderate", "Type 2 diabetes mellitus without complications, above goal."),
+                ("low", "Reviewed last A1c of 7.9 percent."),
+                ("moderate", "Metformin dose increased to 1000 mg twice daily.")),
+        diagnoses=[("Type 2 diabetes mellitus without complications", "type 2 diabetes mellitus without complications",
+                    "Type 2 diabetes mellitus without complications, above goal.", "E11.9"),
+                   ("Essential hypertension", "essential primary hypertension",
+                    "Essential hypertension, controlled on lisinopril; continue current dose.", "I10")],
+        procedures=[("Venipuncture", "routine venipuncture", "Venous blood drawn in clinic by venipuncture.", "36415", 1),
+                    ("Comprehensive metabolic panel", "comprehensive metabolic panel",
+                     "Comprehensive metabolic panel run on the in-office analyzer.", "80053", 1)],
+        separate=None, em="99214"),
+    "new_chest_pain": dict(
+        provider="cardio", status="new", visit="office_visit", minutes=48, title="New patient with chest pain and an ECG",
+        sections=[("Visit", "New patient office visit for chest pain."),
+                  ("History", "Intermittent chest pain for one week, not related to exertion or breathing."),
+                  ("Data", "12-lead ECG performed in clinic and independently interpreted by me: normal sinus rhythm, "
+                           "no acute ST changes. Lipid panel ordered."),
+                  ("Assessment and plan", "Chest pain, cause not yet determined, uncertain prognosis. Started "
+                                          "prescription aspirin 81 mg daily pending stress testing.")],
+        mdm=_em(("moderate", "Chest pain, cause not yet determined, uncertain prognosis."),
+                ("low", "Lipid panel ordered."),  # the ECG's interpretation is billed (93000), so it can't count here
+                ("moderate", "Started prescription aspirin 81 mg daily pending stress testing.")),
+        diagnoses=[("Chest pain", "chest pain unspecified", "Chest pain, cause not yet determined, uncertain prognosis.", "R07.9")],
+        procedures=[("Electrocardiogram", "electrocardiogram 12-lead with interpretation and report",
+                     "12-lead ECG performed in clinic and independently interpreted by me", "93000", 1)],
+        separate=None, em="99204"),
+    "knee_injection_mod25": dict(
+        provider="ortho", status="established", visit="office_visit", minutes=25,
+        title="Knee injection plus a separate diabetes visit (modifier 25)",
+        sections=[("Visit", "Established patient office visit for right knee pain and diabetes follow-up."),
+                  ("Knee", "Primary osteoarthritis of the right knee with worsening pain on stairs. Corticosteroid "
+                           "injection into the right knee joint performed under sterile technique."),
+                  ("Diabetes", "Type 2 diabetes mellitus without complications, stable. Continue metformin at the "
+                               "current prescription dose. The diabetes follow-up was a separate, significant problem "
+                               "addressed in addition to the knee injection.")],
+        mdm=_em(("low", "Type 2 diabetes mellitus without complications, stable."), ("minimal", ""),
+                ("moderate", "Continue metformin at the current prescription dose.")),
+        diagnoses=[("Primary osteoarthritis of the right knee", "unilateral primary osteoarthritis right knee",
+                    "Primary osteoarthritis of the right knee with worsening pain on stairs.", "M17.11"),
+                   ("Type 2 diabetes mellitus without complications", "type 2 diabetes mellitus without complications",
+                    "Type 2 diabetes mellitus without complications, stable.", "E11.9")],
+        procedures=[("Knee joint injection", "injection major joint knee",
+                     "Corticosteroid injection into the right knee joint performed under sterile technique.", "20610", 1)],
+        separate="The diabetes follow-up was a separate, significant problem addressed in addition to the knee injection.",
+        em="99213"),
+    "knee_left_procedure": dict(
+        provider="ortho", status="established", visit="procedure_only", minutes=None, title="Left knee injection only",
+        sections=[("Visit", "Procedure visit for a scheduled knee injection. No other problems addressed."),
+                  ("Procedure", "Primary osteoarthritis of the left knee. Corticosteroid injection into the left knee "
+                                "joint performed under sterile technique. Tolerated well.")],
+        mdm=_em(("minimal", ""), ("minimal", ""), ("minimal", "")),
+        diagnoses=[("Primary osteoarthritis of the left knee", "unilateral primary osteoarthritis left knee",
+                    "Primary osteoarthritis of the left knee.", "M17.12")],
+        procedures=[("Knee joint injection", "injection major joint knee",
+                     "Corticosteroid injection into the left knee joint performed under sterile technique.", "20610", 1)],
+        separate=None, em=None),
+    "hand_laceration": dict(
+        provider="urgent", status="new", visit="procedure_only", minutes=None, title="Hand laceration repair (7th character)",
+        sections=[("Visit", "Procedure visit for a cut to the hand sustained today."),
+                  ("Procedure", "Laceration of the right palm, 2 cm, superficial, without foreign body, initial "
+                                "encounter for this injury. Simple repair of the 2 cm superficial wound with sutures "
+                                "after irrigation.")],
+        mdm=_em(("minimal", ""), ("minimal", ""), ("minimal", "")),
+        diagnoses=[("Laceration of right hand without foreign body, initial encounter",
+                    "laceration without foreign body right hand initial encounter",
+                    "Laceration of the right palm, 2 cm, superficial, without foreign body, initial encounter for this injury.",
+                    "S61.411A")],
+        procedures=[("Simple wound repair", "simple repair superficial wound 2.5 cm or less",
+                     "Simple repair of the 2 cm superficial wound with sutures after irrigation.", "12001", 1)],
+        separate=None, em=None),
+    "strep_test": dict(
+        provider="primary", status="established", visit="office_visit", minutes=18, title="Strep throat with a rapid test",
+        sections=[("Visit", "Established patient office visit for sore throat and fever."),
+                  ("Data", "Rapid strep test performed in clinic and positive for group A streptococcus."),
+                  ("Assessment and plan", "Streptococcal pharyngitis confirmed by the rapid test. Prescription "
+                                          "amoxicillin for ten days.")],
+        mdm=_em(("low", "Streptococcal pharyngitis confirmed by the rapid test."), ("low", "Rapid strep test performed in clinic and positive for group A streptococcus."),
+                ("moderate", "Prescription amoxicillin for ten days.")),
+        diagnoses=[("Streptococcal pharyngitis", "streptococcal pharyngitis",
+                    "Streptococcal pharyngitis confirmed by the rapid test.", "J02.0")],
+        procedures=[("Rapid strep test", "rapid strep test group A streptococcus antigen",
+                     "Rapid strep test performed in clinic and positive for group A streptococcus.", "87880", 1)],
+        separate=None, em="99213"),
+    "cerumen": dict(
+        provider="primary", status="established", visit="procedure_only", minutes=None, title="Ear wax removal, right ear",
+        sections=[("Visit", "Procedure visit for blocked hearing in the right ear."),
+                  ("Procedure", "Impacted cerumen of the right ear. Removal of impacted cerumen from the right ear "
+                                "using a curette under direct visualization. Tympanic membrane intact afterwards.")],
+        mdm=_em(("minimal", ""), ("minimal", ""), ("minimal", "")),
+        diagnoses=[("Impacted cerumen, right ear", "impacted cerumen right ear", "Impacted cerumen of the right ear.", "H61.21")],
+        procedures=[("Cerumen removal", "removal impacted cerumen instruments one ear",
+                     "Removal of impacted cerumen from the right ear using a curette under direct visualization.", "69210", 1)],
+        separate=None, em=None),
+}
+
+
+def encounter_note(path, d, sections):
+    c = canvas.Canvas(str(path), pagesize=letter, invariant=1)
+    header(c, "Clinical Visit Note", d["provider_name"], colors.HexColor("#334155"))
+    w, h = letter
+    x, y = 0.6 * inch, h - 110
+    c.setFont("Helvetica", 10)
+    for line in (f"Patient: {d['patient_name']}", f"DOB: {d['note_dob']}", f"Date of visit: {d['note_service_date']}",
+                 f"Attending: Dr. {d['doctor']}", f"Practice: {d['provider_name']}", f"Practice NPI: {d['provider_npi']}"):
+        c.drawString(x, y, line)
+        y -= 15
+    for title, text in sections:
+        y -= 10
+        c.setFont("Helvetica-Bold", 11)
+        c.drawString(x, y, title)
+        y -= 16
+        y = paragraph(c, x, y, text)
+    if d.get("minutes"):
+        y -= 10
+        c.setFont("Helvetica", 10)
+        c.drawString(x, y, f"Total time on the date of the encounter: {d['minutes']} minutes.")
+    c.setFont("Helvetica", 7)
+    c.drawString(x, 0.6 * inch, "Synthetic document generated for HealthOps AI. All names and identifiers are fictitious.")
+    c.save()
+
+
+def build_encounter_case(case_id: str, scenario: str, rng: random.Random, out_dir: Path, today: date) -> dict:
+    e = ENCOUNTERS[scenario]
+    first, last = rng.choice(FIRST), rng.choice(LAST)
+    payer, prefix = rng.choice(PAYERS)
+    dos = today - timedelta(days=rng.randint(1, 12))
+    dob = date(rng.randint(1948, 2001), rng.randint(1, 12), rng.randint(1, 28))
+    member_id = f"{prefix}{rng.randint(100000000, 999999999)}"
+    d = {"patient_name": f"{first} {last}", "note_dob": us(dob), "note_service_date": long(dos),
+         "doctor": f"{rng.choice(FIRST)} {rng.choice(LAST)}", "provider_name": PROVIDERS[e["provider"]],
+         "provider_npi": npi(rng), "minutes": e["minutes"], "payer_name": payer,
+         "card_member_name": f"{first} {last}", "card_member_id": member_id, "group_number": f"GRP-{rng.randint(1000, 9999)}",
+         "coverage_start": us(date(dos.year - 1, 1, 1)), "coverage_end": None}
+    folder = out_dir / case_id
+    folder.mkdir(parents=True)
+    encounter_note(folder / "clinical_note.pdf", d, e["sections"])
+    insurance_card(folder / "insurance_card.pdf", d)
+    record = {"clinical_note": {"patient_name": d["patient_name"], "patient_dob": d["note_dob"], "service_date": d["note_service_date"],
+                                "provider_name": d["provider_name"], "provider_npi": d["provider_npi"]},
+              "insurance_card": {"member_name": d["card_member_name"], "member_id": member_id, "payer_name": payer,
+                                 "group_number": d["group_number"], "coverage_start": d["coverage_start"], "coverage_end": None}}
+    procedures = [{"code": code, "modifiers": [], "units": units} for _, _, _, code, units in e["procedures"]]
+    if e["em"]:
+        procedures.insert(0, {"code": e["em"], "modifiers": ["25"] if e["separate"] else [], "units": 1})
+    visit_quote = e["sections"][0][1]
+    coding = {
+        "visit": {"type": e["visit"], "patient_status": e["status"], "quote": visit_quote},
+        "time_minutes": {"value": e["minutes"], "quote": f"Total time on the date of the encounter: {e['minutes']} minutes."
+                         if e["minutes"] else ""},
+        "mdm": {k: {"level": lvl, "quote": q} for k, (lvl, q) in e["mdm"].items()},
+        "diagnoses": [{"condition": cond, "search": search, "quote": q, "code": code} for cond, search, q, code in e["diagnoses"]],
+        "procedures": [{"service": svc, "search": search, "quote": q, "code": code, "units": units}
+                       for svc, search, q, code, units in e["procedures"]],
+        "separate_em": {"documented": bool(e["separate"]), "quote": e["separate"] or ""},
+        "expected": {"icd": [code for *_, code in e["diagnoses"]], "cpt": procedures, "em": e["em"]},
+    }
+    expected = {"case_id": case_id, "scenario": scenario, "title": e["title"], "visit": scenario, "patient": d["patient_name"],
+                "record": record, "expected_findings": [], "expects_ai_review": False, "coding": coding}
+    (folder / "expected.json").write_text(json.dumps(expected, indent=2))
+    return expected
+
+
 # Which visits make sense for each scenario (prior auth scenarios need an imaging/surgery visit).
 SCENARIO_VISITS = {
     "prior_auth_missing": ["mri_back", "mri_brain", "knee_scope", "echo"],
@@ -703,10 +900,19 @@ def main(today: date | None = None) -> None:
         order = case_rng.choice(PA_SCENARIOS[scenario][0])
         build_order_case(f"{prefix}_{counters[prefix]:03d}", scenario, order, case_rng, OUT, today, payer_state)
 
+
+    # Encounters to code, on their own random stream.
+    enc_rng = random.Random(1500)
+    counters.update(enc=0, hcod=0)
+    enc_plan = [("enc", s) for s in ENCOUNTERS for _ in range(2)] + [("hcod", s) for s in ENCOUNTERS]
+    for prefix, scenario in enc_plan:
+        counters[prefix] += 1
+        build_encounter_case(f"{prefix}_{counters[prefix]:03d}", scenario, random.Random(enc_rng.random()), OUT, today)
+
     (OUT.parent / "payer_state.json").write_text(json.dumps(payer_state, indent=2))
     print(f"Wrote {counters['case']} eval cases, {counters['hist']} history cases, {counters['den']} denial cases, "
-          f"{counters['hden']} denial history cases, {counters['pa']} authorization cases and {counters['hpa']} "
-          f"authorization history cases to {OUT}")
+          f"{counters['hden']} denial history cases, {counters['pa']} authorization cases, {counters['hpa']} "
+          f"authorization history cases, {counters['enc']} encounters and {counters['hcod']} encounter history cases to {OUT}")
 
 
 if __name__ == "__main__":

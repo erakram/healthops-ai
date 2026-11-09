@@ -17,10 +17,12 @@ from app.core.llm import LLM, RateLimited
 from app.core.workflow import (TRANSITIONS, Status, claim_next_job, defer_job, fail_job, finish_job, log_step,
                                transition)
 from app.db import SessionLocal
-from app.models import Authorization, Claim, Job
+from app.models import Authorization, Claim, Encounter, Job
 from app.pipeline import HANDLERS
 from app.authorizations import give_up as auth_give_up
 from app.authorizations import log_step as auth_log
+from app.coding import give_up as enc_give_up
+from app.coding import log_step as enc_log
 from app.revenue import give_up
 
 logger = logging.getLogger(__name__)
@@ -50,6 +52,8 @@ def run_one(llm: LLM | None) -> bool:
                 _note(db, job, f"Step '{job.kind}' failed, retrying ({message[:160]})")
             elif job.kind.startswith("auth_"):
                 auth_give_up(db, job.payload or {}, message)
+            elif job.kind.startswith("enc_"):
+                enc_give_up(db, job.payload or {}, message)
             elif job.kind in ("triage", "draft_appeal"):
                 give_up(db, job.kind, job.payload or {}, message)
                 _note(db, job, f"Step '{job.kind}' failed: {message[:300]}")
@@ -64,6 +68,10 @@ def _note(db, job: Job, message: str) -> None:
     """A progress note on whatever the job is about."""
     if job.claim_id:
         log_step(db, db.get(Claim, job.claim_id), "Workflow Engine", message)
+    elif (job.payload or {}).get("encounter_id"):
+        enc = db.get(Encounter, job.payload["encounter_id"])
+        if enc:
+            enc_log(db, enc, "Workflow Engine", message)
     elif (job.payload or {}).get("authorization_id"):
         auth = db.get(Authorization, job.payload["authorization_id"])
         if auth:

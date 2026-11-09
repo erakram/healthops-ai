@@ -24,6 +24,10 @@ class FakeLLM:
 
     def complete_json(self, system: str, user: str, model: str | None = None) -> LLMResult:
         self.calls += 1
+        from app.verticals.healthcare.samples import coding_reply
+        coded = coding_reply(self.cases, system, user)
+        if coded is not None:
+            return LLMResult(coded, "fake", 800, 150, 5)
         if system.startswith(("You are a denial analyst", "You are a prior authorization specialist")):
             return LLMResult(self._assess(json.loads(user)), "fake", 300, 60, 5)
         if system.startswith("You draft the medical necessity summary"):

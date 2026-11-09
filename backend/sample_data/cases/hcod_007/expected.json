@@ -1,0 +1,90 @@
+{
+  "case_id": "hcod_007",
+  "scenario": "strep_test",
+  "title": "Strep throat with a rapid test",
+  "visit": "strep_test",
+  "patient": "Leah Petrov",
+  "record": {
+    "clinical_note": {
+      "patient_name": "Leah Petrov",
+      "patient_dob": "03/01/1962",
+      "service_date": "November 1, 2026",
+      "provider_name": "Riverside Family Medicine",
+      "provider_npi": "1379768991"
+    },
+    "insurance_card": {
+      "member_name": "Leah Petrov",
+      "member_id": "SCS877216565",
+      "payer_name": "Summit CareShield",
+      "group_number": "GRP-6958",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "coding": {
+    "visit": {
+      "type": "office_visit",
+      "patient_status": "established",
+      "quote": "Established patient office visit for sore throat and fever."
+    },
+    "time_minutes": {
+      "value": 18,
+      "quote": "Total time on the date of the encounter: 18 minutes."
+    },
+    "mdm": {
+      "problems": {
+        "level": "low",
+        "quote": "Streptococcal pharyngitis confirmed by the rapid test."
+      },
+      "data": {
+        "level": "low",
+        "quote": "Rapid strep test performed in clinic and positive for group A streptococcus."
+      },
+      "risk": {
+        "level": "moderate",
+        "quote": "Prescription amoxicillin for ten days."
+      }
+    },
+    "diagnoses": [
+      {
+        "condition": "Streptococcal pharyngitis",
+        "search": "streptococcal pharyngitis",
+        "quote": "Streptococcal pharyngitis confirmed by the rapid test.",
+        "code": "J02.0"
+      }
+    ],
+    "procedures": [
+      {
+        "service": "Rapid strep test",
+        "search": "rapid strep test group A streptococcus antigen",
+        "quote": "Rapid strep test performed in clinic and positive for group A streptococcus.",
+        "code": "87880",
+        "units": 1
+      }
+    ],
+    "separate_em": {
+      "documented": false,
+      "quote": ""
+    },
+    "expected": {
+      "icd": [
+        "J02.0"
+      ],
+      "cpt": [
+        {
+          "code": "99213",
+          "modifiers": [],
+          "units": 1
+        },
+        {
+          "code": "87880",
+          "modifiers": [],
+          "units": 1
+        }
+      ],
+      "em": "99213"
+    }
+  }
+}

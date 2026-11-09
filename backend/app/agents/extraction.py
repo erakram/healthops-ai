@@ -68,9 +68,10 @@ def extract_document(llm: LLM, parsed: ParsedPdf, document_id: int, model: str |
                 if not isinstance(item, dict):
                     continue
                 _, evidence = _grounded(parsed, document_id, item.get("quote"), item.get("cpt"))
-                items.append({"cpt": str(item.get("cpt") or "").strip(), "description": item.get("description"),
-                              "units": item.get("units"), "charge": normalize_value("money", item.get("charge")),
-                              "evidence": evidence})
+                modifiers = [str(m).strip() for m in item.get("modifiers") or [] if str(m).strip()]
+                items.append({"cpt": str(item.get("cpt") or "").strip(), "modifiers": modifiers,
+                              "description": item.get("description"), "units": item.get("units"),
+                              "charge": normalize_value("money", item.get("charge")), "evidence": evidence})
             out.fields["line_items"] = {"value": items, "confidence": _list_confidence(items)}
 
         for list_name in ("diagnosis_codes", "approved_cpt_codes"):

@@ -87,7 +87,7 @@ def payer_claim(claim: Claim, frequency: str = "1", modifiers: dict[str, list[st
         "provider_name": value("provider_name") or "Unknown provider", "provider_npi": value("provider_npi") or "",
         "diagnosis_codes": [d["code"] for d in (form.get("diagnosis_codes") or {}).get("value", [])],
         "lines": [{"cpt": l["cpt"], "units": l.get("units") or 1, "charge": float(l.get("charge") or 0),
-                   "modifiers": modifiers.get(l["cpt"], [])}
+                   "modifiers": modifiers.get(l["cpt"]) or list(l.get("modifiers") or [])}
                   for l in (form.get("line_items") or {}).get("value", [])],
     }
 

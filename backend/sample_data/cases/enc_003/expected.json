@@ -1,0 +1,109 @@
+{
+  "case_id": "enc_003",
+  "scenario": "chronic_moderate",
+  "title": "Diabetes and blood pressure follow-up",
+  "visit": "chronic_moderate",
+  "patient": "Hannah Brennan",
+  "record": {
+    "clinical_note": {
+      "patient_name": "Hannah Brennan",
+      "patient_dob": "11/27/1950",
+      "service_date": "November 6, 2026",
+      "provider_name": "Riverside Family Medicine",
+      "provider_npi": "1592810992"
+    },
+    "insurance_card": {
+      "member_name": "Hannah Brennan",
+      "member_id": "BWM411802487",
+      "payer_name": "Bluewater Mutual",
+      "group_number": "GRP-6241",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "coding": {
+    "visit": {
+      "type": "office_visit",
+      "patient_status": "established",
+      "quote": "Established patient office visit for diabetes and hypertension follow-up."
+    },
+    "time_minutes": {
+      "value": 32,
+      "quote": "Total time on the date of the encounter: 32 minutes."
+    },
+    "mdm": {
+      "problems": {
+        "level": "moderate",
+        "quote": "Type 2 diabetes mellitus without complications, above goal."
+      },
+      "data": {
+        "level": "low",
+        "quote": "Reviewed last A1c of 7.9 percent."
+      },
+      "risk": {
+        "level": "moderate",
+        "quote": "Metformin dose increased to 1000 mg twice daily."
+      }
+    },
+    "diagnoses": [
+      {
+        "condition": "Type 2 diabetes mellitus without complications",
+        "search": "type 2 diabetes mellitus without complications",
+        "quote": "Type 2 diabetes mellitus without complications, above goal.",
+        "code": "E11.9"
+      },
+      {
+        "condition": "Essential hypertension",
+        "search": "essential primary hypertension",
+        "quote": "Essential hypertension, controlled on lisinopril; continue current dose.",
+        "code": "I10"
+      }
+    ],
+    "procedures": [
+      {
+        "service": "Venipuncture",
+        "search": "routine venipuncture",
+        "quote": "Venous blood drawn in clinic by venipuncture.",
+        "code": "36415",
+        "units": 1
+      },
+      {
+        "service": "Comprehensive metabolic panel",
+        "search": "comprehensive metabolic panel",
+        "quote": "Comprehensive metabolic panel run on the in-office analyzer.",
+        "code": "80053",
+        "units": 1
+      }
+    ],
+    "separate_em": {
+      "documented": false,
+      "quote": ""
+    },
+    "expected": {
+      "icd": [
+        "E11.9",
+        "I10"
+      ],
+      "cpt": [
+        {
+          "code": "99214",
+          "modifiers": [],
+          "units": 1
+        },
+        {
+          "code": "36415",
+          "modifiers": [],
+          "units": 1
+        },
+        {
+          "code": "80053",
+          "modifiers": [],
+          "units": 1
+        }
+      ],
+      "em": "99214"
+    }
+  }
+}

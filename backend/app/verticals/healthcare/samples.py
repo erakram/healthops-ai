@@ -65,3 +65,36 @@ def truth_to_extracted(record: dict, parsed: dict[str, tuple[int, ParsedPdf]]) -
                                      "confidence": 0.95}
         out[kind] = fields
     return out
+
+
+def coding_reply(cases: list[dict], system: str, user: str) -> dict | None:
+    """What a perfect coder would answer, from the enc_*/hcod_* answer keys. Used by the
+    offline tests and to seed demo history without calling a model. None if not a coding call."""
+    import json as _json
+
+    from app.verticals.healthcare.prompts import CODING_EXTRACT_SYSTEM, CODING_SELECT_SYSTEM
+    keyed = [c for c in cases if c.get("coding")]
+    if system == CODING_EXTRACT_SYSTEM:
+        text = " ".join(user.split())
+        case = next((c for c in keyed if c["patient"] in text and all(d["quote"] in text for d in c["coding"]["diagnoses"])), None)
+        if case is None:
+            return {"visit": {"type": "procedure_only"}, "diagnoses": [], "procedures": []}
+        k = case["coding"]
+        return {"visit": k["visit"], "time_minutes": k["time_minutes"], "mdm": k["mdm"],
+                "diagnoses": [{x: d[x] for x in ("condition", "search", "quote")} for d in k["diagnoses"]],
+                "procedures": [{x: p[x] for x in ("service", "search", "quote", "units")} for p in k["procedures"]],
+                "separate_em": k["separate_em"]}
+    if system == CODING_SELECT_SYSTEM:
+        payload = _json.loads(user)
+        known = {(d["quote"], d.get("condition") or d.get("service")): d["code"] for c in keyed
+                 for d in c["coding"]["diagnoses"] + c["coding"]["procedures"]}
+        out = {}
+        for kind in ("diagnoses", "procedures"):
+            out[kind] = []
+            for item in payload.get(kind, []):
+                code = known.get((item["quote"], item["documented"]))
+                offered = {c["code"] for c in item["candidates"]}
+                out[kind].append({"index": item["index"], "code": code if code in offered else None,
+                                  "reason": "answer key"})
+        return out
+    return None

@@ -56,9 +56,10 @@ class Document(Base):
     __tablename__ = "documents"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    # A document belongs to a claim or to a prior authorization request.
+    # A document belongs to a claim, a prior authorization request or an encounter being coded.
     claim_id: Mapped[int | None] = mapped_column(ForeignKey("claims.id"), index=True)
     authorization_id: Mapped[int | None] = mapped_column(ForeignKey("authorizations.id"), index=True)
+    encounter_id: Mapped[int | None] = mapped_column(ForeignKey("encounters.id"), index=True)
     filename: Mapped[str] = mapped_column(String(300))
     path: Mapped[str] = mapped_column(String(500))
     kind: Mapped[str | None] = mapped_column(String(40))  # claim_form | invoice | insurance_card | ...
@@ -139,6 +140,7 @@ class AgentRun(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     claim_id: Mapped[int | None] = mapped_column(ForeignKey("claims.id"), index=True)
     authorization_id: Mapped[int | None] = mapped_column(ForeignKey("authorizations.id"), index=True)
+    encounter_id: Mapped[int | None] = mapped_column(ForeignKey("encounters.id"), index=True)
     agent: Mapped[str] = mapped_column(String(60))
     model: Mapped[str] = mapped_column(String(100))
     input_tokens: Mapped[int] = mapped_column(Integer, default=0)
@@ -299,6 +301,47 @@ class AuthEvent(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     authorization_id: Mapped[int] = mapped_column(ForeignKey("authorizations.id"), index=True)
     type: Mapped[str] = mapped_column(String(20))  # transition | step | decision
+    actor: Mapped[str] = mapped_column(String(100))
+    message: Mapped[str] = mapped_column(Text)
+    data: Mapped[dict] = mapped_column(JSON, default=dict)
+    at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class Encounter(Base):
+    """An outpatient visit to code: from the visit note to the codes a coder approved and the
+    claim generated from them. See app/coding.py for the lifecycle."""
+
+    __tablename__ = "encounters"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    number: Mapped[str] = mapped_column(String(40), unique=True)
+    status: Mapped[str] = mapped_column(String(30), index=True)
+    source: Mapped[str] = mapped_column(String(20), default="upload")
+    case_id: Mapped[str | None] = mapped_column(String(40))
+    patient_name: Mapped[str | None] = mapped_column(String(200))
+    payer_name: Mapped[str | None] = mapped_column(String(200))
+    provider_name: Mapped[str | None] = mapped_column(String(200))
+    service_date: Mapped[str | None] = mapped_column(String(10))
+    extracted: Mapped[dict] = mapped_column(JSON, default=dict)
+    suggestion: Mapped[dict] = mapped_column(JSON, default=dict)  # the Coding Agent's codes, E/M, edits, evidence
+    final: Mapped[dict] = mapped_column(JSON, default=dict)  # the codes a coder approved, and what they changed
+    claim_id: Mapped[int | None] = mapped_column(ForeignKey("claims.id"))
+    coded_by: Mapped[str | None] = mapped_column(String(200))
+    created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+    coded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    documents: Mapped[list[Document]] = relationship(order_by="Document.id", foreign_keys="Document.encounter_id")
+    events: Mapped[list["EncounterEvent"]] = relationship(order_by="EncounterEvent.id")
+
+
+class EncounterEvent(Base):
+    __tablename__ = "encounter_events"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    encounter_id: Mapped[int] = mapped_column(ForeignKey("encounters.id"), index=True)
+    type: Mapped[str] = mapped_column(String(20))
     actor: Mapped[str] = mapped_column(String(100))
     message: Mapped[str] = mapped_column(Text)
     data: Mapped[dict] = mapped_column(JSON, default=dict)
