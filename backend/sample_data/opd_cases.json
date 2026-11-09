@@ -2,6 +2,7 @@
   {"id": "fever_hinglish", "complaint": "3 din se tez bukhar hai aur sar dard", "age": 32, "sex": "M", "department": "general_medicine", "red_flag": null},
   {"id": "cardiac_hinglish", "complaint": "seene mein dard ho raha hai aur pasina aa raha hai", "age": 56, "sex": "M", "department": "cardiology", "red_flag": "cardiac"},
   {"id": "cardiac_devanagari", "complaint": "सीने में दर्द और घबराहट", "age": 62, "sex": "F", "department": "cardiology", "red_flag": "cardiac"},
+  {"id": "cardiac_mai_spelling", "complaint": "seene mai dard ho raha", "age": 61, "sex": "M", "department": "cardiology", "red_flag": "cardiac"},
   {"id": "chest_young_strain", "complaint": "chest pain after lifting weights at gym yesterday, hurts when pressing", "age": 24, "sex": "M", "department": "general_medicine", "red_flag": null},
   {"id": "stroke_hinglish", "complaint": "papa ka muh tedha ho gaya aur bolne mein dikkat ho rahi hai, 1 ghante se", "age": 68, "sex": "M", "department": "general_medicine", "red_flag": "stroke"},
   {"id": "knee_hinglish", "complaint": "ghutne mein dard 6 mahine se, seedhi nahi chadh pati", "age": 60, "sex": "F", "department": "orthopaedics", "red_flag": null},

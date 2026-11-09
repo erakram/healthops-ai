@@ -118,4 +118,5 @@ def opd_reply(complaint: str) -> dict:
     case = next((c for c in opd_cases() if c["complaint"] == complaint), None)
     return {"language": "hinglish", "symptoms": [{"name": "complaint", "quote": complaint}], "duration": None,
             "severity": "moderate", "department": case["department"] if case else "general_medicine",
-            "department_reason": "From the answer key.", "red_flag_signs": [], "summary_en": complaint[:80]}
+            "department_reason": "From the answer key.", "red_flag_signs": [], "summary_en": complaint[:80],
+            "summary_hi": "मरीज़ की शिकायत: " + complaint[:60]}

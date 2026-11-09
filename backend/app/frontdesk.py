@@ -23,7 +23,7 @@ from app.core import audit
 from app.core.events import publish
 from app.core.llm import LLM
 from app.models import Doctor, OpdPatient, OpdVisit, User
-from app.verticals.opd_india.departments import DEPARTMENTS
+from app.verticals.opd_india.departments import DEPARTMENTS, DEPARTMENTS_HI
 
 IST = ZoneInfo("Asia/Kolkata")
 FREE_FOLLOW_UP_DAYS = 7
@@ -243,7 +243,7 @@ def doctor_json(d: Doctor, day: date, counts: dict | None = None) -> dict:
     counts = counts or {}
     nxt = None if on_duty(d, day) else next_duty_day(d, day)
     return {"id": d.id, "name": d.name, "department": d.department, "department_name": DEPARTMENTS.get(d.department, d.department),
-            "qualification": d.qualification, "room": d.room, "fee": d.fee, "days": [DAY_NAMES[i][:3] for i in sorted(d.days)],
+            "department_name_hi": DEPARTMENTS_HI.get(d.department), "qualification": d.qualification, "room": d.room, "fee": d.fee, "days": [DAY_NAMES[i][:3] for i in sorted(d.days)],
             "hours": f"{d.opd_start}-{d.opd_end}", "on_duty": on_duty(d, day), "next_on_duty": nxt.isoformat() if nxt else None,
             "waiting": counts.get("waiting", 0), "seen": counts.get("done", 0), "wait_minutes": wait_minutes(d, counts),
             "languages": d.languages}
@@ -295,7 +295,8 @@ def suggest_doctors(db: Session, patient: OpdPatient, department: str, day: date
     for o in options[1:]:
         o["reason"] = (f"Saw this patient on {o['seen_before']}" if o["seen_before"]
                        else f"About {o['wait_minutes']} min wait")
-    return {"department": department, "department_name": DEPARTMENTS[department], "note": note, "options": options,
+    return {"department": department, "department_name": DEPARTMENTS[department],
+            "department_name_hi": DEPARTMENTS_HI[department], "note": note, "options": options,
             "suggested_doctor_id": options[0]["id"] if options else None}
 
 
@@ -412,7 +413,8 @@ def visit_json(v: OpdVisit) -> dict:
             "fee": v.fee, "fee_note": v.fee_note, "payment_mode": v.payment_mode, "created_by": v.created_by,
             "patient": patient_json(v.patient),
             "doctor": {"id": v.doctor.id, "name": v.doctor.name, "room": v.doctor.room,
-                       "department_name": DEPARTMENTS.get(v.doctor.department)} if v.doctor else None,
+                       "department_name": DEPARTMENTS.get(v.doctor.department),
+                       "department_name_hi": DEPARTMENTS_HI.get(v.doctor.department)} if v.doctor else None,
             "booked_at": v.booked_at.isoformat() if v.booked_at else None,
             "called_at": v.called_at.isoformat() if v.called_at else None}
 
@@ -432,7 +434,8 @@ def queue(db: Session, day: date) -> list[dict]:
                     "now": next(({"id": v.id, "token": v.token, "name": v.patient.name} for v in mine if v.status == "in_consult"), None),
                     "visits": [{"id": v.id, "token": v.token, "status": v.status, "name": v.patient.name,
                                 "age_label": age_label(age_of(v.patient, day)), "sex": v.patient.sex,
-                                "summary": v.intake.get("summary_en") or v.complaint, "fee": v.fee}
+                                "summary": v.intake.get("summary_en") or v.complaint,
+                                "summary_hi": v.intake.get("summary_hi"), "fee": v.fee}
                                for v in mine if v.status != "cancelled"]})
     return out
 

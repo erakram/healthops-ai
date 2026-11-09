@@ -54,6 +54,30 @@ def test_rules_also_read_the_agents_english_symptoms():
     assert [f["id"] for f in check("dil ke paas jakdan si", ["chest heaviness", "sweating"], age=50)] == ["cardiac"]
 
 
+@pytest.mark.parametrize("complaint", ["seene mai dard ho raha", "seene mei dard", "chhati m dard hai", "seena me dardh"])
+def test_common_hinglish_spellings_of_chest_pain(complaint):
+    assert [f["id"] for f in check(complaint, age=61)] == ["cardiac"]
+
+
+def test_red_flags_and_departments_come_in_english_and_hindi():
+    flag = check("seene mai dard ho raha", age=61)[0]
+    assert flag["label"] == "Possible heart attack" and flag["label_hi"] == "दिल का दौरा हो सकता है" and flag["action_hi"]
+    from app.verticals.opd_india.departments import DEPARTMENTS, DEPARTMENTS_HI
+    from app.verticals.opd_india.red_flags import FLAGS
+    assert set(DEPARTMENTS_HI) == set(DEPARTMENTS)
+    assert all(f.label_hi and f.action_hi for f in FLAGS.values())
+
+
+def test_hindi_from_the_agent_must_be_in_devanagari():
+    note = run_intake(Scripted({"department": "ent", "summary_en": "Ear pain for 2 days.", "summary_hi": "2 दिन से कान में दर्द।",
+                                "duration": "2 days", "duration_hi": "2 din",  # Latin letters: not shown as Hindi
+                                "symptoms": [{"name": "ear pain", "name_hi": "कान में दर्द", "quote": "kaan mai dard"}]}),
+                      "kaan mai dard 2 din se", 30, "M")
+    assert note["summary_hi"] == "2 दिन से कान में दर्द।" and note["symptoms"][0]["name_hi"] == "कान में दर्द"
+    assert note["duration_hi"] is None
+    assert note["department_name_hi"] == "नाक, कान, गला"
+
+
 def test_quotes_match_across_scripts_and_punctuation():
     assert contains("गले में दर्द और खराश, 3 दिन से", "गले में दर्द")
     assert contains("Kaan mein DARD!!", "kaan mein dard")

@@ -13,6 +13,7 @@ import { api, type DoctorOption, type DuplicateMatch, type OpdPatient, type OpdV
 import { cn, inr, shortDate } from "@/lib/utils";
 
 const field = "w-full rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white outline-none placeholder:text-slate-500 focus:border-teal-400/50";
+const SEVERITY_HI: Record<string, string> = { mild: "हल्का", moderate: "मध्यम", severe: "गंभीर", unknown: "पता नहीं" };
 const SOURCE: Record<string, string> = { agent: "Intake Agent", keywords: "Keyword rules", rule: "Desk rule", default: "Default", demo: "Demo" };
 
 const isoDay = (offset: number) => {
@@ -29,7 +30,7 @@ export default function FrontDeskPage() {
   return (
     <>
       <PageHeader eyebrow="Front office · OPD" title="Front desk"
-        description="Find the patient by mobile number, type the complaint the way they say it (English, Hinglish or Hindi), and issue a token. The Intake Agent structures the complaint and suggests a department; red flags, the doctor, the fee and the token are decided by rules you can read."
+        description="Find the patient by mobile number, type the complaint the way they say it (English, Hinglish or Hindi), and issue a token. Results are shown in English and Hindi. The Intake Agent structures the complaint and suggests a department; red flags, the doctor, the fee and the token are decided by rules you can read."
         actions={(patient || visit) && <Button variant="secondary" onClick={reset}><RotateCcw className="size-4" /> Next patient</Button>} />
       {readOnly && <p className="mb-4 rounded-xl border border-amber-400/30 bg-amber-400/[0.06] p-3 text-sm text-amber-100">
         You&apos;re signed in as a biller. Registering patients and issuing tokens need the front desk (intake) role; you can look things up.</p>}
@@ -205,7 +206,7 @@ function PatientCard({ patient, onSwitch, locked }: { patient: OpdPatient; onSwi
             <ul className="space-y-1.5">{data.visits.slice(0, 4).map((v) => (
               <li key={v.id} className="rounded-lg bg-white/[0.02] px-2.5 py-1.5 text-xs">
                 <span className="text-slate-300">{shortDate(v.visit_date)}</span> · <span className="text-white">{v.doctor ?? "Emergency"}</span>
-                <span className="text-slate-500"> · {v.summary}</span></li>))}</ul>
+                <span className="text-slate-500"> · {v.summary}</span>{v.summary_hi && <span lang="hi" className="block text-slate-500">{v.summary_hi}</span>}</li>))}</ul>
           )}
         </div>
       </Panel>
@@ -215,7 +216,7 @@ function PatientCard({ patient, onSwitch, locked }: { patient: OpdPatient; onSwi
 
 /* ---------- Step 2: complaint ---------- */
 
-const EXAMPLES = ["3 din se tez bukhar aur sar dard", "ghutne mein dard, seedhi chadhne mein dikkat", "गले में दर्द और खराश", "seene mein dard aur pasina aa raha hai"];
+const EXAMPLES = ["seene mai dard ho raha", "3 din se tez bukhar aur sar dard", "ghutne mein dard, seedhi chadhne mein dikkat", "गले में दर्द और खराश", "seene mein dard aur pasina aa raha hai"];
 
 function Complaint({ patient, onDone }: { patient: OpdPatient; onDone: (v: OpdVisit) => void }) {
   const [text, setText] = useState("");
@@ -267,7 +268,9 @@ function Triage({ visit, onChange, onNext }: { visit: OpdVisit; onChange: (v: Op
   if (visit.status === "emergency") return (
     <Panel className="grid place-items-center py-14 text-center">
       <Siren className="mb-3 size-8 text-rose-300" /><p className="text-lg font-semibold text-white">Sent to Emergency</p>
-      <p className="mt-1 max-w-sm text-sm text-slate-400">{flags.map((f) => f.action).join(" ")}</p>
+      <p lang="hi" className="text-base text-rose-100">इमरजेंसी भेजा गया</p>
+      <p className="mt-2 max-w-sm text-sm text-slate-400">{flags.map((f) => f.action).join(" ")}</p>
+      <p lang="hi" className="max-w-sm text-sm text-slate-400">{flags.map((f) => f.action_hi).join(" ")}</p>
       <Button variant="secondary" className="mt-5" onClick={onNext}>Next patient</Button>
     </Panel>
   );
@@ -281,11 +284,14 @@ function Triage({ visit, onChange, onNext }: { visit: OpdVisit; onChange: (v: Op
           <motion.div className="absolute inset-0 bg-rose-500/10" animate={{ opacity: [0.2, 0.6, 0.2] }} transition={{ duration: 1.6, repeat: Infinity }} />
           <div className="relative">
             <div className="flex items-center gap-2 text-sm font-semibold uppercase tracking-[0.15em] text-rose-200"><AlertOctagon className="size-5" /> Red flag: emergency, not OPD</div>
+            <p lang="hi" className="mt-0.5 text-sm text-rose-100/90">खतरे का संकेत: OPD नहीं, इमरजेंसी</p>
             <ul className="mt-3 space-y-2">{flags.map((f) => (
               <li key={f.id} className="text-sm"><span className="font-medium text-white">{f.label}</span>
-                <span className="text-rose-100/80"> · matched &ldquo;{f.matched}&rdquo;</span><p className="text-xs text-rose-100/70">{f.action}</p></li>))}</ul>
+                {f.label_hi && <span lang="hi" className="font-medium text-white"> · {f.label_hi}</span>}
+                <span className="text-rose-100/80"> · matched &ldquo;{f.matched}&rdquo;</span>
+                <p className="text-xs text-rose-100/70">{f.action}</p>{f.action_hi && <p lang="hi" className="text-xs text-rose-100/70">{f.action_hi}</p>}</li>))}</ul>
             <div className="mt-4 flex flex-wrap items-center gap-2">
-              <Button variant="danger" className="border-rose-300/50 bg-rose-500/30 text-white" loading={emergency.isPending} onClick={() => emergency.mutate()}><Siren className="size-4" /> Send to Emergency</Button>
+              <Button variant="danger" className="border-rose-300/50 bg-rose-500/30 text-white" loading={emergency.isPending} onClick={() => emergency.mutate()}><Siren className="size-4" /> Send to Emergency · इमरजेंसी भेजें</Button>
               <button onClick={() => setCleared(!cleared)} className="text-xs text-rose-100/70 underline-offset-2 hover:underline">Casualty doctor already cleared the patient?</button>
             </div>
             {cleared && <input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Who cleared them, and when (recorded in the audit trail)"
@@ -300,19 +306,19 @@ function Triage({ visit, onChange, onNext }: { visit: OpdVisit; onChange: (v: Op
           <span className="text-[11px] text-slate-500">{n.agent.used ? `${n.agent.usage?.model ?? ""} · ${((n.agent.usage?.latency_ms ?? 0) / 1000).toFixed(1)}s` : n.agent.error ? "model unavailable: rules only" : ""}</span>
         </div>
         <p className="rounded-xl bg-white/[0.03] p-3 text-sm italic text-slate-300">&ldquo;{visit.complaint}&rdquo;</p>
-        {n.summary_en && <p className="mt-3 text-white">{n.summary_en}</p>}
+        <Bilingual en={n.summary_en} hi={n.summary_hi} className="mt-3" big />
         <div className="mt-3 flex flex-wrap gap-2">
           {n.symptoms.map((s, i) => (
             <motion.span key={i} initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }} title={`"${s.quote}"`}
-              className="rounded-lg bg-teal-400/10 px-2 py-1 text-xs text-teal-100 ring-1 ring-teal-400/25">{s.name}</motion.span>))}
-          {n.duration && <span className="flex items-center gap-1 rounded-lg bg-white/[0.04] px-2 py-1 text-xs text-slate-300"><CalendarClock className="size-3" />{n.duration}</span>}
-          {n.severity !== "unknown" && <span className={cn("rounded-lg px-2 py-1 text-xs", n.severity === "severe" ? "bg-rose-500/15 text-rose-200" : n.severity === "moderate" ? "bg-amber-400/10 text-amber-200" : "bg-white/[0.04] text-slate-300")}>{n.severity}</span>}
+              className="rounded-lg bg-teal-400/10 px-2 py-1 text-xs text-teal-100 ring-1 ring-teal-400/25">{s.name}{s.name_hi && <span lang="hi" className="text-teal-200/80"> · {s.name_hi}</span>}</motion.span>))}
+          {n.duration && <span className="flex items-center gap-1 rounded-lg bg-white/[0.04] px-2 py-1 text-xs text-slate-300"><CalendarClock className="size-3" />{n.duration}{n.duration_hi && <span lang="hi"> · {n.duration_hi}</span>}</span>}
+          {n.severity !== "unknown" && <span className={cn("rounded-lg px-2 py-1 text-xs", n.severity === "severe" ? "bg-rose-500/15 text-rose-200" : n.severity === "moderate" ? "bg-amber-400/10 text-amber-200" : "bg-white/[0.04] text-slate-300")}>{n.severity} · <span lang="hi">{SEVERITY_HI[n.severity]}</span></span>}
           {n.language && <span className="flex items-center gap-1 rounded-lg bg-white/[0.04] px-2 py-1 text-xs text-slate-400"><Languages className="size-3" />{n.language}</span>}
         </div>
         {n.dropped_symptoms > 0 && <p className="mt-2 text-[11px] text-amber-200/80">{n.dropped_symptoms} symptom(s) dropped: their words weren&apos;t in the complaint.</p>}
         <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-white/[0.06] pt-4">
           <Stethoscope className="size-4 text-slate-400" /><span className="text-sm text-slate-400">Department</span>
-          <span className="font-medium text-white">{n.department_name}</span>
+          <span className="font-medium text-white">{n.department_name}</span><span lang="hi" className="text-sm text-slate-300">{n.department_name_hi}</span>
           <span className="rounded-full bg-white/[0.05] px-2 py-0.5 text-[11px] text-slate-300 ring-1 ring-white/10">{SOURCE[n.department_source]}</span>
           {n.keyword_department && n.agent_department && n.keyword_department !== n.agent_department &&
             <span className="text-[11px] text-slate-500">keywords said {n.keyword_department.replace("_", " ")}</span>}
@@ -376,15 +382,16 @@ function TokenIssued({ visit, onNext }: { visit: OpdVisit; onNext: () => void })
     <motion.div initial={{ opacity: 0, scale: 0.96 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: "spring", stiffness: 200, damping: 20 }}>
       <Panel className="overflow-hidden p-0">
         <div className="bg-gradient-to-br from-teal-400/20 via-cyan-400/10 to-violet-400/10 p-8 text-center">
-          <p className="text-xs uppercase tracking-[0.3em] text-teal-200/80">Token</p>
+          <p className="text-xs uppercase tracking-[0.3em] text-teal-200/80">Token · <span lang="hi" className="tracking-normal">टोकन</span></p>
           <motion.p initial={{ scale: 0.4, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.15, type: "spring", stiffness: 260, damping: 14 }}
             className="bg-gradient-to-b from-white to-teal-200 bg-clip-text text-8xl font-bold tabular-nums text-transparent">{visit.token}</motion.p>
           <p className="mt-2 text-lg text-white">{visit.doctor?.name}</p>
           <p className="text-sm text-slate-300">{visit.doctor?.department_name} · Room {visit.doctor?.room}</p>
+          <p lang="hi" className="text-sm text-slate-300">{visit.doctor?.department_name_hi} · कमरा {visit.doctor?.room}</p>
         </div>
         <div className="grid gap-3 p-5 sm:grid-cols-3">
           <Info label="Patient" value={visit.patient.name} />
-          <Info label="Fee" value={visit.fee ? `${inr(visit.fee)} · ${visit.payment_mode?.toUpperCase()}` : "Free follow-up"} />
+          <Info label="Fee" value={visit.fee ? `${inr(visit.fee)} · ${visit.payment_mode?.toUpperCase()}` : "Free follow-up · मुफ़्त फॉलो-अप"} />
           <Info label="Visit" value={visit.number} />
         </div>
         {visit.override_reason && <p className="mx-5 mb-4 rounded-lg bg-white/[0.03] p-2 text-xs text-slate-400">Recorded: {visit.override_reason}</p>}
@@ -401,4 +408,16 @@ function TokenIssued({ visit, onNext }: { visit: OpdVisit; onNext: () => void })
 
 function Info({ label, value }: { label: string; value: string }) {
   return <div><p className="text-[11px] uppercase tracking-wider text-slate-500">{label}</p><p className="truncate text-sm text-white">{value}</p></div>;
+}
+
+/** An English line with its Hindi version under it. */
+function Bilingual({ en, hi, className, big }: { en: string | null | undefined; hi: string | null | undefined; className?: string; big?: boolean }) {
+  if (!en && !hi) return null;
+  return (
+    <div className={className}>
+      {en && <p className={cn("text-white", big ? "text-base" : "text-sm")}>{en}</p>}
+      {hi ? <p lang="hi" className={cn("text-slate-300", big ? "text-base" : "text-sm")}>{hi}</p>
+        : <p className="text-[11px] text-slate-500">Hindi summary unavailable (model not used)</p>}
+    </div>
+  );
 }

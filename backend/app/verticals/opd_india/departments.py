@@ -19,13 +19,24 @@ DEPARTMENTS = {
     "ophthalmology": "Ophthalmology",
 }
 
+DEPARTMENTS_HI = {
+    "general_medicine": "सामान्य चिकित्सा (मेडिसिन)",
+    "paediatrics": "बाल रोग",
+    "orthopaedics": "हड्डी रोग",
+    "ent": "नाक, कान, गला",
+    "dermatology": "त्वचा रोग",
+    "gynaecology": "स्त्री एवं प्रसूति रोग",
+    "cardiology": "हृदय रोग",
+    "ophthalmology": "नेत्र रोग",
+}
+
 # Regexes over normalized text (lowercase, no punctuation). \b doesn't work for Devanagari, so those are plain substrings.
 KEYWORDS: dict[str, list[str]] = {
     "general_medicine": [
         r"\bfever\b", r"\bbukh?aa?r\b", "बुखार", r"\bchest\b", r"\bcough\b", r"\bkhaa?nsi\b", "खांसी", "खाँसी", r"\bcold\b", r"\bzukaa?m\b",
         r"\bweakness\b", r"\bkamzori\b", "कमजोरी", r"\bdiabet", r"\bsugar\b", r"\bbp\b", r"\bblood pressure\b", r"\bvomit",
         r"\bult(i|ee)\b", "उल्टी", r"\bloose motions?\b", r"\bdiarrh", r"\bdast\b", r"\bstomach\b", r"\bpet\b", "पेट",
-        r"\bacidity\b", r"\bgas\b", r"\bheadache\b", r"\bsa?i?r ?dard\b", "सिर दर्द", r"\bdizz", r"\bchakk?ar\b", "चक्कर",
+        r"\bacidity\b", r"\bgas\b", r"\bheadache\b", r"\bsa?i?r ?dardh?\b", "सिर दर्द", r"\bdizz", r"\bchakk?ar\b", "चक्कर",
         r"\bthyroid\b", r"\bbody ?ache\b", r"\bbadan dard\b", r"\bjaundice\b", r"\bpeeliya\b", r"\burine\b", r"\bpeshab\b",
     ],
     "paediatrics": [r"\bchild\b", r"\bbaby\b", r"\binfant\b", r"\bbach?ch?a\b", "बच्चा", "बच्चे", r"\bvaccin", r"\bteeka\b",
@@ -33,7 +44,7 @@ KEYWORDS: dict[str, list[str]] = {
     "orthopaedics": [
         r"\bknee", r"\bghutn", "घुटन", "घुटने", r"\bback ?pain\b", r"\bkamar\b", "कमर", r"\bjoints?\b",
         r"\bjodo?n?\b", r"\bfracture\b", r"\bhaddi\b", "हड्डी", r"\bsprain", r"\bmoch\b", "मोच", r"\bshoulder\b",
-        r"\bkandha\b", r"\bneck pain\b", r"\bgardan (me|mein|main) dard\b", r"\bankle\b", r"\bwrist\b", r"\bgir (gaya|gayi|gaye)\b",
+        r"\bkandha\b", r"\bneck pain\b", r"\bgardan (mein|main|mei|mai|me|m) dard\b", r"\bankle\b", r"\bwrist\b", r"\bgir (gaya|gayi|gaye)\b",
         r"\bfell\b", r"\bslipped\b", r"\bspine\b", r"\bhip\b",
     ],
     "ent": [r"\bears?\b", r"\bkaa?n\b", "कान", r"\bnose\b", r"\bnaa?k\b", "नाक", r"\bthroat\b", r"\bgala\b", r"\bgale\b",

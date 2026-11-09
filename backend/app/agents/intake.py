@@ -12,15 +12,23 @@ If the model is unavailable, the desk still works on rules alone.
 
 import json
 import logging
+import re
 
 from app.core.llm import LLM, LLMError
 from app.verticals.opd_india import red_flags
-from app.verticals.opd_india.departments import DEPARTMENTS, department_by_rule, keyword_department, keyword_scores
+from app.verticals.opd_india.departments import DEPARTMENTS, DEPARTMENTS_HI, department_by_rule, keyword_department, keyword_scores
 from app.verticals.opd_india.prompts import INTAKE_SYSTEM
 from app.verticals.opd_india.text import contains
 
 logger = logging.getLogger(__name__)
 SEVERITIES = {"mild", "moderate", "severe", "unknown"}
+_DEVANAGARI = re.compile(r"[\u0900-\u097F]")
+
+
+def hindi(value) -> str | None:
+    """The model's Hindi text, only if it really is in Devanagari (not Hinglish in Latin letters)."""
+    text = str(value or "").strip()
+    return text if _DEVANAGARI.search(text) else None
 
 
 def intake_system() -> str:
@@ -46,15 +54,14 @@ def run_intake(llm: LLM | None, complaint: str, age: float | None, sex: str | No
     symptoms, dropped = [], 0
     for s in reply.get("symptoms") or []:
         if isinstance(s, dict) and s.get("name") and contains(complaint, str(s.get("quote") or "")):
-            symptoms.append({"name": str(s["name"]).strip(), "quote": str(s["quote"]).strip()})
+            symptoms.append({"name": str(s["name"]).strip(), "name_hi": hindi(s.get("name_hi")), "quote": str(s["quote"]).strip()})
         elif isinstance(s, dict):
             dropped += 1
 
     flags = red_flags.check(complaint, [s["name"] for s in symptoms], age)
     for sign in reply.get("red_flag_signs") or []:
         if isinstance(sign, dict) and contains(complaint, str(sign.get("quote") or "")) and not flags:
-            flags.append({"id": "agent", "label": red_flags.FLAGS["agent"].label, "action": red_flags.FLAGS["agent"].action,
-                          "matched": str(sign["quote"]), "sign": str(sign.get("sign") or "")})
+            flags.append({**red_flags.flag_json("agent", str(sign["quote"])), "sign": str(sign.get("sign") or "")})
 
     names = [s["name"] for s in symptoms]
     keyword = keyword_department(complaint, *names)
@@ -75,11 +82,14 @@ def run_intake(llm: LLM | None, complaint: str, age: float | None, sex: str | No
         "symptoms": symptoms,
         "dropped_symptoms": dropped,
         "duration": reply.get("duration") or None,
+        "duration_hi": hindi(reply.get("duration_hi")),
         "severity": severity,
         "summary_en": str(reply.get("summary_en") or "").strip() or None,
+        "summary_hi": hindi(reply.get("summary_hi")),
         "red_flags": flags,
         "department": chosen,
         "department_name": DEPARTMENTS[chosen],
+        "department_name_hi": DEPARTMENTS_HI[chosen],
         "department_source": source,  # agent | keywords | rule | default
         "department_reason": reason,
         "keyword_department": keyword,

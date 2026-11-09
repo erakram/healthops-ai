@@ -366,18 +366,18 @@ export interface OpdPatient {
 export interface OpdPatientDetail extends OpdPatient {
   family: OpdPatient[];
   visits: { id: number; number: string; visit_date: string; status: string; token: number | null; doctor: string | null;
-    department_name: string | null; summary: string; fee: number }[];
+    department_name: string | null; summary: string; summary_hi: string | null; fee: number }[];
 }
 export interface DuplicateMatch { patient: OpdPatient; score: number; why: string[] }
-export interface RedFlag { id: string; label: string; action: string; matched: string; sign?: string }
+export interface RedFlag { id: string; label: string; action: string; label_hi: string; action_hi: string; matched: string; sign?: string }
 export interface DoctorOption {
-  id: number; name: string; department: string; department_name: string; qualification: string; room: string; fee: number;
+  id: number; name: string; department: string; department_name: string; department_name_hi: string | null; qualification: string; room: string; fee: number;
   days: string[]; hours: string; on_duty: boolean; next_on_duty: string | null; waiting: number; seen: number; wait_minutes: number;
   languages: string[]; seen_before?: string | null; fee_due?: number; fee_note?: string; reason?: string;
 }
 export interface OpdIntake {
-  complaint: string; language: string | null; symptoms: { name: string; quote: string }[]; dropped_symptoms: number;
-  duration: string | null; severity: "mild" | "moderate" | "severe" | "unknown"; summary_en: string | null; red_flags: RedFlag[];
+  complaint: string; language: string | null; symptoms: { name: string; name_hi: string | null; quote: string }[]; dropped_symptoms: number;
+  duration: string | null; duration_hi: string | null; summary_hi: string | null; department_name_hi: string; severity: "mild" | "moderate" | "severe" | "unknown"; summary_en: string | null; red_flags: RedFlag[];
   department: string; department_name: string; department_source: "agent" | "keywords" | "rule" | "default" | "demo";
   department_reason: string; keyword_department: string | null; agent_department: string | null;
   agent: { used: boolean; error: string | null; usage: { model: string; input_tokens: number; output_tokens: number; latency_ms: number } | null };
@@ -386,13 +386,13 @@ export interface OpdVisit {
   id: number; number: string; visit_date: string; token: number | null;
   status: "triaged" | "waiting" | "in_consult" | "done" | "skipped" | "cancelled" | "emergency";
   complaint: string; intake: OpdIntake;
-  suggestion: { department: string; department_name: string; note: string | null; options: DoctorOption[]; suggested_doctor_id: number | null };
+  suggestion: { department: string; department_name: string; department_name_hi: string; note: string | null; options: DoctorOption[]; suggested_doctor_id: number | null };
   override_reason: string | null; fee: number; fee_note: string | null; payment_mode: string | null; patient: OpdPatient;
-  doctor: { id: number; name: string; room: string; department_name: string } | null;
+  doctor: { id: number; name: string; room: string; department_name: string; department_name_hi: string | null } | null;
 }
 export interface QueueDoctor extends DoctorOption {
   now: { id: number; token: number; name: string } | null;
-  visits: { id: number; token: number; status: OpdVisit["status"]; name: string; age_label: string; sex: string; summary: string; fee: number }[];
+  visits: { id: number; token: number; status: OpdVisit["status"]; name: string; age_label: string; sex: string; summary: string; summary_hi: string | null; fee: number }[];
 }
 export interface OpdSummary {
   date: string; day: string; tokens: number; waiting: number; in_consult: number; seen: number; emergencies: number;

@@ -8,6 +8,7 @@ Measures:
   - red-flag recall (must be 100%) and false emergencies on routine complaints
   - department accuracy: final, the agent's raw answer, and keywords alone (the baseline)
   - symptoms dropped because their quote wasn't in the complaint
+  - Hindi output: the share of summaries and symptoms with a Devanagari version
   - tokens and time
 Writes evals/reports/opd-<timestamp>.json.
 """
@@ -60,7 +61,8 @@ def main() -> None:
             "expected_red_flag": case["red_flag"], "red_flags": flags,
             "rules_only_red_flags": [f["id"] for f in check(case["complaint"], age=case["age"])],
             "symptoms": note["symptoms"], "dropped_symptoms": note["dropped_symptoms"], "language": note["language"],
-            "summary_en": note["summary_en"], "agent_error": note["agent"]["error"], "usage": note["agent"]["usage"],
+            "summary_en": note["summary_en"], "summary_hi": note["summary_hi"],
+            "symptoms_with_hindi": sum(1 for s in note["symptoms"] if s.get("name_hi")), "agent_error": note["agent"]["error"], "usage": note["agent"]["usage"],
         }
         rows.append(row)
         mark = ("ER " if flags else "MISS") if case["red_flag"] else ("ok " if row["department"] == case["department"] else "MISS")
@@ -82,6 +84,8 @@ def main() -> None:
         "agent_department_accuracy": rate(sum(r["agent_department"] == r["expected_department"] for r in routine), len(routine)),
         "keyword_department_accuracy": rate(sum(r["keyword_department"] == r["expected_department"] for r in routine), len(routine)),
         "dropped_symptoms": sum(r["dropped_symptoms"] for r in rows),
+        "hindi_summary_rate": rate(sum(bool(r["summary_hi"]) for r in rows), len(rows)),
+        "hindi_symptom_rate": rate(sum(r["symptoms_with_hindi"] for r in rows), sum(len(r["symptoms"]) for r in rows)),
         "agent_errors": sum(bool(r["agent_error"]) for r in rows),
         "input_tokens": sum((r["usage"] or {}).get("input_tokens", 0) for r in rows),
         "output_tokens": sum((r["usage"] or {}).get("output_tokens", 0) for r in rows),

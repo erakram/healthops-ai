@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from app.agents.intake import run_intake
 from app.frontdesk import _number, age_of, fee_for, on_duty, today
 from app.models import Doctor, OpdPatient, OpdVisit
-from app.verticals.opd_india.departments import DEPARTMENTS
+from app.verticals.opd_india.departments import DEPARTMENTS, DEPARTMENTS_HI
 
 MON_SAT = [0, 1, 2, 3, 4, 5]
 DOCTORS = [  # name, department, qualification, room, fee, days, start, end, minutes, languages
@@ -63,9 +63,28 @@ TODAY = [  # patient, doctor, complaint, English summary, status
 ]
 
 
+SUMMARIES_HI = {
+    "High sugar readings and excess thirst.": "शुगर ज़्यादा आ रही है और बहुत प्यास लगती है।",
+    "Palpitations; breathless on stairs.": "धड़कन तेज़ रहती है; सीढ़ी चढ़ने पर सांस फूलती है।",
+    "Knee pain for 2 months.": "2 महीने से घुटने में दर्द।",
+    "Itchy rash on hands and neck.": "हाथ और गर्दन पर खुजली और दाने।",
+    "Cough and mild fever.": "खांसी और हल्का बुखार।",
+    "Cough and fever for 4 days.": "4 दिन से खांसी और बुखार।",
+    "Stomach pain and vomiting since morning.": "सुबह से पेट में दर्द और उल्टी।",
+    "Headache for a week.": "एक हफ़्ते से सिर दर्द।",
+    "Body ache and weakness for 3 days.": "3 दिन से बदन दर्द और कमज़ोरी।",
+    "Irregular periods for 3 months.": "3 महीने से पीरियड अनियमित।",
+    "Knee pain, worse on stairs.": "घुटने में दर्द, सीढ़ी चढ़ने पर ज़्यादा।",
+    "Itching continues; rash better.": "खुजली अभी भी है; दाने कम हुए।",
+    "Loose motions for 2 days (9-month-old).": "9 महीने के बच्चे को 2 दिन से दस्त।",
+    "Sore throat.": "गले में दर्द और खराश।",
+}
+
+
 def _intake(complaint: str, summary: str, patient: OpdPatient, doctor: Doctor, day: date) -> dict:
     note = run_intake(None, complaint, age_of(patient, day), patient.sex)
-    note.update(summary_en=summary, department=doctor.department, department_name=DEPARTMENTS[doctor.department],
+    note.update(summary_en=summary, summary_hi=SUMMARIES_HI.get(summary), department=doctor.department,
+                department_name=DEPARTMENTS[doctor.department], department_name_hi=DEPARTMENTS_HI[doctor.department],
                 department_source="demo", agent={"used": False, "error": None, "demo": True, "usage": None})
     return note
 

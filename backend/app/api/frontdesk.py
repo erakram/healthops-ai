@@ -90,7 +90,8 @@ def patient(patient_id: int, db: Session = Depends(get_db), _: User = Depends(cu
             "visits": [{"id": v.id, "number": v.number, "visit_date": v.visit_date, "status": v.status, "token": v.token,
                         "doctor": v.doctor.name if v.doctor else None,
                         "department_name": v.intake.get("department_name"),
-                        "summary": v.intake.get("summary_en") or v.complaint, "fee": v.fee} for v in visits]}
+                        "summary": v.intake.get("summary_en") or v.complaint, "summary_hi": v.intake.get("summary_hi"),
+                        "fee": v.fee} for v in visits]}
 
 
 class Intake(BaseModel):
