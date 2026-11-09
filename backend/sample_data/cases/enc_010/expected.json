@@ -9,8 +9,8 @@
       "patient_name": "Robert Mbeki",
       "patient_dob": "08/04/1980",
       "service_date": "November 5, 2026",
-      "provider_name": "Lakeside Orthopedics",
-      "provider_npi": "1923337855"
+      "practice_name": "Lakeside Orthopedics",
+      "practice_npi": "1923337855"
     },
     "insurance_card": {
       "member_name": "Robert Mbeki",

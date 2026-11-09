@@ -1,0 +1,91 @@
+{
+  "case_id": "har_003",
+  "scenario": "records_pending",
+  "title": "Payer pended it for medical records",
+  "visit": "diabetes",
+  "patient": "Hannah Larkin",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-754017",
+      "patient_name": "Hannah Larkin",
+      "patient_dob": "07/27/1981",
+      "member_id": "SCS754926717",
+      "payer_name": "Summit CareShield",
+      "provider_name": "Riverside Family Medicine",
+      "provider_npi": "1272173935",
+      "service_date": "08/31/2026",
+      "total_charge": "$292.50",
+      "prior_auth_number": null,
+      "line_items": [
+        {
+          "cpt": "99214",
+          "description": "Office visit, established, moderate complexity",
+          "units": 1,
+          "charge": "$215.00"
+        },
+        {
+          "cpt": "80053",
+          "description": "Comprehensive metabolic panel",
+          "units": 1,
+          "charge": "$62.50"
+        },
+        {
+          "cpt": "36415",
+          "description": "Routine venipuncture",
+          "units": 1,
+          "charge": "$15.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "E11.9",
+        "I10"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Hannah Larkin",
+      "member_id": "SCS754926717",
+      "payer_name": "Summit CareShield",
+      "group_number": "GRP-3764",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Hannah Larkin",
+      "patient_dob": "07/27/1981",
+      "service_date": "August 31, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-20381",
+      "patient_name": "Hannah Larkin",
+      "service_date": "08/31/2026",
+      "total_amount": "$292.50",
+      "line_items": [
+        {
+          "cpt": "99214",
+          "description": "Office visit, established, moderate complexity",
+          "units": 1,
+          "charge": "$215.00"
+        },
+        {
+          "cpt": "80053",
+          "description": "Comprehensive metabolic panel",
+          "units": 1,
+          "charge": "$62.50"
+        },
+        {
+          "cpt": "36415",
+          "description": "Routine venipuncture",
+          "units": 1,
+          "charge": "$15.00"
+        }
+      ]
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "ar": {
+    "scenario": "records_pending",
+    "action": "send_records",
+    "dos_days": 70
+  }
+}

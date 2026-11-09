@@ -9,8 +9,8 @@
       "patient_name": "Ethan Larkin",
       "patient_dob": "04/21/1999",
       "service_date": "October 31, 2026",
-      "provider_name": "Lakeside Orthopedics",
-      "provider_npi": "1739879595"
+      "practice_name": "Lakeside Orthopedics",
+      "practice_npi": "1739879595"
     },
     "insurance_card": {
       "member_name": "Ethan Larkin",

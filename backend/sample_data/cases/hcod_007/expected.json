@@ -9,8 +9,8 @@
       "patient_name": "Leah Petrov",
       "patient_dob": "03/01/1962",
       "service_date": "November 1, 2026",
-      "provider_name": "Riverside Family Medicine",
-      "provider_npi": "1379768991"
+      "practice_name": "Riverside Family Medicine",
+      "practice_npi": "1379768991"
     },
     "insurance_card": {
       "member_name": "Leah Petrov",

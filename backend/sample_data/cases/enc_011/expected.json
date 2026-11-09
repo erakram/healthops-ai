@@ -9,8 +9,8 @@
       "patient_name": "Maria Lindqvist",
       "patient_dob": "01/14/1989",
       "service_date": "October 30, 2026",
-      "provider_name": "Bayview Urgent Care",
-      "provider_npi": "1704777410"
+      "practice_name": "Bayview Urgent Care",
+      "practice_npi": "1704777410"
     },
     "insurance_card": {
       "member_name": "Maria Lindqvist",

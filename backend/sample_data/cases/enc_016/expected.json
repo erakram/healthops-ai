@@ -9,8 +9,8 @@
       "patient_name": "Robert Fischer",
       "patient_dob": "03/27/1952",
       "service_date": "November 7, 2026",
-      "provider_name": "Riverside Family Medicine",
-      "provider_npi": "1051228199"
+      "practice_name": "Riverside Family Medicine",
+      "practice_npi": "1051228199"
     },
     "insurance_card": {
       "member_name": "Robert Fischer",

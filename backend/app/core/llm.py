@@ -177,8 +177,13 @@ def make_llm(model: str | None = None) -> LLM | None:
         return None
     model = model or settings.extraction_model
     if settings.llm_provider == "anthropic":
-        return ClaudeLLM(key, model, settings.request_timeout, settings.max_retries, settings.claude_effort)
-    return GroqLLM(key, model, settings.request_timeout, settings.max_retries)
+        llm = ClaudeLLM(key, model, settings.request_timeout, settings.max_retries, settings.claude_effort)
+    else:
+        llm = GroqLLM(key, model, settings.request_timeout, settings.max_retries)
+    if settings.phi_masking:
+        from app.core.phi import MaskingLLM
+        return MaskingLLM(llm)
+    return llm
 
 
 def default_llm() -> LLM | None:
@@ -186,6 +191,6 @@ def default_llm() -> LLM | None:
     if llm is None:
         logger.warning("%s is not set: uploaded claims can't be processed", settings.llm_key_name)
     else:
-        logger.info("LLM provider: %s, models %s / %s", settings.llm_provider, settings.extraction_model,
-                    settings.review_model)
+        logger.info("LLM provider: %s, models %s / %s, PHI masking %s", settings.llm_provider,
+                    settings.extraction_model, settings.review_model, "on" if settings.phi_masking else "off")
     return llm

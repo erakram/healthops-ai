@@ -2,7 +2,7 @@
 
     uvicorn app.main:app --reload --port 8010
 
-On start: create tables, seed demo users and history (if SEED_DEMO_DATA), and start
+On start: apply database migrations, seed demo users and history (if SEED_DEMO_DATA), and start
 the background worker that runs the claim pipeline.
 """
 
@@ -11,10 +11,11 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.api import auth, authorizations, claims, coding, denials, insights
+from app.api import ar, auth, authorizations, billing, claims, coding, denials, insights, reconciliation
 from app.config import settings
 from app.core.llm import default_llm
-from app.db import Base, SessionLocal, engine
+from app.db import SessionLocal, engine
+from app.db_migrate import migrate
 from app.seed import seed_history, seed_users
 from app.worker import Worker
 
@@ -26,7 +27,7 @@ async def lifespan(app: FastAPI):
     settings.storage_dir.mkdir(parents=True, exist_ok=True)
     if settings.database_url.startswith("sqlite"):
         settings.storage_dir.parent.mkdir(parents=True, exist_ok=True)
-    Base.metadata.create_all(engine)
+    migrate(engine)
     if settings.seed_demo_data:
         with SessionLocal() as db:
             seed_users(db)
@@ -45,9 +46,12 @@ app.include_router(insights.router)
 app.include_router(denials.router)
 app.include_router(authorizations.router)
 app.include_router(coding.router)
+app.include_router(ar.router)
+app.include_router(billing.router)
+app.include_router(reconciliation.router)
 
 
 @app.get("/api/health")
 def health():
     return {"ok": True, "llm_configured": settings.llm_api_key is not None,
-            "provider": settings.llm_provider, "model": settings.review_model}
+            "provider": settings.llm_provider, "model": settings.review_model, "phi_masking": settings.phi_masking}

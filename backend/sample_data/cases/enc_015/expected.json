@@ -9,8 +9,8 @@
       "patient_name": "Fatima Sato",
       "patient_dob": "11/15/1982",
       "service_date": "October 29, 2026",
-      "provider_name": "Riverside Family Medicine",
-      "provider_npi": "1262341344"
+      "practice_name": "Riverside Family Medicine",
+      "practice_npi": "1262341344"
     },
     "insurance_card": {
       "member_name": "Fatima Sato",

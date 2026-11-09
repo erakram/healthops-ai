@@ -193,7 +193,9 @@ def act(denial_id: int, body: Action, db: Session = Depends(get_db), user: User 
         if denial.group_code != "PR" and denial.category != "eligibility":
             raise HTTPException(400, f"{code} is the provider's write-off under contract; it can't be billed to the patient")
         denial.status, denial.action_taken, denial.closed_at = DenialStatus.PATIENT_BILLED, "bill_patient", datetime.now(timezone.utc)
-        _log(db, denial, user, f"{user.name} sent the patient a statement for ${denial.amount:,.2f}")
+        from app.billing import bill_patient
+        statement = bill_patient(db, denial, user.email)
+        _log(db, denial, user, f"{user.name} billed the patient ${denial.amount:,.2f} on statement {statement.number}")
     elif body.action == "corrected_claim":
         fix = (denial.triage or {}).get("fix")
         if denial.category != "coding_bundling" or not fix:

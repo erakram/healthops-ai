@@ -209,6 +209,9 @@ def _resolve(db, claim, case, denial, result, received, rng, now) -> None:
     done = min(received + timedelta(days=rng.randint(1, 3)), now - timedelta(hours=1))
     if result.action == "bill_patient":
         denial.status, denial.action_taken = DenialStatus.PATIENT_BILLED, "bill_patient"
+        db.flush()
+        from app.billing import bill_patient
+        bill_patient(db, denial, BILLER, today=done.date())
     elif result.action == "write_off":
         denial.status, denial.action_taken = DenialStatus.WRITTEN_OFF, "write_off"
     elif result.action == "appeal":
@@ -411,7 +414,7 @@ def seed_encounters(db: Session, now: datetime, rng: random.Random) -> int:
         enc.extracted = record
         value = lambda doc, name: ((record.get(doc) or {}).get(name) or {}).get("value")  # noqa: E731
         enc.patient_name, enc.payer_name = value("clinical_note", "patient_name"), value("insurance_card", "payer_name")
-        enc.provider_name, enc.service_date = value("clinical_note", "provider_name"), value("clinical_note", "service_date")
+        enc.provider_name, enc.service_date = value("clinical_note", "practice_name"), value("clinical_note", "service_date")
         result = code_encounter(AnswerKeyCoder(), parsed["clinical_note"])
         enc.suggestion = result.as_json()
         steps = [(created, "transition", "biller@healthops.demo", "Received 2 document(s)"),
@@ -440,6 +443,20 @@ def seed_encounters(db: Session, now: datetime, rng: random.Random) -> int:
             db.add(EncounterEvent(encounter_id=enc.id, type=kind, actor=actor, message=message, at=when))
     db.commit()
     return len(cases)
+
+
+def _seed_payments(db: Session, now: datetime) -> None:
+    """Some patients paid, one is on a payment plan."""
+    from app.billing import record_payment, set_up_plan
+    from app.models import Statement
+    biller = db.scalar(select(User).where(User.email == BILLER))
+    statements = db.scalars(select(Statement).order_by(Statement.id)).all()
+    for index, s in enumerate(statements):
+        if index == 0:
+            record_payment(db, s, s.total, "card", "AUTH-58213", biller, today=now.date())
+        elif index == 1:
+            set_up_plan(db, s, 3, biller, today=now.date())
+            record_payment(db, s, s.plan["schedule"][0]["amount"], "check", "CHK-1042", biller, today=now.date())
 
 
 def seed_history(db: Session) -> int:
@@ -474,7 +491,18 @@ def seed_history(db: Session) -> int:
         submitted_at = _walk(db, claim, Status.SUBMITTED, findings, rng)
         _process_payer(db, claim, case, submitted_at, rng, now)
         created += 1
+    # Claims the payer never answered: the accounts receivable worklist.
+    for index, case in enumerate(list_cases("har_")):
+        from app.verticals.healthcare.schema import parse_date
+        dos = datetime.combine(parse_date(case["record"]["claim_form"]["service_date"]), datetime.min.time(), timezone.utc)
+        created_at = dos + timedelta(days=rng.randint(1, 3), hours=rng.randint(8, 16))
+        claim, findings = _build_claim(db, case, f"CLM-{22000 + index}", created_at, seen)
+        sent = _walk(db, claim, Status.SUBMITTED, findings, rng)
+        db.add(Submission(claim_id=claim.id, idempotency_key=f"submit:{claim.id}", frequency="1",
+                          payload=payer_claim(claim), payer_reference=f"PYR-{secrets.token_hex(4).upper()}", at=sent))
+        created += 1
     db.commit()
+    _seed_payments(db, now)
     authorizations = seed_authorizations(db, now, rng)
     encounters = seed_encounters(db, now, rng)
     if created:

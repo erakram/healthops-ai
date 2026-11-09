@@ -6,7 +6,7 @@ can highlight the box; if it isn't, the value is marked unverified instead of tr
 """
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import pymupdf
 
@@ -29,17 +29,50 @@ class ParsedPdf:
     text: str  # with "--- page N ---" markers, which the agent sees
     words: list[Word]
     page_sizes: list[tuple[float, float]]
+    ocr_pages: list[int] = field(default_factory=list)  # scanned pages read with OCR
+    needs_ocr: list[int] = field(default_factory=list)  # scanned pages that couldn't be read here
+
+
+MIN_TEXT_CHARS = 20  # a page with less text than this but an image on it is treated as a scan
+
+
+def _ocr_words(page, index: int) -> list[Word]:
+    from app.documents import ocr
+    png = page.get_pixmap(matrix=pymupdf.Matrix(2, 2), alpha=False).tobytes("png")
+    w, h = page.rect.width, page.rect.height
+    return [Word(index, o["x0"] * w, o["y0"] * h, o["x1"] * w, o["y1"] * h, o["text"]) for o in ocr.ocr_png(png)]
+
+
+def _lines(words: list[Word]) -> str:
+    """Reading order for OCR words: group into lines by vertical position, left to right."""
+    lines: list[list[Word]] = []
+    for word in sorted(words, key=lambda w: (w.y0, w.x0)):
+        if lines and abs(lines[-1][0].y0 - word.y0) < (word.y1 - word.y0) * 0.6:
+            lines[-1].append(word)
+        else:
+            lines.append([word])
+    return "\n".join(" ".join(w.text for w in sorted(line, key=lambda w: w.x0)) for line in lines)
 
 
 def parse_pdf(path: str) -> ParsedPdf:
+    from app.documents import ocr
     with pymupdf.open(path) as doc:
-        parts, words, sizes = [], [], []
+        parts, words, sizes, ocr_pages, needs_ocr = [], [], [], [], []
         for index, page in enumerate(doc, start=1):
-            parts.append(f"--- page {index} ---\n{page.get_text('text').strip()}")
+            text = page.get_text("text").strip()
             sizes.append((page.rect.width, page.rect.height))
-            for x0, y0, x1, y1, text, *_ in page.get_text("words"):
-                words.append(Word(index, x0, y0, x1, y1, text))
-        return ParsedPdf(pages=len(doc), text="\n\n".join(parts), words=words, page_sizes=sizes)
+            page_words = [Word(index, x0, y0, x1, y1, t) for x0, y0, x1, y1, t, *_ in page.get_text("words")]
+            if len(text) < MIN_TEXT_CHARS and page.get_images():
+                if ocr.available():
+                    page_words = _ocr_words(page, index)
+                    text = _lines(page_words)
+                    ocr_pages.append(index)
+                else:
+                    needs_ocr.append(index)
+            parts.append(f"--- page {index} ---\n{text}")
+            words.extend(page_words)
+        return ParsedPdf(pages=len(doc), text="\n\n".join(parts), words=words, page_sizes=sizes,
+                         ocr_pages=ocr_pages, needs_ocr=needs_ocr)
 
 
 def render_page_png(path: str, page: int, zoom: float = 2.0) -> bytes:

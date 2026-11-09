@@ -9,8 +9,8 @@
       "patient_name": "Marcus Osei",
       "patient_dob": "01/10/1977",
       "service_date": "October 30, 2026",
-      "provider_name": "Maplewood Cardiology",
-      "provider_npi": "1379877594"
+      "practice_name": "Maplewood Cardiology",
+      "practice_npi": "1379877594"
     },
     "insurance_card": {
       "member_name": "Marcus Osei",

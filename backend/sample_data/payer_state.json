@@ -19,5 +19,15 @@
     "NWH620480440": 60.0,
     "CRH958883648": 90.0,
     "SCS886641621": 60.0
+  },
+  "ar_status": {
+    "BWM795832346": "lost",
+    "BWM743507835": "lost",
+    "SCS754926717": "records_pending",
+    "SCS942459845": "records_pending",
+    "CRH284055713": "paid_no_835",
+    "CRH473130624": "paid_no_835",
+    "NWH184436626": "in_process",
+    "NWH234254458": "in_process"
   }
 }

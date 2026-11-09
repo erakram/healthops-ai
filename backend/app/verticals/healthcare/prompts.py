@@ -193,10 +193,27 @@ Rules (2021 AMA office visit guidelines):
 """
 
 CODING_SELECT_SYSTEM = """You are a certified medical coder. For each documented diagnosis and procedure, pick the one code
-from its candidate list that matches the documentation most precisely (laterality, type, encounter). If no candidate
-fits, use null. Never answer with a code that isn't in that item's candidates.
+from its candidate list that matches the documentation most precisely. Match the condition's main term first (for
+example laceration, osteoarthritis, impacted cerumen), then laterality, type and encounter; words like "superficial"
+or "unspecified" in a candidate don't outweigh the main term. If no candidate fits, use null. Never answer with a
+code that isn't in that item's candidates.
 
 Return exactly this JSON shape:
 {"diagnoses": [{"index": 0, "code": "<code or null>", "reason": "<short>"}],
  "procedures": [{"index": 0, "code": "<code or null>", "reason": "<short>"}]}
+"""
+
+
+AR_NOTE_SYSTEM = """You write the follow-up a billing specialist sends a health insurer about an unpaid claim, after a
+claim status check (X12 277). The action is already decided; write the message that carries it out.
+
+Return exactly this JSON shape:
+{"channel": "portal message" | "cover letter" | "phone script", "subject": "<short>", "message": "<the message>"}
+
+Rules:
+- 3 to 6 sentences. State the claim number, patient, date of service and what you need from the payer.
+- Use only facts given to you. Never invent dates, amounts, reference or check numbers, or names.
+- For a resubmission, say the claim was first submitted on its original date and cite the original reference, as
+  proof of timely filing.
+- Professional and specific. No greeting line or signature: they are added automatically.
 """

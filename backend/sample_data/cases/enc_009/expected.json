@@ -9,8 +9,8 @@
       "patient_name": "Mei Castillo",
       "patient_dob": "04/23/1976",
       "service_date": "November 4, 2026",
-      "provider_name": "Lakeside Orthopedics",
-      "provider_npi": "1286191998"
+      "practice_name": "Lakeside Orthopedics",
+      "practice_npi": "1286191998"
     },
     "insurance_card": {
       "member_name": "Mei Castillo",

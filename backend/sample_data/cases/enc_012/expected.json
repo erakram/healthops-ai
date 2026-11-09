@@ -9,8 +9,8 @@
       "patient_name": "Mei Gallagher",
       "patient_dob": "05/22/1971",
       "service_date": "November 4, 2026",
-      "provider_name": "Bayview Urgent Care",
-      "provider_npi": "1244867440"
+      "practice_name": "Bayview Urgent Care",
+      "practice_npi": "1244867440"
     },
     "insurance_card": {
       "member_name": "Mei Gallagher",

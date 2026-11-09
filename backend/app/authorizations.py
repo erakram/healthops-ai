@@ -153,6 +153,10 @@ def handle_auth_read(db: Session, _claim, llm: LLM | None, payload: dict) -> Non
         if doc.kind is None:
             log_step(db, auth, DOCUMENT_AGENT, f"Reading {doc.filename}", document_id=doc.id)
             parsed = parse_pdf(doc.path)
+            if parsed.ocr_pages or parsed.needs_ocr:
+                log_step(db, auth, DOCUMENT_AGENT, f"{doc.filename}: scanned page(s) "
+                         + (f"{parsed.ocr_pages} read with on-device OCR" if parsed.ocr_pages else
+                            f"{parsed.needs_ocr} need a person (no OCR on this server)"), document_id=doc.id)
             result = extract_document(llm, parsed, doc.id, model=settings.extraction_model)
             _record_run(db, auth, DOCUMENT_AGENT, result.llm)
             doc.pages, doc.text, doc.kind, doc.fields = parsed.pages, parsed.text, result.document_type, result.fields

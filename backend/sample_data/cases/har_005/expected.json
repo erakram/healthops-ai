@@ -1,0 +1,66 @@
+{
+  "case_id": "har_005",
+  "scenario": "paid_no_835",
+  "title": "Payer paid but no remittance arrived",
+  "visit": "uri",
+  "patient": "Elena Quintero",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-394834",
+      "patient_name": "Elena Quintero",
+      "patient_dob": "05/19/1991",
+      "member_id": "CRH284055713",
+      "payer_name": "Cedar Ridge Health",
+      "provider_name": "Riverside Family Medicine",
+      "provider_npi": "1021519677",
+      "service_date": "09/10/2026",
+      "total_charge": "$145.00",
+      "prior_auth_number": null,
+      "line_items": [
+        {
+          "cpt": "99213",
+          "description": "Office visit, established, low complexity",
+          "units": 1,
+          "charge": "$145.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "J06.9"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Elena Quintero",
+      "member_id": "CRH284055713",
+      "payer_name": "Cedar Ridge Health",
+      "group_number": "GRP-4822",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Elena Quintero",
+      "patient_dob": "05/19/1991",
+      "service_date": "September 10, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-74184",
+      "patient_name": "Elena Quintero",
+      "service_date": "09/10/2026",
+      "total_amount": "$145.00",
+      "line_items": [
+        {
+          "cpt": "99213",
+          "description": "Office visit, established, low complexity",
+          "units": 1,
+          "charge": "$145.00"
+        }
+      ]
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "ar": {
+    "scenario": "paid_no_835",
+    "action": "request_remittance",
+    "dos_days": 60
+  }
+}

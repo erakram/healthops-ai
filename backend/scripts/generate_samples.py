@@ -11,6 +11,10 @@ the PDFs and expected.json:
 case_* folders are used for evals and the "Load sample" button; hist_* folders seed
 the dashboard's history, with different patients so they don't look like duplicates.
 
+har_* folders are clean claims the payer stays silent about (lost, pended for records, paid
+without a remittance, still in process), for accounts receivable follow-up; payer_state.json's
+"ar_status" says which.
+
 enc_* folders are outpatient encounters to code (the visit note and the insurance card); their
 expected.json has a "coding" answer key with the correct ICD-10-CM and CPT codes. hcod_* do
 the same for the seeded history.
@@ -168,6 +172,13 @@ DENIAL_SCENARIOS = {
     "retro_termination": (["uri", "diabetes", "labs"], "Employer ended coverage retroactively",
                           {"remit_status": "4", "codes": ["CO-27"], "category": "eligibility", "action": "bill_patient",
                            "policy_id": "EL-0027", "appeal_should_win": False}),
+}
+# Accounts receivable: scenario -> (payer, service dates in days ago, the follow-up action expected)
+AR_SCENARIOS = {
+    "lost": ("Bluewater Mutual", [95, 50], "resubmit"),
+    "records_pending": ("Summit CareShield", [70, 40], "send_records"),
+    "paid_no_835": ("Cedar Ridge Health", [60, 35], "request_remittance"),
+    "in_process": ("Northwind Health Plan", [28, 20], "wait"),
 }
 TIMELY_LIMITS = {"Northwind Health Plan": 90, "Bluewater Mutual": 180, "Cedar Ridge Health": 90, "Summit CareShield": 120}
 
@@ -393,14 +404,19 @@ def prior_auth(path, d):
 
 # --- one case ----------------------------------------------------------------------------
 
-def build_case(case: Case, out_dir: Path, today: date, payer_state: dict | None = None) -> dict:
+def build_case(case: Case, out_dir: Path, today: date, payer_state: dict | None = None,
+               payer_override: str | None = None, dos_days: int | None = None) -> dict:
     rng, scenario = case.rng, case.scenario
     first, last = rng.choice(FIRST), rng.choice(LAST)
     payer, prefix = rng.choice(PAYERS)
+    if payer_override:
+        payer, prefix = next(p for p in PAYERS if p[0] == payer_override)
     provider_key, lines, dx, note_text = VISITS_ALL[case.visit]
     dos = today - timedelta(days=rng.randint(3, 40))
     if scenario == "timely_filing":
         dos = today - timedelta(days=TIMELY_LIMITS[payer] + rng.randint(20, 60))
+    if dos_days is not None:
+        dos = today - timedelta(days=dos_days)
     dob = date(rng.randint(1948, 2001), rng.randint(1, 12), rng.randint(1, 28))
     member_id = f"{prefix}{rng.randint(100000000, 999999999)}"
     line_items = [{"cpt": cpt, "description": CPT[cpt][0], "units": units, "charge": round(CPT[cpt][1] * units, 2)}
@@ -478,8 +494,14 @@ def build_case(case: Case, out_dir: Path, today: date, payer_state: dict | None 
         record["prior_authorization"] = {"auth_number": d["auth_number"], "member_id": d["member_id"],
                                          "valid_from": d["auth_from"], "valid_to": d["auth_to"],
                                          "approved_cpt_codes": d["auth_codes"]}
-    denial = None
-    if scenario in DENIAL_SCENARIOS:
+    denial = ar = None
+    if scenario in AR_SCENARIOS:
+        description = {"lost": "Payer has no record of the claim", "records_pending": "Payer pended it for medical records",
+                       "paid_no_835": "Payer paid but no remittance arrived", "in_process": "Payer is still processing it"}[scenario]
+        findings, ai = [], False
+        payer_state["ar_status"][re.sub(r"[^A-Z0-9]", "", d["member_id"].upper())] = scenario
+        ar = {"scenario": scenario, "action": AR_SCENARIOS[scenario][2], "dos_days": dos_days}
+    elif scenario in DENIAL_SCENARIOS:
         _, description, denial = DENIAL_SCENARIOS[scenario]
         findings, ai = [], False
         member = re.sub(r"[^A-Z0-9]", "", d["member_id"].upper())
@@ -496,6 +518,8 @@ def build_case(case: Case, out_dir: Path, today: date, payer_state: dict | None 
                 "expected_findings": findings, "expects_ai_review": ai}
     if denial:
         expected["denial"] = denial
+    if ar:
+        expected["ar"] = ar
     (folder / "expected.json").write_text(json.dumps(expected, indent=2))
     return expected
 
@@ -817,7 +841,7 @@ def build_encounter_case(case_id: str, scenario: str, rng: random.Random, out_di
     encounter_note(folder / "clinical_note.pdf", d, e["sections"])
     insurance_card(folder / "insurance_card.pdf", d)
     record = {"clinical_note": {"patient_name": d["patient_name"], "patient_dob": d["note_dob"], "service_date": d["note_service_date"],
-                                "provider_name": d["provider_name"], "provider_npi": d["provider_npi"]},
+                                "practice_name": d["provider_name"], "practice_npi": d["provider_npi"]},
               "insurance_card": {"member_name": d["card_member_name"], "member_id": member_id, "payer_name": payer,
                                  "group_number": d["group_number"], "coverage_start": d["coverage_start"], "coverage_end": None}}
     procedures = [{"code": code, "modifiers": [], "units": units} for _, _, _, code, units in e["procedures"]]
@@ -875,7 +899,7 @@ def main(today: date | None = None) -> None:
 
     # Denial scenarios use their own random stream, so adding them didn't change the cases above.
     payer_state = {"generated_on": today.isoformat(), "auth_not_on_file": [], "terminations": {},
-                   "deductible_remaining": {}}
+                   "deductible_remaining": {}, "ar_status": {}}
     den_rng = random.Random(1835)
     denial_plan = [("den", s) for s in DENIAL_SCENARIOS for _ in range(2)]
     history_weights = {"paid_clean": 4, "deductible": 2, "auth_not_on_file": 2, "med_necessity_supported": 2,
@@ -901,6 +925,17 @@ def main(today: date | None = None) -> None:
         build_order_case(f"{prefix}_{counters[prefix]:03d}", scenario, order, case_rng, OUT, today, payer_state)
 
 
+    # Claims the payer is silent about (accounts receivable), on their own random stream.
+    ar_rng = random.Random(276)
+    counters["har"] = 0
+    for scenario, (payer_name, ages, _) in AR_SCENARIOS.items():
+        for days in ages:
+            counters["har"] += 1
+            case_rng = random.Random(ar_rng.random())
+            visit = case_rng.choice(["labs", "diabetes", "uri", "knee_inj"])
+            build_case(Case(f"har_{counters['har']:03d}", scenario, visit, case_rng), OUT, today, payer_state,
+                       payer_override=payer_name, dos_days=days)
+
     # Encounters to code, on their own random stream.
     enc_rng = random.Random(1500)
     counters.update(enc=0, hcod=0)
@@ -912,7 +947,8 @@ def main(today: date | None = None) -> None:
     (OUT.parent / "payer_state.json").write_text(json.dumps(payer_state, indent=2))
     print(f"Wrote {counters['case']} eval cases, {counters['hist']} history cases, {counters['den']} denial cases, "
           f"{counters['hden']} denial history cases, {counters['pa']} authorization cases, {counters['hpa']} "
-          f"authorization history cases, {counters['enc']} encounters and {counters['hcod']} encounter history cases to {OUT}")
+          f"authorization history cases, {counters['enc']} encounters, {counters['hcod']} encounter history cases and "
+          f"{counters['har']} accounts receivable cases to {OUT}")
 
 
 if __name__ == "__main__":

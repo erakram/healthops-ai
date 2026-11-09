@@ -94,6 +94,10 @@ def handle_enc_read(db: Session, _claim, llm: LLM | None, payload: dict) -> None
         if doc.kind is None:
             log_step(db, enc, DOCUMENT_AGENT, f"Reading {doc.filename}", document_id=doc.id)
             parsed = parse_pdf(doc.path)
+            if parsed.ocr_pages or parsed.needs_ocr:
+                log_step(db, enc, DOCUMENT_AGENT, f"{doc.filename}: scanned page(s) "
+                         + (f"{parsed.ocr_pages} read with on-device OCR" if parsed.ocr_pages else
+                            f"{parsed.needs_ocr} need a person (no OCR on this server)"), document_id=doc.id)
             result = extract_document(llm, parsed, doc.id, model=settings.extraction_model)
             _record_run(db, enc, DOCUMENT_AGENT, result.llm)
             doc.pages, doc.text, doc.kind, doc.fields = parsed.pages, parsed.text, result.document_type, result.fields
@@ -108,7 +112,7 @@ def handle_enc_read(db: Session, _claim, llm: LLM | None, payload: dict) -> None
     value = lambda doc, name: (doc.get(name) or {}).get("value")  # noqa: E731
     enc.patient_name = value(note, "patient_name") or value(card, "member_name")
     enc.payer_name = value(card, "payer_name")
-    enc.provider_name = value(note, "provider_name")
+    enc.provider_name = value(note, "practice_name")
     enc.service_date = value(note, "service_date")
     db.commit()
     transition(db, enc, EncStatus.CODING, SYSTEM, "Documents read, coding the encounter")
@@ -230,8 +234,8 @@ def create_claim(db: Session, enc: Encounter, user: User) -> Claim:
     folder.mkdir(parents=True, exist_ok=True)
     data = {"claim_number": enc.number, "payer_name": value(card, "payer_name") or enc.payer_name or "",
             "patient_name": value(note, "patient_name") or enc.patient_name or "", "patient_dob": us(value(note, "patient_dob")),
-            "member_id": member, "provider_name": value(note, "provider_name") or "Provider",
-            "provider_npi": value(note, "provider_npi") or "", "service_date": us(enc.service_date),
+            "member_id": member, "provider_name": value(note, "practice_name") or "Provider",
+            "provider_npi": value(note, "practice_npi") or "", "service_date": us(enc.service_date),
             "diagnosis_codes": [c["code"] for c in enc.final["icd"]], "prior_auth_number": auth.auth_number if auth else None,
             "line_items": lines, "invoice_number": f"INV-{enc.id:05d}"}
     claim_form(str(folder / "claim_form.pdf"), data)

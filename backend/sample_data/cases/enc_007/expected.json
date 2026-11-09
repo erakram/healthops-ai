@@ -9,8 +9,8 @@
       "patient_name": "Victor Petrov",
       "patient_dob": "10/27/2001",
       "service_date": "November 8, 2026",
-      "provider_name": "Lakeside Orthopedics",
-      "provider_npi": "1175577588"
+      "practice_name": "Lakeside Orthopedics",
+      "practice_npi": "1175577588"
     },
     "insurance_card": {
       "member_name": "Victor Petrov",

@@ -9,8 +9,8 @@
       "patient_name": "Samuel Alvarez",
       "patient_dob": "04/16/1980",
       "service_date": "November 8, 2026",
-      "provider_name": "Bayview Urgent Care",
-      "provider_npi": "1187259845"
+      "practice_name": "Bayview Urgent Care",
+      "practice_npi": "1187259845"
     },
     "insurance_card": {
       "member_name": "Samuel Alvarez",

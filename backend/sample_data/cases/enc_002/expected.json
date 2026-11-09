@@ -9,8 +9,8 @@
       "patient_name": "Priya Iverson",
       "patient_dob": "09/22/1948",
       "service_date": "November 1, 2026",
-      "provider_name": "Riverside Family Medicine",
-      "provider_npi": "1531464000"
+      "practice_name": "Riverside Family Medicine",
+      "practice_npi": "1531464000"
     },
     "insurance_card": {
       "member_name": "Priya Iverson",

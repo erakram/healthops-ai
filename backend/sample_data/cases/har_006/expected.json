@@ -1,0 +1,78 @@
+{
+  "case_id": "har_006",
+  "scenario": "paid_no_835",
+  "title": "Payer paid but no remittance arrived",
+  "visit": "knee_inj",
+  "patient": "Marcus Larkin",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-258851",
+      "patient_name": "Marcus Larkin",
+      "patient_dob": "10/23/1986",
+      "member_id": "CRH473130624",
+      "payer_name": "Cedar Ridge Health",
+      "provider_name": "Lakeside Orthopedics",
+      "provider_npi": "1729540413",
+      "service_date": "10/05/2026",
+      "total_charge": "$350.00",
+      "prior_auth_number": null,
+      "line_items": [
+        {
+          "cpt": "99213",
+          "description": "Office visit, established, low complexity",
+          "units": 1,
+          "charge": "$145.00"
+        },
+        {
+          "cpt": "20610",
+          "description": "Injection, major joint",
+          "units": 1,
+          "charge": "$205.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "M17.11"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Marcus Larkin",
+      "member_id": "CRH473130624",
+      "payer_name": "Cedar Ridge Health",
+      "group_number": "GRP-1413",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Marcus Larkin",
+      "patient_dob": "10/23/1986",
+      "service_date": "October 5, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-35146",
+      "patient_name": "Marcus Larkin",
+      "service_date": "10/05/2026",
+      "total_amount": "$350.00",
+      "line_items": [
+        {
+          "cpt": "99213",
+          "description": "Office visit, established, low complexity",
+          "units": 1,
+          "charge": "$145.00"
+        },
+        {
+          "cpt": "20610",
+          "description": "Injection, major joint",
+          "units": 1,
+          "charge": "$205.00"
+        }
+      ]
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "ar": {
+    "scenario": "paid_no_835",
+    "action": "request_remittance",
+    "dos_days": 35
+  }
+}

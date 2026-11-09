@@ -145,3 +145,19 @@ def test_changes_need_a_reason_and_are_recorded(client):
     bad = client.post(f"/api/encounters/{enc['id']}/finalize", json={**body, "icd": ["M17.1"]})
     assert bad.status_code == 409  # already coded
     assert client.get("/api/codes/icd10", params={"q": "M17.1"}).json()[0]["code"] == "M17.10"
+
+
+@pytest.mark.parametrize("query,code", [
+    ("laceration right palm", "S61.411A"),        # seen in evals: "palm" never found the hand code
+    ("cut on right palm", "S61.411A"),
+    ("ear wax right ear", "H61.21"),
+    ("high blood pressure", "I10"),
+])
+def test_everyday_wording_still_finds_the_icd_code(query, code):
+    assert code in [h["code"] for h in search_icd10(query, 12)]
+
+
+def test_injury_encounter_versions_are_collapsed():
+    codes = [h["code"] for h in search_icd10("laceration without foreign body right hand initial encounter", 12)]
+    assert codes[0] == "S61.411A" and "S61.411D" not in codes and "S61.411S" not in codes
+    assert "S61.412D" in [h["code"] for h in search_icd10("follow-up visit laceration left hand", 12)]

@@ -9,8 +9,8 @@
       "patient_name": "David Brennan",
       "patient_dob": "03/24/1959",
       "service_date": "November 7, 2026",
-      "provider_name": "Maplewood Cardiology",
-      "provider_npi": "1118256779"
+      "practice_name": "Maplewood Cardiology",
+      "practice_npi": "1118256779"
     },
     "insurance_card": {
       "member_name": "David Brennan",

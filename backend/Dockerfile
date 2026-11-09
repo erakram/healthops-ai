@@ -6,6 +6,8 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY app ./app
 COPY scripts ./scripts
+COPY migrations ./migrations
+COPY alembic.ini .
 COPY sample_data ./sample_data
 
 ENV PORT=8010

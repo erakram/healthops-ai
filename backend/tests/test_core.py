@@ -39,3 +39,19 @@ def test_enqueue_is_idempotent(client):
         db.commit()
         assert enqueue(db, "noop", claim, key="same-key") is not None
         assert enqueue(db, "noop", claim, key="same-key") is None
+
+
+def test_migrations_match_the_models(tmp_path):
+    """A model change without a migration fails here (run `alembic revision --autogenerate`)."""
+    from alembic.autogenerate import compare_metadata
+    from alembic.migration import MigrationContext
+    from sqlalchemy import create_engine
+
+    from app.db import Base
+    from app.db_migrate import migrate
+
+    engine = create_engine(f"sqlite:///{tmp_path / 'migrated.db'}")
+    migrate(engine)
+    with engine.connect() as connection:
+        diff = compare_metadata(MigrationContext.configure(connection, opts={"compare_type": True}), Base.metadata)
+    assert diff == [], diff

@@ -9,8 +9,8 @@
       "patient_name": "Omar Quintero",
       "patient_dob": "12/06/1995",
       "service_date": "October 29, 2026",
-      "provider_name": "Riverside Family Medicine",
-      "provider_npi": "1690516475"
+      "practice_name": "Riverside Family Medicine",
+      "practice_npi": "1690516475"
     },
     "insurance_card": {
       "member_name": "Omar Quintero",

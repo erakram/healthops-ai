@@ -284,3 +284,46 @@ def review_authorization(request: dict, payer_name: str, attempt: int, today: da
     return {"action": "A3", "disposition": "Denied: medical necessity not established. Missing: " + "; ".join(asks),
             "notes": ["The ordering physician may request a peer-to-peer review."],
             "satisfied": [c["id"] for c in satisfied], "missing": [c["id"] for c in missing]}
+
+
+# --- claim status (276/277) ----------------------------------------------------------------------
+
+# Claims the payer is silent about, from payer_state["ar_status"] keyed by member ID:
+#   lost              the payer never received it: 277 D0 "not found" until it's resubmitted
+#   records_pending   pended for medical records: 277 P3, the 835 comes after records arrive
+#   paid_no_835       paid, but the remittance never reached the provider: 277 F1 with the check
+#   in_process        still being worked: 277 P1, nothing to do but wait
+def ar_scenario(member_id: str | None) -> str | None:
+    return (payer_state().get("ar_status") or {}).get(normalize_id(member_id))
+
+
+def withholds_remittance(member_id: str | None, first_submission: bool, released: bool) -> bool:
+    """Whether the payer stays silent instead of sending an 835 for this submission."""
+    scenario = ar_scenario(member_id)
+    if released or scenario is None:
+        return False
+    if scenario == "lost":
+        return first_submission  # a resubmission arrives normally
+    return True
+
+
+def claim_status(payer_name: str | None, request: dict, today: date) -> dict:
+    """The payer's answer to a 276 for a claim it hasn't sent an 835 for."""
+    from datetime import timedelta
+    profile = profile_for(payer_name)
+    scenario = ar_scenario(request["member_id"])
+    control = _control_number(profile, request["claim_number"], "1")
+    if scenario == "lost":
+        return {"category": "D0", "code": "35", "effective": today.isoformat(),
+                "message": "No claim on file for this member and date of service"}
+    if scenario == "records_pending":
+        return {"category": "P3", "code": "294", "effective": (today - timedelta(days=9)).isoformat(),
+                "payer_claim_number": control, "message": "Medical records requested; send within 30 days"}
+    if scenario == "paid_no_835":
+        allowed = round(request["charge"] * profile.allowed_pct, 2)
+        paid_on = today - timedelta(days=12)
+        return {"category": "F1", "code": "65", "effective": paid_on.isoformat(), "paid_amount": allowed,
+                "paid_on": paid_on.isoformat(), "check_number": f"EFT{int(control[3:9], 16) % 10**8:08d}",
+                "payer_claim_number": control, "message": "Claim paid"}
+    return {"category": "P1", "code": "20", "effective": (today - timedelta(days=3)).isoformat(),
+            "payer_claim_number": control, "message": "Claim in process; decision expected within 15 days"}

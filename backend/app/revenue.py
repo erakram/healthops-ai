@@ -29,6 +29,7 @@ from app.verticals.healthcare.carc import CARCS, CATEGORIES, describe
 from app.verticals.healthcare.policies import get_policy
 from app.verticals.healthcare.schema import DOCUMENT_TYPES
 from app.verticals.healthcare.x12_835 import build_835, parse_835
+from app.verticals.healthcare.x12_837 import parse_837
 
 GATEWAY = "Payer Gateway"
 TRIAGE_AGENT = "Denial Triage Agent"
@@ -85,6 +86,7 @@ def payer_claim(claim: Claim, frequency: str = "1", modifiers: dict[str, list[st
         "member_id": value("member_id") or "", "patient_last": last, "patient_first": first,
         "service_date": claim.service_date, "prior_auth_number": value("prior_auth_number"),
         "provider_name": value("provider_name") or "Unknown provider", "provider_npi": value("provider_npi") or "",
+        "patient_dob": value("patient_dob"),
         "diagnosis_codes": [d["code"] for d in (form.get("diagnosis_codes") or {}).get("value", [])],
         "lines": [{"cpt": l["cpt"], "units": l.get("units") or 1, "charge": float(l.get("charge") or 0),
                    "modifiers": modifiers.get(l["cpt"]) or list(l.get("modifiers") or [])}
@@ -120,6 +122,8 @@ def ingest_835(db: Session, raw: str, kind: str) -> tuple[list[Remittance], list
 
 def process_remittance(db: Session, claim: Claim, remit: Remittance) -> None:
     clp = remit.parsed["claim"]
+    from app.ar import resolve_paid
+    resolve_paid(db, claim)  # an 835 closes any A/R follow-up on the claim
     audit.record(db, GATEWAY, "remittance.received", "claim", claim.number,
                  {"trace": remit.trace_number, "status": clp["status_code"], "paid": clp["paid"],
                   "patient_responsibility": clp["patient_responsibility"],
@@ -203,7 +207,11 @@ def handle_remit(db: Session, claim: Claim, _llm: LLM | None, payload: dict) -> 
     if db.scalar(select(Remittance).where(Remittance.claim_id == claim.id, Remittance.trace_number == trace)):
         return  # already received: a retried job mustn't pay twice
 
-    request = submission.payload
+    # The payer reads the 837 it was sent, not our database (older demo rows have no file yet).
+    request = parse_837(submission.x12) if submission.x12 else submission.payload
+    first = db.scalar(select(func.min(Submission.id)).where(Submission.claim_id == claim.id)) == submission.id
+    if payer.withholds_remittance(request.get("member_id"), first, bool(payload.get("released"))):
+        return  # the payer is silent: this claim will show up in accounts receivable follow-up
     clp = payer.adjudicate(request, _aware(submission.at).date())
     claims = [clp]
     if submission.frequency == "7":

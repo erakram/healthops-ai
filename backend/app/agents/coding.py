@@ -42,6 +42,19 @@ def _evidence(note: tuple[int, ParsedPdf], quote: str | None) -> dict | None:
     return {"document_id": doc_id, **hit, "label": "Encounter note"} if hit else None
 
 
+def _fused_icd_search(item: dict) -> list[dict]:
+    """Search three ways (the model's search terms, its wording of the condition, the note's own
+    sentence) and merge by reciprocal rank fusion, so one odd phrasing can't hide the right code."""
+    queries = [q for q in (item.get("search"), item.get("condition"), item.get("quote")) if q and str(q).strip()]
+    scores: dict[str, float] = {}
+    hits: dict[str, dict] = {}
+    for query in dict.fromkeys(str(q) for q in queries):
+        for rank, hit in enumerate(search_icd10(query, ICD_CANDIDATES)):
+            scores[hit["code"]] = scores.get(hit["code"], 0.0) + 1 / (60 + rank)
+            hits.setdefault(hit["code"], hit)
+    return [hits[c] for c in sorted(scores, key=lambda c: -scores[c])[:ICD_CANDIDATES]]
+
+
 def code_encounter(llm: LLM, note: tuple[int, ParsedPdf], model: str | None = None) -> CodingResult:
     _, pdf = note
     read = llm.complete_json(CODING_EXTRACT_SYSTEM, pdf.text[:12_000], model=model)
@@ -49,7 +62,7 @@ def code_encounter(llm: LLM, note: tuple[int, ParsedPdf], model: str | None = No
     diagnoses_in = [d for d in data.get("diagnoses") or [] if isinstance(d, dict) and (d.get("condition") or d.get("search"))]
     procedures_in = [p for p in data.get("procedures") or [] if isinstance(p, dict) and (p.get("service") or p.get("search"))]
 
-    dx_candidates = [search_icd10(f"{d.get('search') or ''} {d.get('condition') or ''}", ICD_CANDIDATES) for d in diagnoses_in]
+    dx_candidates = [_fused_icd_search(d) for d in diagnoses_in]
     px_candidates = [search_cpt(f"{p.get('search') or ''} {p.get('service') or ''}", CPT_CANDIDATES) for p in procedures_in]
     payload = {
         "diagnoses": [{"index": i, "documented": d.get("condition"), "quote": d.get("quote"),
@@ -121,7 +134,8 @@ def code_encounter(llm: LLM, note: tuple[int, ParsedPdf], model: str | None = No
     quotes = [x.get("evidence") for x in diagnoses + procedures]
     stats = {"diagnoses": len(diagnoses), "procedures": len(procedures), "rejected_choices": rejected,
              "grounded": sum(1 for q in quotes if q), "quotes": len(quotes),
-             "searched": [[c["code"] for c in cands] for cands in dx_candidates + px_candidates]}
+             "searched": [[c["code"] for c in cands] for cands in dx_candidates + px_candidates],
+             "queries": [{k: d.get(k) for k in ("condition", "search")} for d in diagnoses_in]}
     documented = {"visit": {**visit, "evidence": _evidence(note, visit.get("quote"))},
                   "time": {**time_info, "value": minutes, "evidence": _evidence(note, time_info.get("quote"))},
                   "mdm": mdm, "separate_em": {**separate, "documented": separate_documented,

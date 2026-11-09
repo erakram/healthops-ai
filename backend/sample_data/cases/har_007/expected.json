@@ -1,0 +1,78 @@
+{
+  "case_id": "har_007",
+  "scenario": "in_process",
+  "title": "Payer is still processing it",
+  "visit": "knee_inj",
+  "patient": "Priya Iverson",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-767739",
+      "patient_name": "Priya Iverson",
+      "patient_dob": "08/01/1981",
+      "member_id": "NWH184436626",
+      "payer_name": "Northwind Health Plan",
+      "provider_name": "Lakeside Orthopedics",
+      "provider_npi": "1769497078",
+      "service_date": "10/12/2026",
+      "total_charge": "$350.00",
+      "prior_auth_number": null,
+      "line_items": [
+        {
+          "cpt": "99213",
+          "description": "Office visit, established, low complexity",
+          "units": 1,
+          "charge": "$145.00"
+        },
+        {
+          "cpt": "20610",
+          "description": "Injection, major joint",
+          "units": 1,
+          "charge": "$205.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "M17.11"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Priya Iverson",
+      "member_id": "NWH184436626",
+      "payer_name": "Northwind Health Plan",
+      "group_number": "GRP-2611",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Priya Iverson",
+      "patient_dob": "08/01/1981",
+      "service_date": "October 12, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-99913",
+      "patient_name": "Priya Iverson",
+      "service_date": "10/12/2026",
+      "total_amount": "$350.00",
+      "line_items": [
+        {
+          "cpt": "99213",
+          "description": "Office visit, established, low complexity",
+          "units": 1,
+          "charge": "$145.00"
+        },
+        {
+          "cpt": "20610",
+          "description": "Injection, major joint",
+          "units": 1,
+          "charge": "$205.00"
+        }
+      ]
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "ar": {
+    "scenario": "in_process",
+    "action": "wait",
+    "dos_days": 28
+  }
+}

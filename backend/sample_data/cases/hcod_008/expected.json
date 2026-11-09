@@ -9,8 +9,8 @@
       "patient_name": "Samuel Lindqvist",
       "patient_dob": "03/20/1950",
       "service_date": "November 1, 2026",
-      "provider_name": "Riverside Family Medicine",
-      "provider_npi": "1563641319"
+      "practice_name": "Riverside Family Medicine",
+      "practice_npi": "1563641319"
     },
     "insurance_card": {
       "member_name": "Samuel Lindqvist",

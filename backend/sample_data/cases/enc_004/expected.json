@@ -9,8 +9,8 @@
       "patient_name": "Hannah Sato",
       "patient_dob": "05/04/1991",
       "service_date": "November 3, 2026",
-      "provider_name": "Riverside Family Medicine",
-      "provider_npi": "1853656449"
+      "practice_name": "Riverside Family Medicine",
+      "practice_npi": "1853656449"
     },
     "insurance_card": {
       "member_name": "Hannah Sato",

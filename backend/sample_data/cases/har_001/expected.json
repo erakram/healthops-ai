@@ -1,0 +1,66 @@
+{
+  "case_id": "har_001",
+  "scenario": "lost",
+  "title": "Payer has no record of the claim",
+  "visit": "uri",
+  "patient": "Nadia Holloway",
+  "record": {
+    "claim_form": {
+      "claim_number": "PC-134091",
+      "patient_name": "Nadia Holloway",
+      "patient_dob": "04/20/1986",
+      "member_id": "BWM795832346",
+      "payer_name": "Bluewater Mutual",
+      "provider_name": "Riverside Family Medicine",
+      "provider_npi": "1039447374",
+      "service_date": "08/06/2026",
+      "total_charge": "$145.00",
+      "prior_auth_number": null,
+      "line_items": [
+        {
+          "cpt": "99213",
+          "description": "Office visit, established, low complexity",
+          "units": 1,
+          "charge": "$145.00"
+        }
+      ],
+      "diagnosis_codes": [
+        "J06.9"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Nadia Holloway",
+      "member_id": "BWM795832346",
+      "payer_name": "Bluewater Mutual",
+      "group_number": "GRP-8885",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Nadia Holloway",
+      "patient_dob": "04/20/1986",
+      "service_date": "August 6, 2026"
+    },
+    "invoice": {
+      "invoice_number": "INV-71329",
+      "patient_name": "Nadia Holloway",
+      "service_date": "08/06/2026",
+      "total_amount": "$145.00",
+      "line_items": [
+        {
+          "cpt": "99213",
+          "description": "Office visit, established, low complexity",
+          "units": 1,
+          "charge": "$145.00"
+        }
+      ]
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "ar": {
+    "scenario": "lost",
+    "action": "resubmit",
+    "dos_days": 95
+  }
+}

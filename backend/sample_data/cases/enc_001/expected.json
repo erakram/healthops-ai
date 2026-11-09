@@ -9,8 +9,8 @@
       "patient_name": "Jonah Quintero",
       "patient_dob": "04/05/1983",
       "service_date": "November 6, 2026",
-      "provider_name": "Riverside Family Medicine",
-      "provider_npi": "1310296995"
+      "practice_name": "Riverside Family Medicine",
+      "practice_npi": "1310296995"
     },
     "insurance_card": {
       "member_name": "Jonah Quintero",

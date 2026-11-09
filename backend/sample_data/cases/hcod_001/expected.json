@@ -9,8 +9,8 @@
       "patient_name": "Thomas Sato",
       "patient_dob": "11/20/1969",
       "service_date": "November 4, 2026",
-      "provider_name": "Riverside Family Medicine",
-      "provider_npi": "1033086012"
+      "practice_name": "Riverside Family Medicine",
+      "practice_npi": "1033086012"
     },
     "insurance_card": {
       "member_name": "Thomas Sato",

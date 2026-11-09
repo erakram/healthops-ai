@@ -79,12 +79,14 @@ class _Index:
         self.avg = sum(self.lengths.values()) / max(n, 1)
         self.idf = {t: math.log(1 + (n - len(p) + 0.5) / (len(p) + 0.5)) for t, p in self.postings.items()}
 
-    def search(self, query: str, k: int = 10) -> list[tuple[str, float]]:
+    def search(self, query: str, k: int = 10, weights: dict[str, float] | None = None) -> list[tuple[str, float]]:
+        weights = weights or {}
         scores: Counter = Counter()
         for term in set(tokenize(query)):
+            weight = weights.get(term, 1.0)
             for code, tf in self.postings.get(term, ()):
                 norm = self.k1 * (1 - self.b + self.b * self.lengths[code] / self.avg)
-                scores[code] += self.idf[term] * tf * (self.k1 + 1) / (tf + norm)
+                scores[code] += weight * self.idf[term] * tf * (self.k1 + 1) / (tf + norm)
         return [(code, round(score, 3)) for code, score in scores.most_common(k)]
 
 
@@ -93,19 +95,89 @@ def _icd_index() -> _Index:
     return _Index(icd10())
 
 
+# Clinical and everyday wording -> the words ICD-10-CM descriptions use. Matching terms are
+# added to the query (never substituted), so the original words still count. Seen in evals: a
+# note's "right palm" never found S61.411A ("...of right hand"); burns of the palm ranked first.
+SYNONYMS: list[tuple[str, str]] = [
+    (r"\bpalms?\b|\bpalmar\b", "hand"),
+    (r"\bfingertips?\b", "finger"),
+    (r"\bsoles?\b|\bplantar\b|\bheels?\b", "foot"),
+    (r"\bshins?\b|\bcalf\b|\bcalves\b", "lower leg"),
+    (r"\bcuts?\b|\bgash(es)?\b", "laceration"),
+    (r"\bbroken\b", "fracture"),
+    (r"\bear ?wax\b", "cerumen"),
+    (r"\bhigh blood pressure\b", "hypertension"),
+    (r"\bheart attack\b", "myocardial infarction"),
+    (r"\bstroke\b", "cerebral infarction"),
+    (r"\bpink eye\b", "conjunctivitis"),
+    (r"\bstrep throat\b", "streptococcal pharyngitis"),
+    (r"\bsore throat\b", "pharyngitis"),
+    (r"\bcommon cold\b", "acute nasopharyngitis"),
+    (r"\bflu\b", "influenza"),
+    (r"\buti\b", "urinary tract infection"),
+    (r"\bshortness of breath\b", "dyspnea"),
+    (r"\bkidney stones?\b", "calculus of kidney"),
+    (r"\b(first|initial) (visit|evaluation)\b|\bnew injury\b|\bsustained today\b", "initial encounter"),
+]
+_SYNONYMS = [(re.compile(pattern, re.IGNORECASE), words) for pattern, words in SYNONYMS]
+
+
+def expand_query(query: str) -> tuple[str, dict[str, float]]:
+    """The query plus the ICD-10-CM wording for any clinical or everyday terms in it, and term
+    weights: added ICD wording counts more than the everyday word it stands for, so a rare word
+    like "palm" (which ICD mostly uses for burns) doesn't outweigh "hand"."""
+    extra, weights = [], {}
+    for pattern, words in _SYNONYMS:
+        match = pattern.search(query)
+        if not match or words in query.lower():
+            continue
+        extra.append(words)
+        for token in tokenize(match.group(0)):
+            if token not in tokenize(words):
+                weights[token] = 0.3
+        for token in tokenize(words):
+            weights[token] = 1.5
+    return (f"{query} {' '.join(extra)}" if extra else query), weights
+
+
 _CODE_LIKE = re.compile(r"^[A-TV-Z][0-9][0-9A-Z](\.?[0-9A-Z]{0,4})?$", re.IGNORECASE)
+_ENCOUNTER_VARIANT = re.compile(r"(, |\()(initial encounter|subsequent encounter|sequela)")
+
+
+def _encounter_preference(query: str) -> str:
+    q = query.lower()
+    return "S" if "sequela" in q else "D" if "subsequent" in q or "follow-up" in q or "follow up" in q else "A"
 
 
 def search_icd10(query: str, k: int = 12) -> list[dict]:
-    """Codes for a clinical phrase, or the code itself (and its completions) if one is typed."""
+    """Codes for a clinical phrase, or the code itself (and its completions) if one is typed.
+
+    Injury codes come in three 7th-character versions (A initial, D subsequent, S sequela) that
+    would otherwise fill the list with near-duplicates; only the one the query implies is kept."""
     query = query.strip()
+    codes = icd10()
     if _CODE_LIKE.match(query):
         exact = dotted(query)
-        hits = ([{"code": exact, "description": icd10()[exact], "score": None}] if exact in icd10() else [])
+        hits = ([{"code": exact, "description": codes[exact], "score": None}] if exact in codes else [])
         hits += [{"code": c, "description": d, "score": None} for c, d in completions(exact, k)]
         if hits:
             return hits[:k]
-    return [{"code": c, "description": icd10()[c], "score": s} for c, s in _icd_index().search(query, k)]
+    expanded, weights = expand_query(query)
+    want = _encounter_preference(query)
+    results, seen = [], set()
+    for code, score in _icd_index().search(expanded, k * 8, weights):
+        if _ENCOUNTER_VARIANT.search(codes[code]) and len(undotted(code)) == 7:
+            base = undotted(code)[:-1]
+            if base in seen:
+                continue
+            preferred = dotted(base + want)
+            if preferred in codes and preferred != code:
+                code = preferred
+            seen.add(base)
+        results.append({"code": code, "description": codes[code], "score": score})
+        if len(results) == k:
+            break
+    return results
 
 
 # --- CPT (curated) ------------------------------------------------------------------------------

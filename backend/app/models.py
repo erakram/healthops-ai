@@ -162,7 +162,8 @@ class Submission(Base):
     idempotency_key: Mapped[str] = mapped_column(String(100), unique=True)
     payer_reference: Mapped[str] = mapped_column(String(40))
     frequency: Mapped[str] = mapped_column(String(1), default="1")
-    payload: Mapped[dict] = mapped_column(JSON, default=dict)  # exactly what the payer received
+    payload: Mapped[dict] = mapped_column(JSON, default=dict)  # the claim as our system holds it
+    x12: Mapped[str | None] = mapped_column(Text)  # the 837P file sent: what the payer actually reads
     at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
@@ -346,3 +347,76 @@ class EncounterEvent(Base):
     message: Mapped[str] = mapped_column(Text)
     data: Mapped[dict] = mapped_column(JSON, default=dict)
     at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class FollowUp(Base):
+    """Accounts receivable follow-up on a claim the payer hasn't answered: every status check
+    (the 276 sent, the 277 received, what the A/R agent recommended) and what was done."""
+
+    __tablename__ = "ar_followups"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    claim_id: Mapped[int] = mapped_column(ForeignKey("claims.id"), unique=True)
+    status: Mapped[str] = mapped_column(String(20), default="open")  # open | waiting | resolved
+    checks: Mapped[list] = mapped_column(JSON, default=list)
+    recommended_action: Mapped[str | None] = mapped_column(String(30))
+    action_taken: Mapped[str | None] = mapped_column(String(30))
+    next_check_on: Mapped[str | None] = mapped_column(String(10))
+    last_checked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+    claim: Mapped[Claim] = relationship()
+
+
+class Statement(Base):
+    """A patient statement: what the patient owes after insurance, with a plain-language reason
+    per line, the reminders sent, any payment plan, and payments received."""
+
+    __tablename__ = "patient_statements"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    number: Mapped[str] = mapped_column(String(40), unique=True)
+    patient_key: Mapped[str] = mapped_column(String(60), index=True)  # member ID, normalized
+    patient_name: Mapped[str] = mapped_column(String(200))
+    items: Mapped[list] = mapped_column(JSON, default=list)  # [{denial_id, claim_number, service_date, code, reason, amount}]
+    total: Mapped[float] = mapped_column(Float, default=0)
+    paid: Mapped[float] = mapped_column(Float, default=0)
+    status: Mapped[str] = mapped_column(String(20), default="open")  # open | partial | plan | paid | review
+    stage: Mapped[str] = mapped_column(String(20), default="statement")  # statement | reminder | final_notice | review
+    issued_on: Mapped[str] = mapped_column(String(10))
+    due_on: Mapped[str] = mapped_column(String(10))
+    plan: Mapped[dict] = mapped_column(JSON, default=dict)  # {installments, schedule: [{due_on, amount, paid}]}
+    letters: Mapped[list] = mapped_column(JSON, default=list)  # [{stage, path, at}]
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
+class PatientPayment(Base):
+    __tablename__ = "patient_payments"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    statement_id: Mapped[int] = mapped_column(ForeignKey("patient_statements.id"), index=True)
+    amount: Mapped[float] = mapped_column(Float)
+    method: Mapped[str] = mapped_column(String(20))  # card | cash | check | ach
+    reference: Mapped[str | None] = mapped_column(String(60))
+    received_on: Mapped[str] = mapped_column(String(10))
+    recorded_by: Mapped[str] = mapped_column(String(200))
+    at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class BankDeposit(Base):
+    """A line from an imported bank statement, and what reconciliation matched it to."""
+
+    __tablename__ = "bank_deposits"
+    __table_args__ = (UniqueConstraint("bank_reference"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    posted_on: Mapped[str] = mapped_column(String(10))
+    amount: Mapped[float] = mapped_column(Float)
+    description: Mapped[str] = mapped_column(Text)
+    bank_reference: Mapped[str] = mapped_column(String(60))
+    trace_number: Mapped[str | None] = mapped_column(String(60), index=True)  # from the ACH addenda (TRN*1*...)
+    status: Mapped[str] = mapped_column(String(30), default="unmatched")  # matched | amount_differs | unmatched | resolved
+    remittance_ids: Mapped[list] = mapped_column(JSON, default=list)
+    note: Mapped[str | None] = mapped_column(Text)
+    imported_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)

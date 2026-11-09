@@ -62,7 +62,8 @@ def run_case(llm, case: dict, model: str) -> dict:
                            if c in searched),
         "search_targets": len(want_icd) + sum(1 for l in key["expected"]["cpt"] if not l["code"].startswith("992")),
         "rejected": result.stats["rejected_choices"], "grounded": result.stats["grounded"], "quotes": result.stats["quotes"],
-        "edits": [e["code"] for e in result.edits], "tokens": meter.tokens, "seconds": round(time.perf_counter() - started, 2),
+        "edits": [e["code"] for e in result.edits], "queries": result.stats["queries"],
+        "searched": result.stats["searched"], "tokens": meter.tokens, "seconds": round(time.perf_counter() - started, 2),
     }
 
 

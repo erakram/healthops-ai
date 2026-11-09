@@ -9,8 +9,8 @@
       "patient_name": "David Gallagher",
       "patient_dob": "11/17/1987",
       "service_date": "November 3, 2026",
-      "provider_name": "Riverside Family Medicine",
-      "provider_npi": "1525084459"
+      "practice_name": "Riverside Family Medicine",
+      "practice_npi": "1525084459"
     },
     "insurance_card": {
       "member_name": "David Gallagher",

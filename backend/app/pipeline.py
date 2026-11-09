@@ -25,7 +25,9 @@ from app.core.workflow import Status, enqueue, log_step, transition
 from app.documents.pdf import locate, parse_pdf
 from app.models import AgentRun, Claim, Finding, Submission
 from app.verticals.healthcare.rules import SEVERITY_ORDER, RuleFinding, risk_level
+from app.verticals.healthcare import payer
 from app.verticals.healthcare.schema import DOCUMENT_TYPES
+from app.verticals.healthcare.x12_837 import build_837
 
 DOCUMENT_AGENT = "Document Agent"
 REVIEW_AGENT = "Claims Review Agent"
@@ -52,6 +54,12 @@ def handle_extract(db: Session, claim: Claim, llm: LLM | None, _payload: dict | 
         if doc.kind is None:
             log_step(db, claim, DOCUMENT_AGENT, f"Reading {doc.filename}", document_id=doc.id)
             parsed = parse_pdf(doc.path)
+            if parsed.ocr_pages:
+                log_step(db, claim, DOCUMENT_AGENT, f"{doc.filename} is a scan: read page(s) {parsed.ocr_pages} with "
+                                                    "on-device OCR", document_id=doc.id)
+            if parsed.needs_ocr:
+                log_step(db, claim, DOCUMENT_AGENT, f"{doc.filename} page(s) {parsed.needs_ocr} are scans and OCR isn't "
+                                                    "available on this server: a person needs to read them", document_id=doc.id)
             result = extract_document(llm, parsed, doc.id, model=settings.extraction_model)
             _record_run(db, claim, DOCUMENT_AGENT, result.llm)
             suspicious = None
@@ -152,9 +160,15 @@ def handle_submit(db: Session, claim: Claim, _llm: LLM | None, payload: dict | N
     key = payload.get("key") or f"submit:{claim.id}"
     submission = db.scalar(select(Submission).where(Submission.idempotency_key == key))
     if not submission:
+        request = payer_claim(claim, frequency, payload.get("modifiers"))
+        if frequency == "7":  # a replacement claim names the claim it replaces
+            original = db.scalars(select(Submission).where(Submission.claim_id == claim.id).order_by(Submission.id)).first()
+            request["original_reference"] = original.payer_reference if original else None
+        profile = payer.profile_for(claim.payer_name)
         submission = Submission(claim_id=claim.id, idempotency_key=key, frequency=frequency,
-                                payer_reference=f"PYR-{secrets.token_hex(4).upper()}",
-                                payload=payer_claim(claim, frequency, payload.get("modifiers")))
+                                payer_reference=f"PYR-{secrets.token_hex(4).upper()}", payload=request,
+                                x12=build_837(request, profile.id, claim.id * 10 + int(frequency),
+                                              datetime.now(timezone.utc)))
         db.add(submission)
         try:
             db.commit()
@@ -164,7 +178,8 @@ def handle_submit(db: Session, claim: Claim, _llm: LLM | None, payload: dict | N
         audit.record(db, SYSTEM, "claim.submitted", "claim", claim.number,
                      {"payer_reference": submission.payer_reference, "frequency": frequency})
     label = "Corrected claim (frequency 7)" if frequency == "7" else "Claim"
-    log_step(db, claim, SYSTEM, f"{label} sent to {claim.payer_name or 'payer'}, reference {submission.payer_reference}")
+    log_step(db, claim, SYSTEM, f"{label} sent to {claim.payer_name or 'payer'} as an X12 837P, "
+                                f"reference {submission.payer_reference}")
     if claim.status != Status.SUBMITTED:
         transition(db, claim, Status.SUBMITTED, SYSTEM, f"Accepted by payer gateway ({submission.payer_reference})")
     enqueue(db, "remit", claim, key=f"remit:{submission.id}", payload={"submission_id": submission.id},

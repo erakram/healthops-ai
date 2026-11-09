@@ -9,8 +9,8 @@
       "patient_name": "Sofia Moreau",
       "patient_dob": "11/04/1975",
       "service_date": "November 5, 2026",
-      "provider_name": "Maplewood Cardiology",
-      "provider_npi": "1544913498"
+      "practice_name": "Maplewood Cardiology",
+      "practice_npi": "1544913498"
     },
     "insurance_card": {
       "member_name": "Sofia Moreau",

@@ -9,8 +9,8 @@
       "patient_name": "Fatima Whitaker",
       "patient_dob": "08/17/1987",
       "service_date": "November 7, 2026",
-      "provider_name": "Lakeside Orthopedics",
-      "provider_npi": "1022437507"
+      "practice_name": "Lakeside Orthopedics",
+      "practice_npi": "1022437507"
     },
     "insurance_card": {
       "member_name": "Fatima Whitaker",
