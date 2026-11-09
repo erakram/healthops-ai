@@ -8,8 +8,12 @@ services:
   - type: web
     name: healthops-api
     runtime: docker
-    rootDir: backend
     plan: free
+    # Paths are relative to the repo root (Render resolves them from there).
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    buildFilter:
+      paths: ["backend/**"]
     healthCheckPath: /api/health
     envVars:
       - key: LLM_PROVIDER
@@ -26,8 +30,11 @@ services:
   - type: web
     name: healthops-web
     runtime: docker
-    rootDir: frontend
     plan: free
+    dockerfilePath: ./frontend/Dockerfile
+    dockerContext: ./frontend
+    buildFilter:
+      paths: ["frontend/**"]
     envVars:
       # The frontend forwards /api/* to the API. Render passes this to the Docker build, where the
       # address is baked in, so if Render gives the API a different URL, change it here and redeploy.
