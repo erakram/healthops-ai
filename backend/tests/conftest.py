@@ -6,6 +6,7 @@ from pathlib import Path
 _tmp = Path(tempfile.mkdtemp(prefix="healthops-test-"))
 # TEST_DATABASE_URL runs the suite on Postgres (CI); it must be an empty database.
 os.environ["DATABASE_URL"] = os.getenv("TEST_DATABASE_URL") or f"sqlite:///{_tmp / 'test.db'}"
+os.environ["COOKIE_SECURE"] = "false"  # the test client speaks plain http
 os.environ["STORAGE_DIR"] = str(_tmp / "documents")
 os.environ["SEED_DEMO_DATA"] = "true"
 os.environ["GROQ_API_KEY"] = ""

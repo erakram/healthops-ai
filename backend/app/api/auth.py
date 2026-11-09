@@ -44,7 +44,7 @@ def demo_login(body: DemoLoginRequest, response: Response, db: Session = Depends
 
 def _start_session(user: User, response: Response, db: Session) -> dict:
     response.set_cookie(COOKIE_NAME, create_token(user), httponly=True, samesite="lax",
-                        secure=not settings.database_url.startswith("sqlite"),  # https in production
+                        secure=settings.cookie_secure,  # https in production
                         max_age=settings.session_hours * 3600)
     audit.record(db, user.email, "auth.login", "user", user.id)
     return user_json(user)
