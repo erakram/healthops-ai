@@ -307,6 +307,49 @@ export interface EncounterDetail extends EncounterSummary {
 }
 export interface CodingSample { case_id: string; title: string; scenario: string; patient: string; files: string[] }
 
+/* ---------- Accounts receivable, patient billing, reconciliation ---------- */
+
+export interface ArRow {
+  claim_id: number; claim_number: string; patient_name: string | null; payer_name: string | null; service_date: string | null;
+  amount: number; submitted_on: string; age_days: number; bucket: string; due_for_follow_up: boolean; filing_deadline: string;
+  days_to_filing_deadline: number; priority: number; followup_status: string | null; recommended_action: string | null;
+  last_status: ArStatus | null; next_check_on: string | null;
+}
+export interface ArStatus {
+  category: string; code: string; category_text: string; code_text: string; effective: string | null;
+  paid_amount: number | null; check_number: string | null; message: string | null;
+}
+export interface ArCheck {
+  at: string; by: string; x12_276: string; x12_277: string; status: ArStatus; payer_claim_number: string | null;
+  action: string; reasons: string[]; note: { channel?: string; subject?: string; message: string; drafted_by: string; rejected_because?: string[] };
+}
+export interface ArDetail extends ArRow { claim_status: string; original_reference: string; checks: ArCheck[]; action_taken: string | null; actions: Record<string, string> }
+export interface ArSummary {
+  claims: number; amount: number; buckets: { bucket: string; count: number; amount: number }[]; due_for_follow_up: number;
+  filing_risk: number; average_age_days: number | null;
+}
+export interface StatementRow {
+  id: number; number: string; patient_name: string; total: number; paid: number; balance: number; status: string; stage: string;
+  issued_on: string; due_on: string; items: { claim_number: string; service_date: string; code: string; description: string; reason: string; amount: number }[];
+  plan: { installments?: number; schedule?: { due_on: string; amount: number; paid: boolean }[] };
+  letters: { stage: string; at: string; index: number }[];
+  payments?: { amount: number; method: string; reference: string | null; received_on: string; recorded_by: string }[];
+}
+export interface BillingSummary {
+  statements: number; open: number; outstanding: number; collected: number; collection_rate: number | null; on_plan: number;
+  needs_review: number; by_stage: Record<string, number>;
+}
+export interface Deposit {
+  id: number; posted_on: string; amount: number; description: string; bank_reference: string; trace_number: string | null;
+  status: "matched" | "amount_differs" | "unmatched" | "resolved"; note: string | null;
+  remittances: { id: number; claim_id: number; payer: string; amount: number }[];
+}
+export interface Reconciliation {
+  matched: number; amount_differs: number; unmatched: number; remittances_without_deposit: number; deposited: number;
+  missing_deposits: { trace_number: string; amount: number; paid_on: string | null; payer: string; claims: number[] }[];
+  deposits: Deposit[];
+}
+
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
     super(message);
@@ -419,6 +462,29 @@ export const api = {
   reopenEncounter: (id: number) => request<EncounterDetail>(`/api/encounters/${id}/reopen`, { method: "POST" }),
   createClaimFromEncounter: (id: number) => request<EncounterDetail & { claim_number: string }>(`/api/encounters/${id}/claim`, { method: "POST" }),
   retryEncounter: (id: number) => request<EncounterDetail>(`/api/encounters/${id}/retry`, { method: "POST" }),
+
+  arList: () => request<ArRow[]>("/api/ar"),
+  arSummary: () => request<ArSummary>("/api/ar/summary"),
+  arDetail: (claimId: number) => request<ArDetail>(`/api/ar/${claimId}`),
+  arCheck: (claimId: number) => request<ArDetail>(`/api/ar/${claimId}/check`, { method: "POST" }),
+  arAction: (claimId: number, action: string, note?: string) => request<ArDetail>(`/api/ar/${claimId}/action`, json({ action, note })),
+
+  statements: (view: "open" | "all" = "open") => request<StatementRow[]>(`/api/billing/statements?view=${view}`),
+  billingSummary: () => request<BillingSummary>("/api/billing/summary"),
+  statement: (id: number) => request<StatementRow>(`/api/billing/statements/${id}`),
+  recordPayment: (id: number, amount: number, method: string, reference?: string) =>
+    request<StatementRow>(`/api/billing/statements/${id}/payments`, json({ amount, method, reference })),
+  setUpPlan: (id: number, installments: number) => request<StatementRow>(`/api/billing/statements/${id}/plan`, json({ installments })),
+  runReminders: () => request<{ moved: { statement: string; stage: string }[] }>("/api/billing/reminders", { method: "POST" }),
+
+  reconciliation: () => request<Reconciliation>("/api/reconciliation"),
+  loadDemoBankStatement: () => request<Reconciliation & { added: number }>("/api/reconciliation/demo-statement", { method: "POST" }),
+  importBankStatement: (file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return request<Reconciliation & { added: number; already_imported: number }>("/api/reconciliation/import", { method: "POST", body: form });
+  },
+  resolveDeposit: (id: number, note: string) => request<{ ok: boolean }>(`/api/reconciliation/deposits/${id}/resolve`, json({ note })),
 
   remittanceRaw: async (id: number) => {
     const res = await fetch(`/api/remittances/${id}/raw`, { credentials: "same-origin" });

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { ClipboardCheck, FileStack, Tags, LayoutDashboard, LogOut, Menu, Scale, ScrollText, X } from "lucide-react";
+import { ClipboardCheck, FileStack, Hourglass, Landmark, Tags, Wallet, LayoutDashboard, LogOut, Menu, Scale, ScrollText, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -19,6 +19,9 @@ const NAV = [
   { href: "/coding", label: "Coding", icon: Tags, badge: "coding" as const },
   { href: "/claims", label: "Claims", icon: FileStack, badge: "claims" as const },
   { href: "/denials", label: "Denials", icon: Scale, badge: "denials" as const },
+  { href: "/receivables", label: "Receivables", icon: Hourglass, badge: "ar" as const },
+  { href: "/billing", label: "Patient billing", icon: Wallet },
+  { href: "/reconciliation", label: "Reconciliation", icon: Landmark },
   { href: "/audit", label: "Audit trail", icon: ScrollText, roles: ["biller", "admin"] },
 ];
 
@@ -35,8 +38,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { data: denials } = useQuery({ queryKey: ["denials", "summary"], queryFn: api.denialsSummary, refetchInterval: 30_000 });
   const { data: auths } = useQuery({ queryKey: ["auths", "summary"], queryFn: api.authorizationsSummary, refetchInterval: 30_000 });
   const { data: coding } = useQuery({ queryKey: ["encounters", "summary"], queryFn: api.encountersSummary, refetchInterval: 30_000 });
+  const { data: ar } = useQuery({ queryKey: ["ar", "summary"], queryFn: api.arSummary, refetchInterval: 60_000 });
   const badges = { claims: waiting?.length ?? 0, denials: denials?.open ?? 0, auths: auths?.needs_documentation ?? 0,
-    coding: coding?.review ?? 0 };
+    coding: coding?.review ?? 0, ar: ar?.due_for_follow_up ?? 0 };
   const connected = useLiveEvents((event) => {
     if (event.type === "auth.updated" && ["approved", "pended", "denied"].includes(event.status ?? "")) {
       const words = { approved: "approved", pended: "pended: the payer wants more information", denied: "denied" } as Record<string, string>;
@@ -74,7 +78,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   className={cn("relative rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1",
                     item.badge === "denials" ? "bg-orange-400/15 text-orange-200 ring-orange-400/30"
                       : item.badge === "auths" ? "bg-violet-400/15 text-violet-200 ring-violet-400/30"
-                      : item.badge === "coding" ? "bg-cyan-400/15 text-cyan-200 ring-cyan-400/30" : "bg-amber-400/15 text-amber-200 ring-amber-400/30")}>
+                      : item.badge === "coding" ? "bg-cyan-400/15 text-cyan-200 ring-cyan-400/30"
+                      : item.badge === "ar" ? "bg-sky-400/15 text-sky-200 ring-sky-400/30" : "bg-amber-400/15 text-amber-200 ring-amber-400/30")}>
                   {badges[item.badge]}
                 </motion.span>
               )}

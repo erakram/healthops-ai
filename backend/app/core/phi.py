@@ -27,6 +27,10 @@ _MEMBER_LABEL = re.compile(r"(?:Member ID|INSURED'S ID NUMBER|Subscriber ID)\s*[
 _PHONE = re.compile(r"\(?\b\d{3}\)?[-. ]\d{3}[-. ]\d{4}\b")
 _SSN = re.compile(r"\b\d{3}-\d{2}-\d{4}\b")
 _EMAIL = re.compile(r"\b[\w.+-]+@[\w-]+\.[\w.]+\b")
+# Structured payloads (JSON facts sent to the appeal, request and A/R agents): identifiers by key.
+_JSON_NAME = re.compile(r'"(?:patient|patient_name|member_name|insured|insured_name|patient_full_name)"\s*:\s*"([^"]+)"')
+_JSON_ID = re.compile(r'"(?:member_id|subscriber_id|insured_id)"\s*:\s*"([^"]+)"')
+_JSON_DOB = re.compile(r'"(?:patient_dob|dob|date_of_birth|birth_date)"\s*:\s*"([^"]+)"')
 _TOKEN = re.compile(r"\[?\b(PERSON|MEMBER_ID|DOB|PHONE|SSN|EMAIL)_(\d+)\b\]?")
 _STOP = {"Date", "Of", "Birth", "Member", "Patient", "ID", "Name", "Insurance", "Group", "Visit", "Attending"}
 
@@ -44,8 +48,9 @@ class Masker:
         return self.values[value]
 
     def _names(self, text: str) -> None:
-        for match in _NAME_LABELS.finditer(text):
-            name = match.group(1).strip()
+        found = [m.group(1).strip() for m in _NAME_LABELS.finditer(text)]
+        found += [m.group(1).strip() for m in _JSON_NAME.finditer(text)]
+        for name in found:
             words = [w.strip(",") for w in name.split()]
             if len(words) < 2 or any(w in _STOP for w in words):
                 continue
@@ -62,6 +67,10 @@ class Masker:
         self._names(text)
         for match in _DOB.finditer(text):
             self._token("DOB", match.group(1))
+        for match in _JSON_DOB.finditer(text):
+            self._token("DOB", match.group(1))
+        for match in _JSON_ID.finditer(text):
+            self._token("MEMBER_ID", match.group(1))
         for pattern, kind in ((_MEMBER_LABEL, "MEMBER_ID"),):
             for match in pattern.finditer(text):
                 self._token(kind, match.group(1))

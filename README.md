@@ -27,6 +27,13 @@ upload ─► Document Agent ─► rules engine ─► Claims Review Agent ─�
 payer ─► 835 remittance ─► Denial Triage Agent ─► Appeal Agent ─► biller edits & sends ─► overturned / upheld
          parsed like a      why, what to do,       letter whose       (or corrected claim,     money recovered
          real ERA file      by when, odds          every fact cites   bill patient, write off)
+
+no 835? ─► A/R follow-up ─► 276 status inquiry ─► 277 answer ─► A/R Agent ─► resubmit / send records / ask for the 835
+           aging buckets,     X12, per claim         lost, pending,    next step + drafted
+           filing deadlines                          paid, in process  message to the payer
+
+patient share ─► statement PDF ─► reminders 30/60, review at 90 ─► payments, payment plans
+bank CSV ─► reconciliation: deposit ↔ 835 by EFT trace number ─► short pays, money without an 835, missing deposits
 ```
 
 | Piece | How it works |
@@ -43,6 +50,12 @@ payer ─► 835 remittance ─► Denial Triage Agent ─► Appeal Agent ─�
 | **Payer and 835** | A deterministic mock payer adjudicates each submission (timely filing, eligibility, authorization, records review, bundling edits, fee schedule, deductible) and answers with real X12 835 text. Our side reads it with an 835 parser, the same path as an imported clearinghouse file, and opens a denial for every adjustment someone must act on. Corrected claims get a reversal (CLP 22) and a replacement payment. |
 | **Denial Triage Agent** | Mostly rules: the reason code (CARC/RARC) gives the category, the payer contract gives the deadline, the packet shows whether an authorization existed. The LLM only judges whether the clinical note meets the payer policy's criteria, and a criterion counts as met only with a quote found in the note. Policies are found with BM25 search over the policy library. Recommends appeal, corrected claim, bill patient or write-off, with expected recovery. |
 | **Appeal Agent** | Drafts the appeal; every argument paragraph must cite the note, the authorization or the policy. Quotes are verified against the source, paragraphs with no verified citation or with a date, amount or ID that isn't in the record are removed and shown to the biller. The letter header (IDs, dates, amounts) is filled in by code. The biller edits and sends; citations stay attached server-side. |
+| **A/R follow-up** | Claims submitted with no 835 are aged into 0-30/31-60/61-90/90+ buckets with their timely-filing deadline. After 14 days a status check sends an X12 276 and parses the payer's 277 (claim not found, records requested, paid, in process, rejected). Rules pick the next step (resubmit the 837, send records, request the missing 835, correct, wait); the A/R Follow-up Agent writes the message to the payer, fact-checked like the appeal letters, with a template fallback. |
+| **Patient billing** | Deductibles, coinsurance and post-termination visits become patient statements (PDF) with each line's reason in plain words from its adjustment code. Payments, payment plans (installment schedule), and a reminder cycle: reminder at 30 days, final notice at 60, a person decides at 90. Nothing goes to collections automatically. |
+| **Bank reconciliation** | Import the bank's CSV; each deposit is matched to its 835 by the EFT trace number (TRN), then by amount within five days. Short payments, money with no 835 (linked to the A/R 277 that reported it paid) and 835s whose money never arrived are listed for a person. Rules only. |
+| **837P claim file** | Submissions are real X12 837P files (CLM with frequency code, HI diagnosis qualifiers, SV1 lines, REF*F8 for corrected claims); the mock payer parses them back, with segment-count and total checks. |
+| **PHI masking** | Every LLM call goes through a masking layer: patient names (all their forms), member IDs, birth dates, phone numbers, SSNs and emails become tokens like `[PERSON_1]` before leaving the process, and are restored in the answer. On by default (`PHI_MASKING=false` to turn off). Service dates, codes and amounts stay, since the agents reason over them; this is not full Safe Harbor de-identification. |
+| **Scanned documents** | Pages with no text layer are OCR'd with the macOS Vision framework (a 44 KB Swift helper compiled on first use, no downloads); OCR'd pages are labeled. Elsewhere they're marked as needing OCR instead of being silently read as empty. |
 | **Evals** | `evals/run_evals.py` scores the real model against the answer keys of 26 synthetic packets: classification, field accuracy, grounding rate, finding precision/recall, AI-review catches and false alarms, tokens and time. |
 
 ## Stack
@@ -50,7 +63,9 @@ payer ─► 835 remittance ─► Denial Triage Agent ─► Appeal Agent ─�
 - **Backend:** Python, FastAPI, SQLAlchemy (SQLite locally, Postgres in Docker/Render), PyMuPDF, Claude (`claude-opus-5-5`, via the Anthropic SDK) or Groq (`openai/gpt-oss-120b`) behind a small provider adapter
 - **Frontend:** Next.js 15 (App Router), React 19, Tailwind 4, Motion, TanStack Query, Recharts
 - **Live updates:** server-sent events from the worker to the UI
-- **Denials:** X12 835 writer/parser, CARC/RARC catalog, BM25 policy search (no extra dependencies)
+- **X12:** 835, 837P, 276/277 writers and parsers (no extra dependencies)
+- **Migrations:** Alembic, applied automatically on startup
+- **Denials:** CARC/RARC catalog, BM25 policy search (no extra dependencies)
 - **Auth:** JWT in an httpOnly cookie, roles `intake`, `biller`, `admin` enforced by the API
 
 ```
@@ -70,12 +85,16 @@ healthops-ai/
 │   │   ├── authorizations.py  auth_read → auth_check → auth_decide handlers (prior authorization)
 │   │   ├── coding.py        enc_read → enc_code handlers, finalize, claim generation
 │   │   ├── revenue.py       remit → triage → draft_appeal → appeal_decision handlers
+│   │   ├── ar.py            unpaid claims, 276/277 status checks, follow-up actions
+│   │   ├── billing.py       patient statements, payments, plans, reminders
+│   │   ├── reconciliation.py  bank deposits ↔ 835s
 │   ├── scripts/generate_samples.py   synthetic packets with planted problems + answer keys
 │   ├── evals/run_evals.py            intake agents vs. the answer keys, with the real model
 │   ├── evals/run_denial_evals.py     denial agents vs. the den_* answer keys
 │   ├── evals/run_auth_evals.py       prior authorization agents vs. the pa_* answer keys
 │   ├── evals/run_coding_evals.py     Coding Agent vs. the enc_* answer keys
-│   └── tests/                        201 tests, offline (fake LLM)
+│   ├── migrations/                   Alembic migrations (run on startup)
+│   └── tests/                        255 tests, offline (fake LLM)
 ├── frontend/                Next.js app
 └── docker-compose.yml       Postgres + API + web
 ```
@@ -127,8 +146,8 @@ cd backend
 .venv/bin/python -m evals.run_coding_evals   # coding: ICD/CPT precision and recall, E/M level, search recall
 ```
 
-The database schema has no migrations yet: after pulling changes that add tables or columns, delete
-`backend/data/` and restart (demo data is re-seeded). Sample dates are relative to when
+Schema changes ship as Alembic migrations and are applied on startup; an existing database is upgraded in
+place. Sample dates are relative to when
 `scripts.generate_samples` ran (see `sample_data/payer_state.json`); regenerate and reset if they're months old,
 or the mock payer will start denying claims for timely filing.
 
@@ -137,9 +156,8 @@ planted problems are found: each one caught, nothing else flagged.
 
 ## Known limits (next steps)
 
-- Text PDFs only: scanned documents need OCR or a vision model.
-- PHI redaction before LLM calls isn't in yet (planned: Microsoft Presidio).
+- OCR uses macOS Vision, so scanned pages are only read on a Mac; the Docker image marks them as needing OCR.
+- PHI masking is pattern-based (labels and known ID formats), not an NER model like Presidio.
+- No front office yet: patient intake, scheduling and eligibility at check-in are next.
 - The payer is a mock: deterministic rules and a synthetic policy library, not a real payer's edits.
-- No 837 (claim) file is written yet; the payer receives a JSON claim. 835 is real X12.
-- No schema migrations (Alembic) yet.
 - On Groq's free tier (~8k tokens/minute, 200k/day) about one claim per minute fits. Jobs wait out rate limits and resume automatically on either provider.

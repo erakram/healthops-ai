@@ -51,3 +51,13 @@ def test_the_answer_comes_back_unmasked():
     assert "[PERSON_" not in restored and "[MEMBER_ID_" not in restored
     assert record["patient_name"] in restored or record["patient_name"].upper().replace(" ", ", ") in restored \
         or record["member_id"] in restored
+
+
+def test_structured_payloads_are_masked_too():
+    """Seen in the browser: the A/R agent's JSON facts carried "patient": "<name>" unmasked."""
+    payload = json.dumps({"claim_number": "CLM-1", "patient": "Nadia Holloway", "member_id": "BWM743507835",
+                          "patient_dob": "1961-03-04", "facts": {"patient_name": "HOLLOWAY, NADIA"}})
+    masked = Masker().mask(payload)
+    for value in ("Nadia Holloway", "HOLLOWAY, NADIA", "BWM743507835", "1961-03-04", "Holloway"):
+        assert value not in masked, value
+    assert "CLM-1" in masked

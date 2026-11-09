@@ -73,11 +73,17 @@ def facts_text(facts: dict) -> str:
     return " ".join(parts)
 
 
+# Standard names that contain digits but aren't facts about the patient or claim: X12
+# transaction sets and code-list names. Seen in A/R drafts: "the 835" was flagged as invented.
+STANDARD_TERMS = {"835", "837", "837p", "837i", "276", "277", "270", "271", "278", "x12", "5010", "icd10", "icd10cm",
+                  "1500", "cms1500", "ub04"}
+
+
 def unsupported_facts(text: str, known: str, known_tokens: set[str]) -> list[str]:
     missing = []
     for token in _FACT.findall(text):
         n = norm(token)
-        if not n or n in known_tokens:
+        if not n or n in known_tokens or n in STANDARD_TERMS:
             continue
         if len(n) >= 3 and n in known:
             continue

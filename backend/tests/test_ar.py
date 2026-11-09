@@ -107,3 +107,16 @@ def test_in_process_claim_means_wait(client):
     assert client.get(f"/api/claims/{row['claim_id']}").json()["status"] == "submitted"
     summary = client.get("/api/ar/summary").json()
     assert summary["claims"] >= 1 and sum(b["count"] for b in summary["buckets"]) == summary["claims"]
+
+
+def test_transaction_names_are_not_mistaken_for_invented_facts():
+    class Plain:
+        def complete_json(self, system, user, model=None):
+            return LLMResult({"channel": "portal message", "subject": "835 copy",
+                              "message": "Claim CLM-1 shows as paid in your 277 response, but we never received the 835. "
+                                         "Please resend the remittance."}, "fake", 1, 1, 1)
+
+    facts = {"claim_number": "CLM-1", "patient": "Jane Doe", "payer": "Cedar Ridge Health", "service_date": "2026-10-01",
+             "first_submitted_on": "2026-10-03", "original_reference": "PYR-1"}
+    note, _ = draft_note(Plain(), "request_remittance", facts)
+    assert note["drafted_by"] == "agent"
