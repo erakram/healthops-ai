@@ -153,7 +153,11 @@ E11.9; untick modifier 25 to watch the checks catch it, approve, then generate t
 
 **With Docker:** `ANTHROPIC_API_KEY=... docker compose up --build`, then http://localhost:3000.
 
-**On Render:** in the Render dashboard choose New > Blueprint and pick this repository; `render.yaml` creates the API,
+**On Render, one service:** create a Web Service from this repo with the Docker runtime and no root directory. The
+`Dockerfile` at the top runs the web app and the API together in one container with SQLite (demo data re-seeds on every
+restart). Add `GROQ_API_KEY` and `JWT_SECRET` under Environment.
+
+**On Render, Blueprint:** in the Render dashboard choose New > Blueprint and pick this repository; `render.yaml` creates the API,
 the web app and a Postgres database. Paste a `GROQ_API_KEY` when asked. On the free plan services sleep after about
 15 idle minutes, the database is removed after 30 days, and the demo data re-seeds itself on an empty database. If
 Render names the API something other than `healthops-api.onrender.com`, change `BACKEND_URL` in `render.yaml`.
