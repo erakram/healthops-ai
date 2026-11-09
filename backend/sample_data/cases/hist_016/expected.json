@@ -13,7 +13,7 @@
       "payer_name": "Cedar Ridge Health",
       "provider_name": "Maplewood Cardiology",
       "provider_npi": "1661606222",
-      "service_date": "10/14/2026",
+      "service_date": "10/16/2026",
       "total_charge": "$1,095.00",
       "prior_auth_number": "PA-6558849",
       "line_items": [
@@ -40,12 +40,12 @@
     "clinical_note": {
       "patient_name": "Michael Osei",
       "patient_dob": "04/09/1991",
-      "service_date": "October 14, 2026"
+      "service_date": "October 16, 2026"
     },
     "invoice": {
       "invoice_number": "INV-63992",
       "patient_name": "Michael Osei",
-      "service_date": "10/14/2026",
+      "service_date": "10/16/2026",
       "total_amount": "$1,180.00",
       "line_items": [
         {
@@ -59,8 +59,8 @@
     "prior_authorization": {
       "auth_number": "PA-6558849",
       "member_id": "CRH996617228",
-      "valid_from": "09/24/2026",
-      "valid_to": "11/23/2026",
+      "valid_from": "09/26/2026",
+      "valid_to": "11/25/2026",
       "approved_cpt_codes": [
         "93306"
       ]

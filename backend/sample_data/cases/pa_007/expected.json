@@ -1,0 +1,61 @@
+{
+  "case_id": "pa_007",
+  "scenario": "urgent",
+  "title": "Urgent brain MRI for a new headache pattern",
+  "visit": "brain",
+  "patient": "James Sullivan",
+  "record": {
+    "service_order": {
+      "order_number": "ORD-658737",
+      "patient_name": "James Sullivan",
+      "patient_dob": "09/01/1964",
+      "member_id": "NWH941849166",
+      "payer_name": "Northwind Health Plan",
+      "ordering_provider": "Harbor Imaging Center",
+      "provider_npi": "1197362597",
+      "scheduled_date": "11/12/2026",
+      "urgency": "urgent",
+      "line_items": [
+        {
+          "cpt": "70553",
+          "description": "MRI brain with and without contrast",
+          "units": 1,
+          "charge": null
+        }
+      ],
+      "diagnosis_codes": [
+        "R51.9"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "James Sullivan",
+      "member_id": "NWH941849166",
+      "payer_name": "Northwind Health Plan",
+      "group_number": "GRP-6361",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "James Sullivan",
+      "patient_dob": "09/01/1964",
+      "service_date": "October 30, 2026"
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "pa": {
+    "required": true,
+    "eligible": true,
+    "action": "submit",
+    "first_decision": "approved",
+    "policy_id": "MP-1150",
+    "cpt": "70553",
+    "criteria": {
+      "C1": true
+    },
+    "criteria_quotes": {
+      "C1": "New pattern of headache over the past month, now waking the patient at night."
+    },
+    "addendum": false
+  }
+}

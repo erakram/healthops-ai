@@ -13,7 +13,7 @@
       "payer_name": "Northwind Health Plan",
       "provider_name": "Harbor Imaging Center",
       "provider_npi": "1223581376",
-      "service_date": "10/17/2026",
+      "service_date": "10/19/2026",
       "total_charge": "$1,575.00",
       "prior_auth_number": "PA-7433469",
       "line_items": [
@@ -39,12 +39,12 @@
     "clinical_note": {
       "patient_name": "Claire Osei",
       "patient_dob": "08/10/1994",
-      "service_date": "October 17, 2026"
+      "service_date": "October 19, 2026"
     },
     "invoice": {
       "invoice_number": "INV-95823",
       "patient_name": "Claire Osei",
-      "service_date": "10/17/2026",
+      "service_date": "10/19/2026",
       "total_amount": "$1,695.00",
       "line_items": [
         {
@@ -58,8 +58,8 @@
     "prior_authorization": {
       "auth_number": "PA-7433469",
       "member_id": "NWH838243511",
-      "valid_from": "09/27/2026",
-      "valid_to": "11/26/2026",
+      "valid_from": "09/29/2026",
+      "valid_to": "11/28/2026",
       "approved_cpt_codes": [
         "72148"
       ]

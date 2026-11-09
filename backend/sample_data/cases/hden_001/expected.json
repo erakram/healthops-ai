@@ -13,7 +13,7 @@
       "payer_name": "Northwind Health Plan",
       "provider_name": "Riverside Family Medicine",
       "provider_npi": "1653838775",
-      "service_date": "10/03/2026",
+      "service_date": "10/05/2026",
       "total_charge": "$292.50",
       "prior_auth_number": null,
       "line_items": [
@@ -52,12 +52,12 @@
     "clinical_note": {
       "patient_name": "James Mbeki",
       "patient_dob": "08/24/1989",
-      "service_date": "October 3, 2026"
+      "service_date": "October 5, 2026"
     },
     "invoice": {
       "invoice_number": "INV-26781",
       "patient_name": "James Mbeki",
-      "service_date": "10/03/2026",
+      "service_date": "10/05/2026",
       "total_amount": "$292.50",
       "line_items": [
         {

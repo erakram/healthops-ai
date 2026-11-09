@@ -13,7 +13,7 @@
       "payer_name": "Summit CareShield",
       "provider_name": "Harbor Imaging Center",
       "provider_npi": "1343760223",
-      "service_date": "09/30/2026",
+      "service_date": "10/02/2026",
       "total_charge": "$1,575.00",
       "prior_auth_number": "PA-2910786",
       "line_items": [
@@ -39,12 +39,12 @@
     "clinical_note": {
       "patient_name": "James Haddad",
       "patient_dob": "09/08/1991",
-      "service_date": "September 30, 2026"
+      "service_date": "October 2, 2026"
     },
     "invoice": {
       "invoice_number": "INV-12610",
       "patient_name": "James Haddad",
-      "service_date": "09/30/2026",
+      "service_date": "10/02/2026",
       "total_amount": "$1,575.00",
       "line_items": [
         {
@@ -58,8 +58,8 @@
     "prior_authorization": {
       "auth_number": "PA-2910786",
       "member_id": "SCS205420496",
-      "valid_from": "09/10/2026",
-      "valid_to": "11/09/2026",
+      "valid_from": "09/12/2026",
+      "valid_to": "11/11/2026",
       "approved_cpt_codes": [
         "72148"
       ]

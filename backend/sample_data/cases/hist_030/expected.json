@@ -13,7 +13,7 @@
       "payer_name": "Summit CareShield",
       "provider_name": "Harbor Imaging Center",
       "provider_npi": "1338772357",
-      "service_date": "10/05/2026",
+      "service_date": "10/07/2026",
       "total_charge": "$2,380.00",
       "prior_auth_number": "PA-9761328",
       "line_items": [
@@ -40,12 +40,12 @@
     "clinical_note": {
       "patient_name": "Samuel Holloway",
       "patient_dob": "04/22/1981",
-      "service_date": "October 5, 2026"
+      "service_date": "October 7, 2026"
     },
     "invoice": {
       "invoice_number": "INV-22172",
       "patient_name": "Samuel Holloway",
-      "service_date": "10/05/2026",
+      "service_date": "10/07/2026",
       "total_amount": "$2,380.00",
       "line_items": [
         {
@@ -59,8 +59,8 @@
     "prior_authorization": {
       "auth_number": "PA-9761328",
       "member_id": "SCS568621231",
-      "valid_from": "09/15/2026",
-      "valid_to": "11/14/2026",
+      "valid_from": "09/17/2026",
+      "valid_to": "11/16/2026",
       "approved_cpt_codes": [
         "72148"
       ]

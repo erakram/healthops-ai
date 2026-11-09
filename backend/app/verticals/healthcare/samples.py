@@ -8,7 +8,7 @@ from app.documents.pdf import ParsedPdf, locate
 from app.verticals.healthcare.schema import DOCUMENT_TYPES, normalize_value
 
 CASES_DIR = BACKEND_ROOT / "sample_data" / "cases"
-FILE_KINDS = {"claim_form.pdf": "claim_form", "itemized_invoice.pdf": "invoice", "insurance_card.pdf": "insurance_card",
+FILE_KINDS = {"service_order.pdf": "service_order", "claim_form.pdf": "claim_form", "itemized_invoice.pdf": "invoice", "insurance_card.pdf": "insurance_card",
               "clinical_note.pdf": "clinical_note", "prior_authorization.pdf": "prior_authorization"}
 
 

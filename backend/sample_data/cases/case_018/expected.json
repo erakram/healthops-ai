@@ -13,7 +13,7 @@
       "payer_name": "Cedar Ridge Health",
       "provider_name": "Harbor Imaging Center",
       "provider_npi": "1278140474",
-      "service_date": "10/09/2026",
+      "service_date": "10/11/2026",
       "total_charge": "$2,380.00",
       "prior_auth_number": null,
       "line_items": [
@@ -40,12 +40,12 @@
     "clinical_note": {
       "patient_name": "Lucas Gallagher",
       "patient_dob": "11/14/1981",
-      "service_date": "October 9, 2026"
+      "service_date": "October 11, 2026"
     },
     "invoice": {
       "invoice_number": "INV-30230",
       "patient_name": "Lucas Gallagher",
-      "service_date": "10/09/2026",
+      "service_date": "10/11/2026",
       "total_amount": "$2,380.00",
       "line_items": [
         {

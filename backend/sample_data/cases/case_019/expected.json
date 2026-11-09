@@ -13,7 +13,7 @@
       "payer_name": "Bluewater Mutual",
       "provider_name": "Harbor Imaging Center",
       "provider_npi": "1980269884",
-      "service_date": "10/16/2026",
+      "service_date": "10/18/2026",
       "total_charge": "$1,575.00",
       "prior_auth_number": "PA-1263006",
       "line_items": [
@@ -39,12 +39,12 @@
     "clinical_note": {
       "patient_name": "Fatima Sullivan",
       "patient_dob": "07/25/1983",
-      "service_date": "October 16, 2026"
+      "service_date": "October 18, 2026"
     },
     "invoice": {
       "invoice_number": "INV-30569",
       "patient_name": "Fatima Sullivan",
-      "service_date": "10/16/2026",
+      "service_date": "10/18/2026",
       "total_amount": "$1,575.00",
       "line_items": [
         {
@@ -58,8 +58,8 @@
     "prior_authorization": {
       "auth_number": "PA-1263006",
       "member_id": "BWM384904631",
-      "valid_from": "09/26/2026",
-      "valid_to": "11/25/2026",
+      "valid_from": "09/28/2026",
+      "valid_to": "11/27/2026",
       "approved_cpt_codes": [
         "70553"
       ]

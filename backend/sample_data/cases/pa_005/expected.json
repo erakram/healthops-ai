@@ -1,0 +1,60 @@
+{
+  "case_id": "pa_005",
+  "scenario": "not_necessary",
+  "title": "Knee arthroscopy for arthritis alone: criteria not met",
+  "visit": "knee_oa",
+  "patient": "Maria Sullivan",
+  "record": {
+    "service_order": {
+      "order_number": "ORD-689672",
+      "patient_name": "Maria Sullivan",
+      "patient_dob": "03/03/1998",
+      "member_id": "NWH649642917",
+      "payer_name": "Northwind Health Plan",
+      "ordering_provider": "Lakeside Orthopedics",
+      "provider_npi": "1004157081",
+      "scheduled_date": "11/29/2026",
+      "urgency": "routine",
+      "line_items": [
+        {
+          "cpt": "29881",
+          "description": "Knee arthroscopy with meniscectomy",
+          "units": 1,
+          "charge": null
+        }
+      ],
+      "diagnosis_codes": [
+        "M17.11"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Maria Sullivan",
+      "member_id": "NWH649642917",
+      "payer_name": "Northwind Health Plan",
+      "group_number": "GRP-1028",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Maria Sullivan",
+      "patient_dob": "03/03/1998",
+      "service_date": "November 7, 2026"
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "pa": {
+    "required": true,
+    "eligible": true,
+    "action": "do_not_submit",
+    "first_decision": "pended",
+    "policy_id": "MP-1310",
+    "cpt": "29881",
+    "criteria": {
+      "C1": false,
+      "C2": false
+    },
+    "criteria_quotes": {},
+    "addendum": false
+  }
+}

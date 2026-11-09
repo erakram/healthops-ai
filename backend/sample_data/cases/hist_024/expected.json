@@ -13,7 +13,7 @@
       "payer_name": "Northwind Health Plan",
       "provider_name": "Lakeside Orthopedics",
       "provider_npi": "1868654812",
-      "service_date": "10/14/2026",
+      "service_date": "10/16/2026",
       "total_charge": "$350.00",
       "prior_auth_number": null,
       "line_items": [
@@ -45,12 +45,12 @@
     "clinical_note": {
       "patient_name": "Thomas Ashworth",
       "patient_dob": "04/03/1957",
-      "service_date": "October 14, 2026"
+      "service_date": "October 16, 2026"
     },
     "invoice": {
       "invoice_number": "INV-21086",
       "patient_name": "Thomas Ashworth",
-      "service_date": "10/14/2026",
+      "service_date": "10/16/2026",
       "total_amount": "$350.00",
       "line_items": [
         {

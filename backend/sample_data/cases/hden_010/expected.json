@@ -13,7 +13,7 @@
       "payer_name": "Bluewater Mutual",
       "provider_name": "Northgate Spine and Pain",
       "provider_npi": "1316956329",
-      "service_date": "10/07/2026",
+      "service_date": "10/09/2026",
       "total_charge": "$1,250.00",
       "prior_auth_number": null,
       "line_items": [
@@ -39,12 +39,12 @@
     "clinical_note": {
       "patient_name": "Sofia Nakamura",
       "patient_dob": "12/07/1961",
-      "service_date": "October 7, 2026"
+      "service_date": "October 9, 2026"
     },
     "invoice": {
       "invoice_number": "INV-45375",
       "patient_name": "Sofia Nakamura",
-      "service_date": "10/07/2026",
+      "service_date": "10/09/2026",
       "total_amount": "$1,250.00",
       "line_items": [
         {

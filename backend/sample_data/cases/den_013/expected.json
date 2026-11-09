@@ -13,7 +13,7 @@
       "payer_name": "Bluewater Mutual",
       "provider_name": "Riverside Family Medicine",
       "provider_npi": "1028739922",
-      "service_date": "04/02/2026",
+      "service_date": "04/04/2026",
       "total_charge": "$260.50",
       "prior_auth_number": null,
       "line_items": [
@@ -58,12 +58,12 @@
     "clinical_note": {
       "patient_name": "Ruth Alvarez",
       "patient_dob": "02/16/1957",
-      "service_date": "April 2, 2026"
+      "service_date": "April 4, 2026"
     },
     "invoice": {
       "invoice_number": "INV-73959",
       "patient_name": "Ruth Alvarez",
-      "service_date": "04/02/2026",
+      "service_date": "04/04/2026",
       "total_amount": "$260.50",
       "line_items": [
         {

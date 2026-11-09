@@ -11,7 +11,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.api import auth, claims, denials, insights
+from app.api import auth, authorizations, claims, denials, insights
 from app.config import settings
 from app.core.llm import default_llm
 from app.db import Base, SessionLocal, engine
@@ -43,6 +43,7 @@ app.include_router(auth.router)
 app.include_router(claims.router)
 app.include_router(insights.router)
 app.include_router(denials.router)
+app.include_router(authorizations.router)
 
 
 @app.get("/api/health")

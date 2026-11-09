@@ -102,10 +102,12 @@ def log_step(db: Session, claim: Claim, agent: str, message: str, **data) -> Non
     events.publish("claim.step", claim_id=claim.id, agent=agent, message=message)
 
 
-def enqueue(db: Session, kind: str, claim: Claim, key: str | None = None, payload: dict | None = None,
+def enqueue(db: Session, kind: str, claim: Claim | None, key: str | None = None, payload: dict | None = None,
             delay_seconds: float = 0) -> Job | None:
-    """Queue a pipeline step. Returns None if a job with this key already exists."""
-    job = Job(kind=kind, claim_id=claim.id, idempotency_key=key or f"{kind}:{claim.id}", payload=payload or {},
+    """Queue a pipeline step. Returns None if a job with this key already exists.
+    `claim` is None for jobs about other things (prior authorizations); their payload says what."""
+    job = Job(kind=kind, claim_id=claim.id if claim else None, idempotency_key=key or f"{kind}:{claim.id}",
+              payload=payload or {},
               run_after=datetime.now(timezone.utc) + timedelta(seconds=delay_seconds))
     db.add(job)
     try:

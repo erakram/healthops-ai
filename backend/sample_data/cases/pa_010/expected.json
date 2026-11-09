@@ -1,0 +1,57 @@
+{
+  "case_id": "pa_010",
+  "scenario": "not_required",
+  "title": "Physical therapy: no authorization needed",
+  "visit": "pt",
+  "patient": "Omar Larkin",
+  "record": {
+    "service_order": {
+      "order_number": "ORD-493802",
+      "patient_name": "Omar Larkin",
+      "patient_dob": "09/19/1982",
+      "member_id": "CRH817809305",
+      "payer_name": "Cedar Ridge Health",
+      "ordering_provider": "Lakeside Orthopedics",
+      "provider_npi": "1305183018",
+      "scheduled_date": "11/19/2026",
+      "urgency": "routine",
+      "line_items": [
+        {
+          "cpt": "97110",
+          "description": "Therapeutic exercise, each 15 min",
+          "units": 3,
+          "charge": null
+        }
+      ],
+      "diagnosis_codes": [
+        "M54.50"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Omar Larkin",
+      "member_id": "CRH817809305",
+      "payer_name": "Cedar Ridge Health",
+      "group_number": "GRP-9015",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Omar Larkin",
+      "patient_dob": "09/19/1982",
+      "service_date": "October 31, 2026"
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "pa": {
+    "required": false,
+    "eligible": true,
+    "action": "none",
+    "first_decision": null,
+    "policy_id": null,
+    "cpt": "97110",
+    "criteria": {},
+    "criteria_quotes": {},
+    "addendum": false
+  }
+}

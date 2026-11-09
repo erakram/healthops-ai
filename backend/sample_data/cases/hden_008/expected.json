@@ -13,7 +13,7 @@
       "payer_name": "Northwind Health Plan",
       "provider_name": "Maplewood Cardiology",
       "provider_npi": "1096063528",
-      "service_date": "11/03/2026",
+      "service_date": "11/05/2026",
       "total_charge": "$1,095.00",
       "prior_auth_number": "PA-2843592",
       "line_items": [
@@ -40,12 +40,12 @@
     "clinical_note": {
       "patient_name": "David Larkin",
       "patient_dob": "04/26/1964",
-      "service_date": "November 3, 2026"
+      "service_date": "November 5, 2026"
     },
     "invoice": {
       "invoice_number": "INV-31441",
       "patient_name": "David Larkin",
-      "service_date": "11/03/2026",
+      "service_date": "11/05/2026",
       "total_amount": "$1,095.00",
       "line_items": [
         {
@@ -59,8 +59,8 @@
     "prior_authorization": {
       "auth_number": "PA-2843592",
       "member_id": "NWH154577836",
-      "valid_from": "10/14/2026",
-      "valid_to": "12/13/2026",
+      "valid_from": "10/16/2026",
+      "valid_to": "12/15/2026",
       "approved_cpt_codes": [
         "93306"
       ]

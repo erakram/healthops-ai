@@ -13,7 +13,7 @@
       "payer_name": "Cedar Ridge Health",
       "provider_name": "Riverside Family Medicine",
       "provider_npi": "1072037827",
-      "service_date": "10/04/2026",
+      "service_date": "10/06/2026",
       "total_charge": "$145.00",
       "prior_auth_number": null,
       "line_items": [
@@ -39,12 +39,12 @@
     "clinical_note": {
       "patient_name": "Thomas Thornton",
       "patient_dob": "08/07/1995",
-      "service_date": "October 4, 2026"
+      "service_date": "October 6, 2026"
     },
     "invoice": {
       "invoice_number": "INV-53534",
       "patient_name": "Thomas Thornton",
-      "service_date": "10/04/2026",
+      "service_date": "10/06/2026",
       "total_amount": "$145.00",
       "line_items": [
         {

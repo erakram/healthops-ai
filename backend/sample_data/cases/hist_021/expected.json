@@ -13,7 +13,7 @@
       "payer_name": "Summit CareShield",
       "provider_name": "Lakeside Orthopedics",
       "provider_npi": "1316690340",
-      "service_date": "10/22/2026",
+      "service_date": "10/24/2026",
       "total_charge": "$350.00",
       "prior_auth_number": null,
       "line_items": [
@@ -45,12 +45,12 @@
     "clinical_note": {
       "patient_name": "Maria Thornton",
       "patient_dob": "07/05/1957",
-      "service_date": "October 22, 2026"
+      "service_date": "October 24, 2026"
     },
     "invoice": {
       "invoice_number": "INV-66740",
       "patient_name": "Maria Thorntoa",
-      "service_date": "10/22/2026",
+      "service_date": "10/24/2026",
       "total_amount": "$350.00",
       "line_items": [
         {

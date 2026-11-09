@@ -13,7 +13,7 @@
       "payer_name": "Northwind Health Plan",
       "provider_name": "Harbor Imaging Center",
       "provider_npi": "1466901281",
-      "service_date": "10/03/2026",
+      "service_date": "10/05/2026",
       "total_charge": "$1,575.00",
       "prior_auth_number": "PA-4523042",
       "line_items": [
@@ -39,12 +39,12 @@
     "clinical_note": {
       "patient_name": "Elena Ramires",
       "patient_dob": "08/13/1995",
-      "service_date": "October 3, 2026"
+      "service_date": "October 5, 2026"
     },
     "invoice": {
       "invoice_number": "INV-67274",
       "patient_name": "Elena Ramires",
-      "service_date": "10/03/2026",
+      "service_date": "10/05/2026",
       "total_amount": "$1,575.00",
       "line_items": [
         {
@@ -58,8 +58,8 @@
     "prior_authorization": {
       "auth_number": "PA-4523042",
       "member_id": "NWH401912487",
-      "valid_from": "09/13/2026",
-      "valid_to": "11/12/2026",
+      "valid_from": "09/15/2026",
+      "valid_to": "11/14/2026",
       "approved_cpt_codes": [
         "72148"
       ]

@@ -1,0 +1,60 @@
+{
+  "case_id": "pa_006",
+  "scenario": "not_necessary",
+  "title": "Knee arthroscopy for arthritis alone: criteria not met",
+  "visit": "knee_oa",
+  "patient": "Sofia Whitaker",
+  "record": {
+    "service_order": {
+      "order_number": "ORD-265632",
+      "patient_name": "Sofia Whitaker",
+      "patient_dob": "10/28/1990",
+      "member_id": "CRH885749552",
+      "payer_name": "Cedar Ridge Health",
+      "ordering_provider": "Lakeside Orthopedics",
+      "provider_npi": "1034108930",
+      "scheduled_date": "11/27/2026",
+      "urgency": "routine",
+      "line_items": [
+        {
+          "cpt": "29881",
+          "description": "Knee arthroscopy with meniscectomy",
+          "units": 1,
+          "charge": null
+        }
+      ],
+      "diagnosis_codes": [
+        "M17.11"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Sofia Whitaker",
+      "member_id": "CRH885749552",
+      "payer_name": "Cedar Ridge Health",
+      "group_number": "GRP-4450",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Sofia Whitaker",
+      "patient_dob": "10/28/1990",
+      "service_date": "November 2, 2026"
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "pa": {
+    "required": true,
+    "eligible": true,
+    "action": "do_not_submit",
+    "first_decision": "pended",
+    "policy_id": "MP-1310",
+    "cpt": "29881",
+    "criteria": {
+      "C1": false,
+      "C2": false
+    },
+    "criteria_quotes": {},
+    "addendum": false
+  }
+}

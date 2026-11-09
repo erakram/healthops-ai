@@ -172,8 +172,9 @@ def handle_submit(db: Session, claim: Claim, _llm: LLM | None, payload: dict | N
 
 
 def _all_handlers() -> dict:
-    from app import revenue
-    return {"extract": handle_extract, "validate": handle_validate, "submit": handle_submit, **revenue.HANDLERS}
+    from app import authorizations, revenue
+    return {"extract": handle_extract, "validate": handle_validate, "submit": handle_submit, **revenue.HANDLERS,
+            **authorizations.HANDLERS}
 
 
 HANDLERS = _all_handlers()

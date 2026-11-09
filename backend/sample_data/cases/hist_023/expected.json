@@ -13,7 +13,7 @@
       "payer_name": "Northwind Health Plan",
       "provider_name": "Maplewood Cardiology",
       "provider_npi": "1935162708",
-      "service_date": "09/28/2026",
+      "service_date": "09/30/2026",
       "total_charge": "$411.00",
       "prior_auth_number": null,
       "line_items": [
@@ -51,12 +51,12 @@
     "clinical_note": {
       "patient_name": "Nadia Castillo",
       "patient_dob": "10/15/1982",
-      "service_date": "September 28, 2026"
+      "service_date": "September 30, 2026"
     },
     "invoice": {
       "invoice_number": "INV-44542",
       "patient_name": "Nadia Castillo",
-      "service_date": "09/28/2026",
+      "service_date": "09/30/2026",
       "total_amount": "$411.00",
       "line_items": [
         {

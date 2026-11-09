@@ -13,7 +13,7 @@
       "payer_name": "Northwind Health Plan",
       "provider_name": "Lakeside Orthopedics",
       "provider_npi": "1167147820",
-      "service_date": "10/12/2026",
+      "service_date": "10/14/2026",
       "total_charge": "$350.00",
       "prior_auth_number": null,
       "line_items": [
@@ -40,17 +40,17 @@
       "payer_name": "Northwind Health Plan",
       "group_number": "GRP-2610",
       "coverage_start": "01/01/2025",
-      "coverage_end": "09/20/2026"
+      "coverage_end": "09/22/2026"
     },
     "clinical_note": {
       "patient_name": "David Sato",
       "patient_dob": "06/11/1989",
-      "service_date": "October 12, 2026"
+      "service_date": "October 14, 2026"
     },
     "invoice": {
       "invoice_number": "INV-33636",
       "patient_name": "David Sato",
-      "service_date": "10/12/2026",
+      "service_date": "10/14/2026",
       "total_amount": "$350.00",
       "line_items": [
         {

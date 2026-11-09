@@ -1,0 +1,60 @@
+{
+  "case_id": "hpa_007",
+  "scenario": "not_necessary",
+  "title": "Knee arthroscopy for arthritis alone: criteria not met",
+  "visit": "knee_oa",
+  "patient": "Jonah Thornton",
+  "record": {
+    "service_order": {
+      "order_number": "ORD-859956",
+      "patient_name": "Jonah Thornton",
+      "patient_dob": "10/08/1963",
+      "member_id": "NWH149368898",
+      "payer_name": "Northwind Health Plan",
+      "ordering_provider": "Lakeside Orthopedics",
+      "provider_npi": "1791363488",
+      "scheduled_date": "11/24/2026",
+      "urgency": "routine",
+      "line_items": [
+        {
+          "cpt": "29881",
+          "description": "Knee arthroscopy with meniscectomy",
+          "units": 1,
+          "charge": null
+        }
+      ],
+      "diagnosis_codes": [
+        "M17.11"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Jonah Thornton",
+      "member_id": "NWH149368898",
+      "payer_name": "Northwind Health Plan",
+      "group_number": "GRP-8621",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Jonah Thornton",
+      "patient_dob": "10/08/1963",
+      "service_date": "November 6, 2026"
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "pa": {
+    "required": true,
+    "eligible": true,
+    "action": "do_not_submit",
+    "first_decision": "pended",
+    "policy_id": "MP-1310",
+    "cpt": "29881",
+    "criteria": {
+      "C1": false,
+      "C2": false
+    },
+    "criteria_quotes": {},
+    "addendum": false
+  }
+}

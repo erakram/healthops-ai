@@ -13,7 +13,7 @@
       "payer_name": "Cedar Ridge Health",
       "provider_name": "Northgate Spine and Pain",
       "provider_npi": "1585099249",
-      "service_date": "10/03/2026",
+      "service_date": "10/05/2026",
       "total_charge": "$1,250.00",
       "prior_auth_number": null,
       "line_items": [
@@ -39,12 +39,12 @@
     "clinical_note": {
       "patient_name": "Mei Bianchi",
       "patient_dob": "05/06/1963",
-      "service_date": "October 3, 2026"
+      "service_date": "October 5, 2026"
     },
     "invoice": {
       "invoice_number": "INV-20378",
       "patient_name": "Mei Bianchi",
-      "service_date": "10/03/2026",
+      "service_date": "10/05/2026",
       "total_amount": "$1,250.00",
       "line_items": [
         {

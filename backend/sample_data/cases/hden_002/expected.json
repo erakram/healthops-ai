@@ -13,7 +13,7 @@
       "payer_name": "Cedar Ridge Health",
       "provider_name": "Riverside Family Medicine",
       "provider_npi": "1555393390",
-      "service_date": "10/23/2026",
+      "service_date": "10/25/2026",
       "total_charge": "$292.50",
       "prior_auth_number": null,
       "line_items": [
@@ -52,12 +52,12 @@
     "clinical_note": {
       "patient_name": "Jonah Larkin",
       "patient_dob": "07/24/1957",
-      "service_date": "October 23, 2026"
+      "service_date": "October 25, 2026"
     },
     "invoice": {
       "invoice_number": "INV-59021",
       "patient_name": "Jonah Larkin",
-      "service_date": "10/23/2026",
+      "service_date": "10/25/2026",
       "total_amount": "$292.50",
       "line_items": [
         {

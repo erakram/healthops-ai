@@ -13,7 +13,7 @@
       "payer_name": "Summit CareShield",
       "provider_name": "Harbor Imaging Center",
       "provider_npi": "1975717293",
-      "service_date": "10/08/2026",
+      "service_date": "10/10/2026",
       "total_charge": "$2,380.00",
       "prior_auth_number": "PA-4427271",
       "line_items": [
@@ -40,12 +40,12 @@
     "clinical_note": {
       "patient_name": "Ethan Sato",
       "patient_dob": "07/07/1952",
-      "service_date": "October 8, 2026"
+      "service_date": "October 10, 2026"
     },
     "invoice": {
       "invoice_number": "INV-96810",
       "patient_name": "Ethan Sato",
-      "service_date": "10/08/2026",
+      "service_date": "10/10/2026",
       "total_amount": "$2,500.00",
       "line_items": [
         {
@@ -59,8 +59,8 @@
     "prior_authorization": {
       "auth_number": "PA-4427271",
       "member_id": "SCS522579600",
-      "valid_from": "09/18/2026",
-      "valid_to": "11/17/2026",
+      "valid_from": "09/20/2026",
+      "valid_to": "11/19/2026",
       "approved_cpt_codes": [
         "70553"
       ]

@@ -13,7 +13,7 @@
       "payer_name": "Bluewater Mutual",
       "provider_name": "Northgate Spine and Pain",
       "provider_npi": "1500159441",
-      "service_date": "10/02/2026",
+      "service_date": "10/04/2026",
       "total_charge": "$1,250.00",
       "prior_auth_number": null,
       "line_items": [
@@ -39,12 +39,12 @@
     "clinical_note": {
       "patient_name": "Marcus Lindqvist",
       "patient_dob": "05/11/1962",
-      "service_date": "October 2, 2026"
+      "service_date": "October 4, 2026"
     },
     "invoice": {
       "invoice_number": "INV-50577",
       "patient_name": "Marcus Lindqvist",
-      "service_date": "10/02/2026",
+      "service_date": "10/04/2026",
       "total_amount": "$1,250.00",
       "line_items": [
         {

@@ -52,14 +52,16 @@ class AnswerKeyAssessor:
     """Stands in for the model's policy-criteria judgement, from the case's answer key."""
 
     def __init__(self, case: dict):
-        self.quotes = (case.get("denial") or {}).get("criteria_quotes", {})
+        self.quotes = (case.get("denial") or case.get("pa") or {}).get("criteria_quotes", {})
 
     def complete_json(self, system: str, user: str, model: str | None = None) -> LLMResult:
         import json
-        criteria = json.loads(user)["policy"]["criteria"]
-        return LLMResult({"criteria": [{"id": c["id"], "met": c["id"] in self.quotes,
-                                        "quote": self.quotes.get(c["id"], ""), "explanation": "From history"}
-                                       for c in criteria], "summary": ""}, "answer-key", 0, 0, 0)
+        payload = json.loads(user)
+        documentation = " ".join(payload["documentation"].split())
+        found = {cid: q for cid, q in self.quotes.items() if q in documentation}
+        return LLMResult({"criteria": [{"id": c["id"], "met": c["id"] in found, "quote": found.get(c["id"], ""),
+                                        "explanation": "" if c["id"] in found else "Not documented in the note."}
+                                       for c in payload["policy"]["criteria"]], "summary": ""}, "answer-key", 0, 0, 0)
 
 
 def seed_users(db: Session) -> None:
@@ -257,6 +259,122 @@ def _resolve(db, claim, case, denial, result, received, rng, now) -> None:
            "step", denial_id=denial.id)
 
 
+def seed_authorizations(db: Session, now: datetime, rng: random.Random) -> int:
+    """Prior authorization history from the hpa_* cases: decided ones through the real payer
+    review and FHIR exchange, and one request still waiting for the physician's addendum."""
+    from app.agents.authorization import assess_documentation, check_requirement
+    from app.authorizations import AuthStatus, documents_of
+    from app.config import settings
+    from app.models import Authorization, AuthEvent
+    from app.verticals.healthcare import fhir_pas
+    from app.verticals.healthcare.letters import determination_letter
+
+    cases = list_cases("hpa_")
+    left_open = False
+    for index, case in enumerate(cases):
+        created = now - timedelta(days=2 + (len(cases) - index) * 18 / len(cases), hours=rng.randint(0, 8))
+        auth = Authorization(number=f"PAR-{39000 + index}", status=AuthStatus.RECEIVED, source="demo-history",
+                             case_id=case["case_id"], created_at=created, updated_at=created)
+        db.add(auth)
+        db.flush()
+        parsed = {}
+        for filename in case["files"]:
+            pdf = parse_pdf(f"{case['path']}/{filename}")
+            doc = Document(authorization_id=auth.id, filename=filename, path=f"{case['path']}/{filename}",
+                           kind=FILE_KINDS.get(filename), pages=pdf.pages, text=pdf.text)
+            db.add(doc)
+            db.flush()
+            parsed[doc.kind] = (doc.id, pdf)
+        record = truth_to_extracted(case["record"], parsed)
+        for kind, (doc_id, _) in parsed.items():
+            db.get(Document, doc_id).fields = record.get(kind, {})
+        from app.authorizations import _apply_record
+        _apply_record(auth, record)
+        db.flush()
+        db.refresh(auth)
+
+        at = created + timedelta(seconds=rng.randint(20, 60))
+        steps = [(created, "transition", "intake@healthops.demo", "Received 3 document(s)")]
+        requirement = check_requirement(record, created.date())
+        auth.requirement = requirement
+        key, scenario = case["pa"], case["scenario"]
+
+        def finish(status, message, when):
+            auth.status = status
+            auth.updated_at = when
+            steps.append((when, "transition", "Workflow Engine", message))
+
+        if not requirement["eligible"]:
+            finish(AuthStatus.INELIGIBLE, "Coverage isn't active on the scheduled date", at)
+        elif not requirement["required"]:
+            auth.assessment = {"action": "none", "reasons": requirement["reasons"], "criteria": [], "missing": []}
+            finish(AuthStatus.NOT_REQUIRED, "No authorization needed: schedule the service", at)
+        else:
+            from app.verticals.healthcare.policies import get_policy
+            policy = get_policy(requirement["policy_id"])
+            notes = {k: v for k, v in documents_of(auth).items() if k.startswith("clinical_note")}
+            assessment = assess_documentation(AnswerKeyAssessor(case), policy, auth.services, notes)
+            auth.assessment = {**assessment.as_json(), "policy_id": policy["id"]}
+            if scenario == "missing_documentation" and not left_open:
+                left_open = True  # waiting for the physician: the demo can add the sample addendum
+                finish(AuthStatus.NEEDS_DOCUMENTATION, "Ask the physician for documentation", at)
+            else:
+                if scenario == "missing_documentation":  # the addendum came in before it was sent
+                    extra = f"{case['path']}/extra/addendum_note.pdf"
+                    pdf = parse_pdf(extra)
+                    db.add(Document(authorization_id=auth.id, filename="addendum_note.pdf", path=extra,
+                                    kind="clinical_note", pages=pdf.pages, text=pdf.text))
+                    db.flush()
+                    db.refresh(auth)
+                    notes = {k: v for k, v in documents_of(auth).items() if k.startswith("clinical_note")}
+                    assessment = assess_documentation(AnswerKeyAssessor(case), policy, auth.services, notes)
+                    auth.assessment = {**assessment.as_json(), "policy_id": policy["id"]}
+                    steps.append((at, "decision", "intake@healthops.demo", "Added documentation: addendum_note.pdf"))
+                auth.draft = {"historical": True}
+                quotes = [{"source": c["source"], "quote": c["quote"]} for c in assessment.criteria if c["met"]]
+                attached = [{"title": "Clinical note" if k == "clinical_note" else "Clinical note (addendum)",
+                             "text": pdf.text} for k, (_, pdf) in notes.items()]
+                attempts = 2 if assessment.action == "do_not_submit" else 1
+                decided = at
+                for attempt in range(1, attempts + 1):
+                    sent = decided + timedelta(hours=rng.randint(1, 20))
+                    order = {"request_number": auth.number, "attempt": attempt, "order_number": auth.number,
+                             "urgency": auth.urgency, "scheduled_date": auth.scheduled_date,
+                             "patient": {"name": auth.patient_name, "dob": None, "member_id": auth.member_id},
+                             "payer": {"name": auth.payer_name, "id": payer.profile_for(auth.payer_name).id},
+                             "provider": {"name": "Provider", "npi": ""}, "services": auth.services,
+                             "diagnosis_codes": []}
+                    auth.fhir_request = fhir_pas.build_request(order, quotes, attached, "Historical request", sent)
+                    request = fhir_pas.read_request(auth.fhir_request)
+                    decided = min(sent + timedelta(hours=rng.randint(4, 30 if auth.urgency == "urgent" else 90)),
+                                  now - timedelta(minutes=30))
+                    review = payer.review_authorization(request, auth.payer_name, attempt, sent.date())
+                    auth.fhir_response = fhir_pas.build_response(request, review, decided)
+                    decision = fhir_pas.read_response(auth.fhir_response)
+                    steps.append((sent, "transition", "intake@healthops.demo", f"Submitted (attempt {attempt})"))
+                auth.attempts, auth.submitted_at, auth.decided_at = attempts, sent, decided
+                auth.due_at = sent + (timedelta(hours=72) if auth.urgency == "urgent" else timedelta(days=7))
+                auth.decision = {**decision, "satisfied": review["satisfied"], "missing": review["missing"]}
+                if decision["decision"] == "approved":
+                    auth.auth_number = decision["auth_number"]
+                    folder = settings.storage_dir / f"auth_{auth.id}"
+                    folder.mkdir(parents=True, exist_ok=True)
+                    path = folder / "authorization_determination.pdf"
+                    determination_letter(str(path), payer=payer.profile_for(auth.payer_name).name,
+                                         auth_number=decision["auth_number"], member_id=auth.member_id or "",
+                                         patient=auth.patient_name or "", valid_from=decision["valid_from"],
+                                         valid_to=decision["valid_to"], services=auth.services, request_number=auth.number)
+                    pdf = parse_pdf(str(path))
+                    db.add(Document(authorization_id=auth.id, filename=path.name, path=str(path),
+                                    kind="prior_authorization", pages=pdf.pages, text=pdf.text))
+                finish({"approved": AuthStatus.APPROVED, "denied": AuthStatus.DENIED, "pended": AuthStatus.PENDED}
+                       [decision["decision"]], decision["disposition"], decided)
+        for when, kind, actor, message in steps:
+            db.add(AuthEvent(authorization_id=auth.id, type=kind, actor=actor, message=message, at=when))
+    db.commit()
+    return len(cases)
+
+
 def seed_history(db: Session) -> int:
     if db.scalar(select(func.count(Claim.id))):
         return 0
@@ -290,8 +408,9 @@ def seed_history(db: Session) -> int:
         _process_payer(db, claim, case, submitted_at, rng, now)
         created += 1
     db.commit()
+    authorizations = seed_authorizations(db, now, rng)
     if created:
         audit.record(db, "system", "demo.seeded", "system", "history",
                      {"claims": created, "remittances": db.scalar(select(func.count(Remittance.id))),
-                      "denials": db.scalar(select(func.count(Denial.id)))})
+                      "denials": db.scalar(select(func.count(Denial.id))), "authorizations": authorizations})
     return created

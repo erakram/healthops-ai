@@ -13,7 +13,7 @@
       "payer_name": "Northwind Health Plan",
       "provider_name": "Riverside Family Medicine",
       "provider_npi": "1099099875",
-      "service_date": "10/14/2026",
+      "service_date": "10/16/2026",
       "total_charge": "$292.50",
       "prior_auth_number": null,
       "line_items": [
@@ -52,12 +52,12 @@
     "clinical_note": {
       "patient_name": "Jonah Larkin",
       "patient_dob": "09/05/1996",
-      "service_date": "October 14, 2026"
+      "service_date": "October 16, 2026"
     },
     "invoice": {
       "invoice_number": "INV-34674",
       "patient_name": "Jonah Larkin",
-      "service_date": "10/14/2026",
+      "service_date": "10/16/2026",
       "total_amount": "$292.50",
       "line_items": [
         {

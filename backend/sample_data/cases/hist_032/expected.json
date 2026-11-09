@@ -13,7 +13,7 @@
       "payer_name": "Northwind Health Plan",
       "provider_name": "Harbor Imaging Center",
       "provider_npi": "1010505562",
-      "service_date": "10/30/2026",
+      "service_date": "11/01/2026",
       "total_charge": "$2,380.00",
       "prior_auth_number": "PA-1640921",
       "line_items": [
@@ -40,13 +40,13 @@
     "clinical_note": {
       "patient_name": "David Fischer",
       "patient_dob": "10/03/1991",
-      "service_date": "October 30, 2026"
+      "service_date": "November 1, 2026"
     },
     "prior_authorization": {
       "auth_number": "PA-1640921",
       "member_id": "NWH206929356",
-      "valid_from": "10/10/2026",
-      "valid_to": "12/09/2026",
+      "valid_from": "10/12/2026",
+      "valid_to": "12/11/2026",
       "approved_cpt_codes": [
         "70553"
       ]

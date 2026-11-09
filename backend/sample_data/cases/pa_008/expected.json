@@ -1,0 +1,61 @@
+{
+  "case_id": "pa_008",
+  "scenario": "urgent",
+  "title": "Urgent brain MRI for a new headache pattern",
+  "visit": "brain",
+  "patient": "James Fischer",
+  "record": {
+    "service_order": {
+      "order_number": "ORD-661266",
+      "patient_name": "James Fischer",
+      "patient_dob": "07/01/1949",
+      "member_id": "SCS233158923",
+      "payer_name": "Summit CareShield",
+      "ordering_provider": "Harbor Imaging Center",
+      "provider_npi": "1164736385",
+      "scheduled_date": "11/13/2026",
+      "urgency": "urgent",
+      "line_items": [
+        {
+          "cpt": "70553",
+          "description": "MRI brain with and without contrast",
+          "units": 1,
+          "charge": null
+        }
+      ],
+      "diagnosis_codes": [
+        "R51.9"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "James Fischer",
+      "member_id": "SCS233158923",
+      "payer_name": "Summit CareShield",
+      "group_number": "GRP-4377",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "James Fischer",
+      "patient_dob": "07/01/1949",
+      "service_date": "November 5, 2026"
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "pa": {
+    "required": true,
+    "eligible": true,
+    "action": "submit",
+    "first_decision": "approved",
+    "policy_id": "MP-1150",
+    "cpt": "70553",
+    "criteria": {
+      "C1": true
+    },
+    "criteria_quotes": {
+      "C1": "New pattern of headache over the past month, now waking the patient at night."
+    },
+    "addendum": false
+  }
+}

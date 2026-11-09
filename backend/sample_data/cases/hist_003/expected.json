@@ -13,7 +13,7 @@
       "payer_name": "Cedar Ridge Health",
       "provider_name": "Lakeside Orthopedics",
       "provider_npi": "1850536354",
-      "service_date": "10/24/2026",
+      "service_date": "10/26/2026",
       "total_charge": "$350.00",
       "prior_auth_number": null,
       "line_items": [
@@ -45,12 +45,12 @@
     "clinical_note": {
       "patient_name": "Zoe Sullivan",
       "patient_dob": "11/19/1981",
-      "service_date": "October 24, 2026"
+      "service_date": "October 26, 2026"
     },
     "invoice": {
       "invoice_number": "INV-81577",
       "patient_name": "Zoe Sullivan",
-      "service_date": "10/24/2026",
+      "service_date": "10/26/2026",
       "total_amount": "$350.00",
       "line_items": [
         {

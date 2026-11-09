@@ -13,7 +13,7 @@
       "payer_name": "Summit CareShield",
       "provider_name": "Riverside Family Medicine",
       "provider_npi": "1192393191",
-      "service_date": "11/03/2026",
+      "service_date": "11/05/2026",
       "total_charge": "$260.50",
       "prior_auth_number": null,
       "line_items": [
@@ -58,12 +58,12 @@
     "clinical_note": {
       "patient_name": "Michael Mbeki",
       "patient_dob": "02/27/1996",
-      "service_date": "November 3, 2026"
+      "service_date": "November 5, 2026"
     },
     "invoice": {
       "invoice_number": "INV-81096",
       "patient_name": "Michael Mbeki",
-      "service_date": "11/03/2026",
+      "service_date": "11/05/2026",
       "total_amount": "$260.50",
       "line_items": [
         {

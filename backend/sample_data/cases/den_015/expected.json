@@ -13,7 +13,7 @@
       "payer_name": "Northwind Health Plan",
       "provider_name": "Riverside Family Medicine",
       "provider_npi": "1148271970",
-      "service_date": "10/21/2026",
+      "service_date": "10/23/2026",
       "total_charge": "$292.50",
       "prior_auth_number": null,
       "line_items": [
@@ -52,12 +52,12 @@
     "clinical_note": {
       "patient_name": "Aisha Ramires",
       "patient_dob": "02/23/1965",
-      "service_date": "October 21, 2026"
+      "service_date": "October 23, 2026"
     },
     "invoice": {
       "invoice_number": "INV-53653",
       "patient_name": "Aisha Ramires",
-      "service_date": "10/21/2026",
+      "service_date": "10/23/2026",
       "total_amount": "$292.50",
       "line_items": [
         {

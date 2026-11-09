@@ -13,7 +13,7 @@
       "payer_name": "Bluewater Mutual",
       "provider_name": "Lakeside Orthopedics",
       "provider_npi": "1266429228",
-      "service_date": "10/28/2026",
+      "service_date": "10/30/2026",
       "total_charge": "$4,720.00",
       "prior_auth_number": "PA-6121116",
       "line_items": [
@@ -35,17 +35,17 @@
       "payer_name": "Bluewater Mutual",
       "group_number": "GRP-9053",
       "coverage_start": "01/01/2025",
-      "coverage_end": "10/11/2026"
+      "coverage_end": "10/13/2026"
     },
     "clinical_note": {
       "patient_name": "Leah Ramires",
       "patient_dob": "10/14/1958",
-      "service_date": "October 28, 2026"
+      "service_date": "October 30, 2026"
     },
     "invoice": {
       "invoice_number": "INV-81547",
       "patient_name": "Leah Ramires",
-      "service_date": "10/28/2026",
+      "service_date": "10/30/2026",
       "total_amount": "$4,720.00",
       "line_items": [
         {
@@ -59,8 +59,8 @@
     "prior_authorization": {
       "auth_number": "PA-6121116",
       "member_id": "BWM878353717",
-      "valid_from": "10/08/2026",
-      "valid_to": "12/07/2026",
+      "valid_from": "10/10/2026",
+      "valid_to": "12/09/2026",
       "approved_cpt_codes": [
         "29881"
       ]

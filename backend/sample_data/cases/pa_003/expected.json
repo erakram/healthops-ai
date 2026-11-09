@@ -1,0 +1,64 @@
+{
+  "case_id": "pa_003",
+  "scenario": "missing_documentation",
+  "title": "Lumbar MRI order: the note doesn't say how long treatment was tried",
+  "visit": "lumbar_gap",
+  "patient": "Kenji Whitaker",
+  "record": {
+    "service_order": {
+      "order_number": "ORD-886594",
+      "patient_name": "Kenji Whitaker",
+      "patient_dob": "04/14/1990",
+      "member_id": "NWH967762349",
+      "payer_name": "Northwind Health Plan",
+      "ordering_provider": "Lakeside Orthopedics",
+      "provider_npi": "1497661573",
+      "scheduled_date": "11/21/2026",
+      "urgency": "routine",
+      "line_items": [
+        {
+          "cpt": "72148",
+          "description": "MRI lumbar spine without contrast",
+          "units": 1,
+          "charge": null
+        }
+      ],
+      "diagnosis_codes": [
+        "M54.16"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Kenji Whitaker",
+      "member_id": "NWH967762349",
+      "payer_name": "Northwind Health Plan",
+      "group_number": "GRP-7227",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Kenji Whitaker",
+      "patient_dob": "04/14/1990",
+      "service_date": "November 4, 2026"
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "pa": {
+    "required": true,
+    "eligible": true,
+    "action": "request_documentation",
+    "first_decision": "pended",
+    "after_addendum": "approved",
+    "policy_id": "MP-1180",
+    "cpt": "72148",
+    "criteria": {
+      "C1": false,
+      "C2": true
+    },
+    "criteria_quotes": {
+      "C2": "Exam shows a positive straight leg raise on the left with weakness of ankle dorsiflexion.",
+      "C1": "The patient completed six weeks of physical therapy and NSAIDs before this visit without improvement."
+    },
+    "addendum": true
+  }
+}

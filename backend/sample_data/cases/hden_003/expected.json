@@ -13,7 +13,7 @@
       "payer_name": "Summit CareShield",
       "provider_name": "Riverside Family Medicine",
       "provider_npi": "1681616672",
-      "service_date": "10/15/2026",
+      "service_date": "10/17/2026",
       "total_charge": "$145.00",
       "prior_auth_number": null,
       "line_items": [
@@ -39,12 +39,12 @@
     "clinical_note": {
       "patient_name": "Marcus Brennan",
       "patient_dob": "02/19/1967",
-      "service_date": "October 15, 2026"
+      "service_date": "October 17, 2026"
     },
     "invoice": {
       "invoice_number": "INV-44526",
       "patient_name": "Marcus Brennan",
-      "service_date": "10/15/2026",
+      "service_date": "10/17/2026",
       "total_amount": "$145.00",
       "line_items": [
         {

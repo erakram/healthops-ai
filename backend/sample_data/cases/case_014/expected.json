@@ -13,7 +13,7 @@
       "payer_name": "Summit CareShield",
       "provider_name": "Harbor Imaging Center",
       "provider_npi": "1228024565",
-      "service_date": "11/03/2026",
+      "service_date": "11/05/2026",
       "total_charge": "$2,380.00",
       "prior_auth_number": "PA-7278956",
       "line_items": [
@@ -40,12 +40,12 @@
     "clinical_note": {
       "patient_name": "Zoe Kowalski",
       "patient_dob": "05/01/1950",
-      "service_date": "November 3, 2026"
+      "service_date": "November 5, 2026"
     },
     "invoice": {
       "invoice_number": "INV-53273",
       "patient_name": "Zoe Kowalski",
-      "service_date": "11/03/2026",
+      "service_date": "11/05/2026",
       "total_amount": "$2,380.00",
       "line_items": [
         {
@@ -59,8 +59,8 @@
     "prior_authorization": {
       "auth_number": "PA-7278956",
       "member_id": "SCS588800704",
-      "valid_from": "10/14/2026",
-      "valid_to": "12/13/2026",
+      "valid_from": "10/16/2026",
+      "valid_to": "12/15/2026",
       "approved_cpt_codes": [
         "70553"
       ]

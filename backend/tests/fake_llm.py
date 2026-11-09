@@ -6,7 +6,7 @@ import json
 from app.core.llm import LLMResult
 from app.verticals.healthcare.samples import list_cases
 
-HEADERS = [("HEALTH INSURANCE CLAIM FORM", "claim_form"), ("Itemized statement", "invoice"),
+HEADERS = [("SERVICE ORDER", "service_order"), ("HEALTH INSURANCE CLAIM FORM", "claim_form"), ("Itemized statement", "invoice"),
            ("Synthetic card", "insurance_card"), ("Clinical Visit Note", "clinical_note"),
            ("Prior Authorization", "prior_authorization")]
 
@@ -19,12 +19,15 @@ class FakeLLM:
         self.calls = 0
         # Criterion quotes from the denial answer keys: a criterion is "met" when its quote is in the note.
         self.criteria_quotes = [(cid, quote) for c in self.cases
-                                for cid, quote in (c.get("denial") or {}).get("criteria_quotes", {}).items()]
+                                for key in ("denial", "pa")
+                                for cid, quote in (c.get(key) or {}).get("criteria_quotes", {}).items()]
 
     def complete_json(self, system: str, user: str, model: str | None = None) -> LLMResult:
         self.calls += 1
-        if system.startswith("You are a denial analyst"):
+        if system.startswith(("You are a denial analyst", "You are a prior authorization specialist")):
             return LLMResult(self._assess(json.loads(user)), "fake", 300, 60, 5)
+        if system.startswith("You draft the medical necessity summary"):
+            return LLMResult(self._auth_request(json.loads(user)), "fake", 600, 200, 5)
         if system.startswith("You draft the body of a first-level appeal"):
             return LLMResult(self._appeal(json.loads(user)), "fake", 600, 200, 5)
         if system.startswith("You assist a medical billing team"):
@@ -75,10 +78,23 @@ class FakeLLM:
         return {"paragraphs": paragraphs}
 
 
+    def _auth_request(self, payload: dict) -> dict:
+        paragraphs = []
+        flat = {k: " ".join(v.split()) for k, v in payload["sources"].items()}
+        for c in payload["analysis"]["criteria"]:
+            source = next((k for k, text in flat.items() if c.get("met") and c.get("quote") and c["quote"] in text), None)
+            if source:
+                paragraphs.append({"kind": "argument", "text": f"The record documents criterion {c['id']}.",
+                                   "citations": [{"source": source, "quote": c["quote"]}]})
+        paragraphs += self.appeal_extra
+        paragraphs.append({"kind": "request", "text": "We request authorization of the ordered service.", "citations": []})
+        return {"paragraphs": paragraphs}
+
+
 def _identifies(case: dict, kind: str, text: str) -> bool:
     """Pick the case whose identifying value for this document type appears in the text."""
     record = case["record"][kind]
-    key = {"claim_form": "claim_number", "invoice": "invoice_number", "insurance_card": "member_id",
+    key = {"service_order": "order_number", "claim_form": "claim_number", "invoice": "invoice_number", "insurance_card": "member_id",
            "clinical_note": "patient_name", "prior_authorization": "auth_number"}[kind]
     value = record.get(key)
     if kind == "clinical_note":  # names repeat across cases; the visit date narrows it down

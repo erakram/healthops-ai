@@ -182,7 +182,7 @@ def review_appeal(category: str, denied_cpts: list[str], citations: list[dict], 
         return AppealDecision(False, f"Denial upheld: {why}.", [m for m in ("A1", "A2") if m not in missing], missing)
 
     if category == "medical_necessity" and policy:
-        notes = [c["quote"] for c in verified if c["source"] == "clinical_note"]
+        notes = [c["quote"] for c in verified if c["source"].startswith("clinical_note")]
         satisfied = [c["id"] for c in policy["criteria"] if any(criterion_satisfied(c, q) for q in notes)]
         missing = [c["id"] for c in policy["criteria"] if c["id"] not in satisfied]
         if not missing:
@@ -215,3 +215,72 @@ def appeal_payment(original: dict, overturned_cpts: list[str], payer_name: str) 
     return {**original, "status_code": "1", "charge": round(sum(l["charge"] for l in lines), 2),
             "paid": round(sum(l["paid"] for l in lines), 2), "patient_responsibility": 0.0,
             "payer_control_number": original["payer_control_number"] + "A", "adjustments": [], "lines": lines}
+
+
+# --- prior authorization ------------------------------------------------------------------
+
+def eligibility(payer_name: str | None, member_id: str | None, on: date) -> dict:
+    """The payer's eligibility answer (what a 270/271 check returns), from its own records."""
+    term = payer_state()["terminations"].get(normalize_id(member_id))
+    if term and date.fromisoformat(term) < on:
+        return {"active": False, "terminated_on": term, "payer": profile_for(payer_name).name}
+    return {"active": True, "terminated_on": None, "payer": profile_for(payer_name).name}
+
+
+def requires_authorization(cpt: str) -> bool:
+    return cpt in PRIOR_AUTH_CPT
+
+
+def medical_policy_for(cpt: str) -> dict | None:
+    from app.verticals.healthcare.policies import all_policies
+    return next((p for p in all_policies().values() if p["kind"] == "medical" and cpt in p["cpt_codes"]), None)
+
+
+def _in_records(quote: str, documents: list[dict]) -> bool:
+    import re
+    clean = lambda t: re.sub(r"[^a-z0-9]", "", t.lower())  # noqa: E731
+    q = clean(quote)
+    return len(q) >= 12 and any(q in clean(d["text"]) for d in documents)
+
+
+def review_authorization(request: dict, payer_name: str, attempt: int, today: date) -> dict:
+    """The payer's utilization review of a PAS request (see fhir_pas.read_request).
+
+    Quotes count only if they appear in the attached clinical records (the payer checks
+    them itself; it doesn't trust the provider's word). All policy criteria shown ->
+    approved. Something missing -> pended with a request for that information on the first
+    review, denied on a later one."""
+    elig = eligibility(payer_name, request["member_id"], date.fromisoformat(request["scheduled_date"]) if
+                       request.get("scheduled_date") else today)
+    if not elig["active"]:
+        return {"action": "A3", "disposition": f"Denied: coverage ended {elig['terminated_on']}.", "notes": [],
+                "satisfied": [], "missing": []}
+    needed = [c for c in request["cpts"] if requires_authorization(c)]
+    if not needed:
+        return {"action": "A1", "disposition": "No authorization required for these services.", "notes": [],
+                "satisfied": [], "missing": []}
+
+    clinical = [d for d in request["documents"] if "note" in (d["title"] or "").lower()]
+    shown = [q["quote"] for q in request["quotes"] if _in_records(q["quote"], clinical)]
+    satisfied, missing = [], []
+    for cpt in needed:
+        policy = medical_policy_for(cpt)
+        for c in (policy or {}).get("criteria", []):
+            (satisfied if any(criterion_satisfied(c, q) for q in shown) else missing).append(
+                {"policy": policy["id"], "id": c["id"], "text": c["text"]})
+    if not missing:
+        digest = hashlib.sha1(f"{request['order_number']}:{payer_name}".encode()).hexdigest()
+        scheduled = date.fromisoformat(request["scheduled_date"]) if request.get("scheduled_date") else today
+        from datetime import timedelta
+        return {"action": "A1", "auth_number": f"PA-{int(digest[:8], 16) % 9_000_000 + 1_000_000}",
+                "start": min(today, scheduled).isoformat(), "end": (max(today, scheduled) + timedelta(days=60)).isoformat(),
+                "disposition": "Approved: medical necessity criteria met.", "notes": [],
+                "satisfied": [c["id"] for c in satisfied], "missing": []}
+    asks = [f"{c['policy']} {c['id']}: {c['text']}" for c in missing]
+    if attempt <= 1:
+        return {"action": "A4", "disposition": "Pended: additional clinical information is needed.",
+                "notes": [f"Please send documentation showing {a}" for a in asks],
+                "satisfied": [c["id"] for c in satisfied], "missing": [c["id"] for c in missing]}
+    return {"action": "A3", "disposition": "Denied: medical necessity not established. Missing: " + "; ".join(asks),
+            "notes": ["The ordering physician may request a peer-to-peer review."],
+            "satisfied": [c["id"] for c in satisfied], "missing": [c["id"] for c in missing]}

@@ -17,8 +17,10 @@ from app.core.llm import LLM, RateLimited
 from app.core.workflow import (TRANSITIONS, Status, claim_next_job, defer_job, fail_job, finish_job, log_step,
                                transition)
 from app.db import SessionLocal
-from app.models import Claim, Job
+from app.models import Authorization, Claim, Job
 from app.pipeline import HANDLERS
+from app.authorizations import give_up as auth_give_up
+from app.authorizations import log_step as auth_log
 from app.revenue import give_up
 
 logger = logging.getLogger(__name__)
@@ -30,30 +32,42 @@ def run_one(llm: LLM | None) -> bool:
         job = claim_next_job(db)
         if not job:
             return False
-        claim = db.get(Claim, job.claim_id)
+        claim = db.get(Claim, job.claim_id) if job.claim_id else None
         try:
             HANDLERS[job.kind](db, claim, llm, job.payload or {})
             finish_job(db, job)
         except RateLimited as exc:
             db.rollback()
             defer_job(db, job, exc.wait_seconds, str(exc))
-            log_step(db, db.get(Claim, job.claim_id), "Workflow Engine",
-                     f"Model provider rate limit reached, resuming in {exc.wait_seconds:.0f}s")
-        except Exception as exc:  # any failure is recorded on the job and the claim
+            _note(db, job, f"Model provider rate limit reached, resuming in {exc.wait_seconds:.0f}s")
+        except Exception as exc:  # any failure is recorded on the job and its claim or authorization
             db.rollback()
             logger.warning("Job %s (%s) failed: %s", job.id, job.kind, exc)
             logger.debug(traceback.format_exc())
             message = f"{type(exc).__name__}: {exc}"
             retrying = fail_job(db, job, message, settings.job_max_attempts)
-            claim = db.get(Claim, job.claim_id)
             if retrying:
-                log_step(db, claim, "Workflow Engine", f"Step '{job.kind}' failed, retrying ({message[:160]})")
+                _note(db, job, f"Step '{job.kind}' failed, retrying ({message[:160]})")
+            elif job.kind.startswith("auth_"):
+                auth_give_up(db, job.payload or {}, message)
             elif job.kind in ("triage", "draft_appeal"):
                 give_up(db, job.kind, job.payload or {}, message)
-                log_step(db, claim, "Workflow Engine", f"Step '{job.kind}' failed: {message[:300]}")
-            elif Status.FAILED in TRANSITIONS[Status(claim.status)]:
-                transition(db, claim, Status.FAILED, "Workflow Engine", f"Step '{job.kind}' failed: {message[:300]}")
+                _note(db, job, f"Step '{job.kind}' failed: {message[:300]}")
+            else:
+                claim = db.get(Claim, job.claim_id)
+                if Status.FAILED in TRANSITIONS[Status(claim.status)]:
+                    transition(db, claim, Status.FAILED, "Workflow Engine", f"Step '{job.kind}' failed: {message[:300]}")
         return True
+
+
+def _note(db, job: Job, message: str) -> None:
+    """A progress note on whatever the job is about."""
+    if job.claim_id:
+        log_step(db, db.get(Claim, job.claim_id), "Workflow Engine", message)
+    elif (job.payload or {}).get("authorization_id"):
+        auth = db.get(Authorization, job.payload["authorization_id"])
+        if auth:
+            auth_log(db, auth, "Workflow Engine", message)
 
 
 def recover_stuck_jobs() -> None:

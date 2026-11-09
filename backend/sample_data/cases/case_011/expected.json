@@ -13,7 +13,7 @@
       "payer_name": "Summit CareShield",
       "provider_name": "Lakeside Orthopedics",
       "provider_npi": "1136898727",
-      "service_date": "10/31/2026",
+      "service_date": "11/02/2026",
       "total_charge": "$4,720.00",
       "prior_auth_number": "PA-4628079",
       "line_items": [
@@ -40,12 +40,12 @@
     "clinical_note": {
       "patient_name": "Fatima Osei",
       "patient_dob": "04/10/1999",
-      "service_date": "October 31, 2026"
+      "service_date": "November 2, 2026"
     },
     "invoice": {
       "invoice_number": "INV-24696",
       "patient_name": "Fatima Osei",
-      "service_date": "10/31/2026",
+      "service_date": "11/02/2026",
       "total_amount": "$4,720.00",
       "line_items": [
         {
@@ -59,8 +59,8 @@
     "prior_authorization": {
       "auth_number": "PA-4628079",
       "member_id": "SCS591711952",
-      "valid_from": "10/11/2026",
-      "valid_to": "12/10/2026",
+      "valid_from": "10/13/2026",
+      "valid_to": "12/12/2026",
       "approved_cpt_codes": [
         "29881"
       ]

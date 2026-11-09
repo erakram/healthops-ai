@@ -13,7 +13,7 @@
       "payer_name": "Cedar Ridge Health",
       "provider_name": "Riverside Family Medicine",
       "provider_npi": "1735207007",
-      "service_date": "06/13/2026",
+      "service_date": "06/15/2026",
       "total_charge": "$260.50",
       "prior_auth_number": null,
       "line_items": [
@@ -58,12 +58,12 @@
     "clinical_note": {
       "patient_name": "Fatima Quintero",
       "patient_dob": "07/26/1959",
-      "service_date": "June 13, 2026"
+      "service_date": "June 15, 2026"
     },
     "invoice": {
       "invoice_number": "INV-35132",
       "patient_name": "Fatima Quintero",
-      "service_date": "06/13/2026",
+      "service_date": "06/15/2026",
       "total_amount": "$260.50",
       "line_items": [
         {

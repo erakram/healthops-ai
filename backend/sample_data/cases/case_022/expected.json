@@ -13,7 +13,7 @@
       "payer_name": "Northwind Health Plan",
       "provider_name": "Riverside Family Medicine",
       "provider_npi": "1378827616",
-      "service_date": "11/03/2026",
+      "service_date": "11/05/2026",
       "total_charge": "$292.50",
       "prior_auth_number": null,
       "line_items": [
@@ -52,7 +52,7 @@
     "clinical_note": {
       "patient_name": "Daniel Quintero",
       "patient_dob": "10/18/1957",
-      "service_date": "November 3, 2026"
+      "service_date": "November 5, 2026"
     }
   },
   "expected_findings": [

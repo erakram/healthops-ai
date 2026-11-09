@@ -1,0 +1,60 @@
+{
+  "case_id": "hpa_010",
+  "scenario": "ineligible",
+  "title": "Patient's coverage ended before the scheduled date",
+  "visit": "lumbar_ok",
+  "patient": "Maria Sato",
+  "record": {
+    "service_order": {
+      "order_number": "ORD-661254",
+      "patient_name": "Maria Sato",
+      "patient_dob": "12/14/1962",
+      "member_id": "SCS204816110",
+      "payer_name": "Summit CareShield",
+      "ordering_provider": "Lakeside Orthopedics",
+      "provider_npi": "1110457268",
+      "scheduled_date": "11/20/2026",
+      "urgency": "routine",
+      "line_items": [
+        {
+          "cpt": "72148",
+          "description": "MRI lumbar spine without contrast",
+          "units": 1,
+          "charge": null
+        }
+      ],
+      "diagnosis_codes": [
+        "M54.16"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Maria Sato",
+      "member_id": "SCS204816110",
+      "payer_name": "Summit CareShield",
+      "group_number": "GRP-8386",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Maria Sato",
+      "patient_dob": "12/14/1962",
+      "service_date": "October 30, 2026"
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "pa": {
+    "required": true,
+    "eligible": false,
+    "action": "ineligible",
+    "first_decision": null,
+    "policy_id": "MP-1180",
+    "cpt": "72148",
+    "criteria": {},
+    "criteria_quotes": {
+      "C1": "Symptoms persisted despite six weeks of physical therapy and NSAIDs.",
+      "C2": "Exam shows a positive straight leg raise on the right with a reduced ankle reflex."
+    },
+    "addendum": false
+  }
+}

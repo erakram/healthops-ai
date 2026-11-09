@@ -56,7 +56,9 @@ class Document(Base):
     __tablename__ = "documents"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    claim_id: Mapped[int] = mapped_column(ForeignKey("claims.id"), index=True)
+    # A document belongs to a claim or to a prior authorization request.
+    claim_id: Mapped[int | None] = mapped_column(ForeignKey("claims.id"), index=True)
+    authorization_id: Mapped[int | None] = mapped_column(ForeignKey("authorizations.id"), index=True)
     filename: Mapped[str] = mapped_column(String(300))
     path: Mapped[str] = mapped_column(String(500))
     kind: Mapped[str | None] = mapped_column(String(40))  # claim_form | invoice | insurance_card | ...
@@ -64,7 +66,7 @@ class Document(Base):
     text: Mapped[str] = mapped_column(Text, default="")
     fields: Mapped[dict] = mapped_column(JSON, default=dict)  # what the agent read from this document
 
-    claim: Mapped[Claim] = relationship(back_populates="documents")
+    claim: Mapped[Claim | None] = relationship(back_populates="documents")
 
 
 class Finding(Base):
@@ -118,8 +120,8 @@ class Job(Base):
     __tablename__ = "jobs"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    kind: Mapped[str] = mapped_column(String(20))  # extract | validate | submit | remit | triage | draft_appeal | appeal_decision
-    claim_id: Mapped[int] = mapped_column(ForeignKey("claims.id"), index=True)
+    kind: Mapped[str] = mapped_column(String(20))  # extract | validate | submit | remit | triage | ... | auth_*
+    claim_id: Mapped[int | None] = mapped_column(ForeignKey("claims.id"), index=True)  # None for auth_* jobs
     payload: Mapped[dict] = mapped_column(JSON, default=dict)  # e.g. {"denial_id": 3}
     idempotency_key: Mapped[str] = mapped_column(String(100), unique=True)
     status: Mapped[str] = mapped_column(String(20), default="queued", index=True)  # queued | running | done | failed
@@ -136,6 +138,7 @@ class AgentRun(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     claim_id: Mapped[int | None] = mapped_column(ForeignKey("claims.id"), index=True)
+    authorization_id: Mapped[int | None] = mapped_column(ForeignKey("authorizations.id"), index=True)
     agent: Mapped[str] = mapped_column(String(60))
     model: Mapped[str] = mapped_column(String(100))
     input_tokens: Mapped[int] = mapped_column(Integer, default=0)
@@ -248,3 +251,55 @@ class AuditLog(Base):
     details: Mapped[dict] = mapped_column(JSON, default=dict)
     prev_hash: Mapped[str] = mapped_column(String(64))
     hash: Mapped[str] = mapped_column(String(64))
+
+
+class Authorization(Base):
+    """A prior authorization request for an ordered service: from the order packet to the
+    payer's decision. See app/authorizations.py for the lifecycle."""
+
+    __tablename__ = "authorizations"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    number: Mapped[str] = mapped_column(String(40), unique=True)
+    status: Mapped[str] = mapped_column(String(30), index=True)
+    urgency: Mapped[str] = mapped_column(String(10), default="routine")  # routine | urgent
+    source: Mapped[str] = mapped_column(String(20), default="upload")  # upload | sample | demo-history
+    case_id: Mapped[str | None] = mapped_column(String(40))  # sample packet it came from (for its addendum)
+    patient_name: Mapped[str | None] = mapped_column(String(200))
+    payer_name: Mapped[str | None] = mapped_column(String(200))
+    member_id: Mapped[str | None] = mapped_column(String(60))
+    services: Mapped[list] = mapped_column(JSON, default=list)  # [{cpt, description, units}]
+    scheduled_date: Mapped[str | None] = mapped_column(String(10))
+    extracted: Mapped[dict] = mapped_column(JSON, default=dict)
+    requirement: Mapped[dict] = mapped_column(JSON, default=dict)  # {required, eligible, reasons, policy_id}
+    assessment: Mapped[dict] = mapped_column(JSON, default=dict)  # {criteria, missing, action, reasons, retrieval}
+    draft: Mapped[dict] = mapped_column(JSON, default=dict)  # the request letter (cited paragraphs, checklist)
+    letter: Mapped[dict] = mapped_column(JSON, default=dict)  # what was sent, after edits
+    attempts: Mapped[int] = mapped_column(Integer, default=0)
+    fhir_request: Mapped[dict] = mapped_column(JSON, default=dict)
+    fhir_response: Mapped[dict] = mapped_column(JSON, default=dict)
+    decision: Mapped[dict] = mapped_column(JSON, default=dict)  # as read from the payer's response
+    auth_number: Mapped[str | None] = mapped_column(String(40))
+    created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id"))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+    submitted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    due_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))  # payer's deadline to answer
+    decided_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    documents: Mapped[list[Document]] = relationship(order_by="Document.id", foreign_keys="Document.authorization_id")
+    events: Mapped[list["AuthEvent"]] = relationship(order_by="AuthEvent.id")
+
+
+class AuthEvent(Base):
+    """An authorization request's timeline, like ClaimEvent for claims."""
+
+    __tablename__ = "auth_events"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    authorization_id: Mapped[int] = mapped_column(ForeignKey("authorizations.id"), index=True)
+    type: Mapped[str] = mapped_column(String(20))  # transition | step | decision
+    actor: Mapped[str] = mapped_column(String(100))
+    message: Mapped[str] = mapped_column(Text)
+    data: Mapped[dict] = mapped_column(JSON, default=dict)
+    at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)

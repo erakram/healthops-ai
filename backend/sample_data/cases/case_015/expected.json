@@ -13,7 +13,7 @@
       "payer_name": "Northwind Health Plan",
       "provider_name": "Riverside Family Medicine",
       "provider_npi": "1439101274",
-      "service_date": "10/17/2026",
+      "service_date": "10/19/2026",
       "total_charge": "$260.50",
       "prior_auth_number": null,
       "line_items": [
@@ -53,17 +53,17 @@
       "payer_name": "Northwind Health Plan",
       "group_number": "GRP-1876",
       "coverage_start": "01/01/2025",
-      "coverage_end": "10/03/2026"
+      "coverage_end": "10/05/2026"
     },
     "clinical_note": {
       "patient_name": "Kenji Larkin",
       "patient_dob": "02/10/1988",
-      "service_date": "October 17, 2026"
+      "service_date": "October 19, 2026"
     },
     "invoice": {
       "invoice_number": "INV-50651",
       "patient_name": "Kenji Larkin",
-      "service_date": "10/17/2026",
+      "service_date": "10/19/2026",
       "total_amount": "$260.50",
       "line_items": [
         {

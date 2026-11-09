@@ -13,7 +13,7 @@
       "payer_name": "Northwind Health Plan",
       "provider_name": "Riverside Family Medicine",
       "provider_npi": "1069851891",
-      "service_date": "09/29/2026",
+      "service_date": "10/01/2026",
       "total_charge": "$260.50",
       "prior_auth_number": null,
       "line_items": [
@@ -58,12 +58,12 @@
     "clinical_note": {
       "patient_name": "Jonah Brennan",
       "patient_dob": "02/02/1996",
-      "service_date": "September 29, 2026"
+      "service_date": "October 1, 2026"
     },
     "invoice": {
       "invoice_number": "INV-14411",
       "patient_name": "Jonah Brennan",
-      "service_date": "09/29/2026",
+      "service_date": "10/01/2026",
       "total_amount": "$260.50",
       "line_items": [
         {

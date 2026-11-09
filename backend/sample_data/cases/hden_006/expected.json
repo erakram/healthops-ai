@@ -13,7 +13,7 @@
       "payer_name": "Summit CareShield",
       "provider_name": "Riverside Family Medicine",
       "provider_npi": "1151605502",
-      "service_date": "09/28/2026",
+      "service_date": "09/30/2026",
       "total_charge": "$292.50",
       "prior_auth_number": null,
       "line_items": [
@@ -52,12 +52,12 @@
     "clinical_note": {
       "patient_name": "Priya Larkin",
       "patient_dob": "03/18/1959",
-      "service_date": "September 28, 2026"
+      "service_date": "September 30, 2026"
     },
     "invoice": {
       "invoice_number": "INV-95443",
       "patient_name": "Priya Larkin",
-      "service_date": "09/28/2026",
+      "service_date": "09/30/2026",
       "total_amount": "$292.50",
       "line_items": [
         {

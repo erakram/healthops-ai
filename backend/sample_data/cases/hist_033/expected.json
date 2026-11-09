@@ -13,7 +13,7 @@
       "payer_name": "Cedar Ridge Health",
       "provider_name": "Maplewood Cardiology",
       "provider_npi": "1849874833",
-      "service_date": "10/07/2026",
+      "service_date": "10/09/2026",
       "total_charge": "$411.00",
       "prior_auth_number": null,
       "line_items": [
@@ -51,12 +51,12 @@
     "clinical_note": {
       "patient_name": "Jonah Sato",
       "patient_dob": "09/14/1948",
-      "service_date": "October 7, 2026"
+      "service_date": "October 9, 2026"
     },
     "invoice": {
       "invoice_number": "INV-48965",
       "patient_name": "Jonah Sato",
-      "service_date": "10/07/2026",
+      "service_date": "10/09/2026",
       "total_amount": "$411.00",
       "line_items": [
         {

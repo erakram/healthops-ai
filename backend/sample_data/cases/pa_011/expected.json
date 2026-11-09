@@ -1,0 +1,60 @@
+{
+  "case_id": "pa_011",
+  "scenario": "ineligible",
+  "title": "Patient's coverage ended before the scheduled date",
+  "visit": "lumbar_ok",
+  "patient": "Marcus Iverson",
+  "record": {
+    "service_order": {
+      "order_number": "ORD-675423",
+      "patient_name": "Marcus Iverson",
+      "patient_dob": "05/17/1949",
+      "member_id": "SCS783048875",
+      "payer_name": "Summit CareShield",
+      "ordering_provider": "Lakeside Orthopedics",
+      "provider_npi": "1038399394",
+      "scheduled_date": "11/22/2026",
+      "urgency": "routine",
+      "line_items": [
+        {
+          "cpt": "72148",
+          "description": "MRI lumbar spine without contrast",
+          "units": 1,
+          "charge": null
+        }
+      ],
+      "diagnosis_codes": [
+        "M54.16"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Marcus Iverson",
+      "member_id": "SCS783048875",
+      "payer_name": "Summit CareShield",
+      "group_number": "GRP-3328",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Marcus Iverson",
+      "patient_dob": "05/17/1949",
+      "service_date": "November 7, 2026"
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "pa": {
+    "required": true,
+    "eligible": false,
+    "action": "ineligible",
+    "first_decision": null,
+    "policy_id": "MP-1180",
+    "cpt": "72148",
+    "criteria": {},
+    "criteria_quotes": {
+      "C1": "Symptoms persisted despite six weeks of physical therapy and NSAIDs.",
+      "C2": "Exam shows a positive straight leg raise on the right with a reduced ankle reflex."
+    },
+    "addendum": false
+  }
+}

@@ -13,7 +13,7 @@
       "payer_name": "Northwind Health Plan",
       "provider_name": "Northgate Spine and Pain",
       "provider_npi": "1401851344",
-      "service_date": "09/30/2026",
+      "service_date": "10/02/2026",
       "total_charge": "$1,250.00",
       "prior_auth_number": null,
       "line_items": [
@@ -39,12 +39,12 @@
     "clinical_note": {
       "patient_name": "Priya Thornton",
       "patient_dob": "05/26/1997",
-      "service_date": "September 30, 2026"
+      "service_date": "October 2, 2026"
     },
     "invoice": {
       "invoice_number": "INV-67900",
       "patient_name": "Priya Thornton",
-      "service_date": "09/30/2026",
+      "service_date": "10/02/2026",
       "total_amount": "$1,250.00",
       "line_items": [
         {

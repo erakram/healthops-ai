@@ -11,6 +11,11 @@ the PDFs and expected.json:
 case_* folders are used for evals and the "Load sample" button; hist_* folders seed
 the dashboard's history, with different patients so they don't look like duplicates.
 
+pa_* folders are orders for imaging or procedures that may need prior authorization (a
+service order, a clinical note, the insurance card; some have an addendum note in extra/
+that supplies missing documentation); their expected.json has a "pa" answer key. hpa_*
+do the same for the seeded history.
+
 den_* folders are clean claims the payer will deny (or pay) after submission, for the
 denials and appeals agents; their expected.json adds a "denial" answer key. hden_* do
 the same for the seeded history. payer_state.json is what the mock payer knows that the
@@ -490,6 +495,155 @@ def build_case(case: Case, out_dir: Path, today: date, payer_state: dict | None 
     return expected
 
 
+# --- prior authorization orders ----------------------------------------------------------
+
+LUMBAR_C1 = "Symptoms persisted despite six weeks of physical therapy and NSAIDs."
+LUMBAR_C2 = "Exam shows a positive straight leg raise on the right with a reduced ankle reflex."
+ADDENDUM_C1 = "The patient completed six weeks of physical therapy and NSAIDs before this visit without improvement."
+# order: (provider, cpt, dx, note, criteria quotes {id: quote}, addendum text or None)
+ORDERS = {
+    "lumbar_ok": ("ortho", "72148", ["M54.16"],
+                  "Low back pain radiating to the right leg for eight weeks. " + LUMBAR_C1 + " " + LUMBAR_C2 +
+                  " MRI of the lumbar spine requested to evaluate for disc herniation.",
+                  {"C1": LUMBAR_C1, "C2": LUMBAR_C2}, None),
+    "lumbar_gap": ("ortho", "72148", ["M54.16"],
+                   "Low back pain radiating to the left leg. Exam shows a positive straight leg raise on the left with "
+                   "weakness of ankle dorsiflexion. MRI of the lumbar spine requested.",
+                   {"C2": "Exam shows a positive straight leg raise on the left with weakness of ankle dorsiflexion.",
+                    "C1": ADDENDUM_C1}, ADDENDUM_C1),
+    "knee_oa": ("ortho", "29881", ["M17.11"],
+                "Chronic right knee pain from osteoarthritis, worse with stairs. X-ray shows joint space narrowing of the "
+                "medial compartment. No mechanical symptoms reported. Arthroscopic meniscectomy requested.",
+                {}, None),
+    "echo": ("cardio", "93306", ["R07.9", "I10"],
+             "Exertional chest pain for two weeks with long-standing hypertension. Resting ECG shows left ventricular "
+             "hypertrophy. Echocardiogram requested to assess left ventricular function.",
+             {"C1": "Exertional chest pain for two weeks with long-standing hypertension."}, None),
+    "brain": ("imaging", "70553", ["R51.9"],
+              "New pattern of headache over the past month, now waking the patient at night. Neurologic exam is "
+              "normal. MRI of the brain with and without contrast requested.",
+              {"C1": "New pattern of headache over the past month, now waking the patient at night."}, None),
+    "pt": ("ortho", "97110", ["M54.50"],
+           "Chronic low back pain. Referral for physical therapy, therapeutic exercise three units per session.",
+           {}, None),
+}
+PA_SCENARIOS = {
+    # scenario: (orders, urgency, title, answer key)
+    "approved": (["lumbar_ok", "echo"], "routine", "Imaging order with complete documentation",
+                 {"required": True, "eligible": True, "action": "submit", "first_decision": "approved"}),
+    "missing_documentation": (["lumbar_gap"], "routine", "Lumbar MRI order: the note doesn't say how long treatment was tried",
+                              {"required": True, "eligible": True, "action": "request_documentation",
+                               "first_decision": "pended", "after_addendum": "approved"}),
+    "not_necessary": (["knee_oa"], "routine", "Knee arthroscopy for arthritis alone: criteria not met",
+                      {"required": True, "eligible": True, "action": "do_not_submit", "first_decision": "pended"}),
+    "urgent": (["brain"], "urgent", "Urgent brain MRI for a new headache pattern",
+               {"required": True, "eligible": True, "action": "submit", "first_decision": "approved"}),
+    "not_required": (["pt"], "routine", "Physical therapy: no authorization needed",
+                     {"required": False, "eligible": True, "action": "none", "first_decision": None}),
+    "ineligible": (["lumbar_ok"], "routine", "Patient's coverage ended before the scheduled date",
+                   {"required": True, "eligible": False, "action": "ineligible", "first_decision": None}),
+}
+ORDER_POLICY = {"72148": "MP-1180", "29881": "MP-1310", "93306": "MP-0930", "70553": "MP-1150"}
+
+
+def service_order(path, d):
+    c = canvas.Canvas(str(path), pagesize=letter)
+    header(c, "SERVICE ORDER", "Outpatient imaging and procedure order - synthetic training document", colors.HexColor("#b45309"))
+    w, h = letter
+    x, y, full = 0.6 * inch, h - 120, w - 1.2 * inch
+    box(c, x, y, full / 2, "ORDER NUMBER", d["order_number"])
+    box(c, x + full / 2, y, full / 4, "URGENCY", d["urgency"].upper())
+    box(c, x + 3 * full / 4, y, full / 4, "SCHEDULED DATE", d["scheduled_date"])
+    y -= 40
+    box(c, x, y, full / 2, "PATIENT NAME", d["patient_name"])
+    box(c, x + full / 2, y, full / 4, "DATE OF BIRTH", d["patient_dob"])
+    box(c, x + 3 * full / 4, y, full / 4, "MEMBER ID", d["member_id"])
+    y -= 40
+    box(c, x, y, full / 2, "PAYER", d["payer_name"])
+    box(c, x + full / 2, y, full / 4, "ORDERING PROVIDER", d["provider_name"])
+    box(c, x + 3 * full / 4, y, full / 4, "NPI", d["provider_npi"])
+    y -= 40
+    box(c, x, y, full, "DIAGNOSIS CODES (ICD-10)", "   ".join(d["diagnosis_codes"]))
+    y -= 30
+    rows = [["CPT", "REQUESTED SERVICE", "UNITS"]] + [[li["cpt"], li["description"], str(li["units"])] for li in d["line_items"]]
+    y = table(c, x, y, [70, 380, 60], rows, "#fef3c7")
+    c.setFont("Helvetica", 9)
+    c.drawString(x, y - 24, "Clinical justification: see the attached clinical note.")
+    c.setFont("Helvetica", 7)
+    c.drawString(x, 0.6 * inch, "Synthetic document generated for HealthOps AI. All names and identifiers are fictitious.")
+    c.save()
+
+
+def addendum_note(path, d, text):
+    c = canvas.Canvas(str(path), pagesize=letter)
+    header(c, "Clinical Note Addendum", d["provider_name"], colors.HexColor("#475569"))
+    w, h = letter
+    x, y = 0.6 * inch, h - 110
+    c.setFont("Helvetica", 10)
+    for line in (f"Patient: {d['patient_name']}", f"DOB: {d['note_dob']}", f"Addendum to visit of: {d['note_service_date']}",
+                 f"Author: Dr. {d['doctor']}"):
+        c.drawString(x, y, line)
+        y -= 15
+    y -= 12
+    paragraph(c, x, y, "Addendum: " + text)
+    c.setFont("Helvetica", 7)
+    c.drawString(x, 0.6 * inch, "Synthetic document generated for HealthOps AI. All names and identifiers are fictitious.")
+    c.save()
+
+
+def build_order_case(case_id: str, scenario: str, order: str, rng: random.Random, out_dir: Path, today: date,
+                     payer_state: dict) -> dict:
+    orders, urgency, title, key = PA_SCENARIOS[scenario]
+    provider_key, cpt, dx, note_text, quotes, addendum = ORDERS[order]
+    first, last = rng.choice(FIRST), rng.choice(LAST)
+    payer, prefix = rng.choice(PAYERS)
+    visit = today - timedelta(days=rng.randint(1, 10))
+    scheduled = today + timedelta(days=rng.randint(2, 5) if urgency == "urgent" else rng.randint(7, 21))
+    dob = date(rng.randint(1948, 2001), rng.randint(1, 12), rng.randint(1, 28))
+    member_id = f"{prefix}{rng.randint(100000000, 999999999)}"
+    units = 3 if cpt == "97110" else 1
+    d = {"order_number": f"ORD-{rng.randint(100000, 999999)}", "urgency": urgency, "scheduled_date": us(scheduled),
+         "patient_name": f"{first} {last}", "patient_dob": us(dob), "member_id": member_id, "payer_name": payer,
+         "provider_name": PROVIDERS[provider_key], "provider_npi": npi(rng), "diagnosis_codes": dx,
+         "line_items": [{"cpt": cpt, "description": CPT[cpt][0], "units": units}],
+         "card_member_name": f"{first} {last}", "card_member_id": member_id, "group_number": f"GRP-{rng.randint(1000, 9999)}",
+         "coverage_start": us(date(visit.year - 1, 1, 1)), "coverage_end": None, "note_dob": us(dob),
+         "note_service_date": long(visit), "doctor": f"{rng.choice(FIRST)} {rng.choice(LAST)}", "note_text": note_text}
+    if scenario == "ineligible":
+        payer_state["terminations"][re.sub(r"[^A-Z0-9]", "", member_id)] = (visit - timedelta(days=rng.randint(10, 40))).isoformat()
+
+    folder = out_dir / case_id
+    folder.mkdir(parents=True)
+    service_order(folder / "service_order.pdf", d)
+    clinical_note(folder / "clinical_note.pdf", d)
+    insurance_card(folder / "insurance_card.pdf", d)
+    if addendum:
+        (folder / "extra").mkdir()
+        addendum_note(folder / "extra" / "addendum_note.pdf", d, addendum)
+
+    record = {
+        "service_order": {"order_number": d["order_number"], "patient_name": d["patient_name"], "patient_dob": d["patient_dob"],
+                          "member_id": member_id, "payer_name": payer, "ordering_provider": d["provider_name"],
+                          "provider_npi": d["provider_npi"], "scheduled_date": d["scheduled_date"], "urgency": urgency,
+                          "line_items": [{"cpt": cpt, "description": CPT[cpt][0], "units": units, "charge": None}],
+                          "diagnosis_codes": dx},
+        "insurance_card": {"member_name": d["card_member_name"], "member_id": member_id, "payer_name": payer,
+                           "group_number": d["group_number"], "coverage_start": d["coverage_start"], "coverage_end": None},
+        "clinical_note": {"patient_name": d["patient_name"], "patient_dob": d["note_dob"], "service_date": d["note_service_date"]},
+    }
+    policy = ORDER_POLICY.get(cpt)
+    criteria = {}
+    if policy and key["action"] not in ("none", "ineligible"):
+        from app.verticals.healthcare.policies import get_policy  # the same policy file the app uses
+        criteria = {c["id"]: c["id"] in quotes and quotes[c["id"]] in note_text for c in get_policy(policy)["criteria"]}
+    expected = {"case_id": case_id, "scenario": scenario, "title": title, "visit": order, "patient": d["patient_name"],
+                "record": record, "expected_findings": [], "expects_ai_review": False,
+                "pa": {**key, "policy_id": policy if key["action"] not in ("none",) else None, "cpt": cpt,
+                       "criteria": criteria, "criteria_quotes": quotes, "addendum": addendum is not None}}
+    (folder / "expected.json").write_text(json.dumps(expected, indent=2))
+    return expected
+
+
 # Which visits make sense for each scenario (prior auth scenarios need an imaging/surgery visit).
 SCENARIO_VISITS = {
     "prior_auth_missing": ["mri_back", "mri_brain", "knee_scope", "echo"],
@@ -535,9 +689,24 @@ def main(today: date | None = None) -> None:
         case_rng = random.Random(den_rng.random())
         visit = case_rng.choice(DENIAL_SCENARIOS[scenario][0])
         build_case(Case(f"{prefix}_{counters[prefix]:03d}", scenario, visit, case_rng), OUT, today, payer_state)
+
+    # Prior authorization orders, again on their own random stream.
+    pa_rng = random.Random(278)
+    pa_plan = [("pa", s) for s in PA_SCENARIOS for _ in range(2)]
+    pa_history = {"approved": 4, "missing_documentation": 2, "not_necessary": 1, "urgent": 1, "not_required": 1,
+                  "ineligible": 1}
+    pa_plan += [("hpa", s) for s, n in pa_history.items() for _ in range(n)]
+    counters.update(pa=0, hpa=0)
+    for prefix, scenario in pa_plan:
+        counters[prefix] += 1
+        case_rng = random.Random(pa_rng.random())
+        order = case_rng.choice(PA_SCENARIOS[scenario][0])
+        build_order_case(f"{prefix}_{counters[prefix]:03d}", scenario, order, case_rng, OUT, today, payer_state)
+
     (OUT.parent / "payer_state.json").write_text(json.dumps(payer_state, indent=2))
-    print(f"Wrote {counters['case']} eval cases, {counters['hist']} history cases, {counters['den']} denial cases "
-          f"and {counters['hden']} denial history cases to {OUT}")
+    print(f"Wrote {counters['case']} eval cases, {counters['hist']} history cases, {counters['den']} denial cases, "
+          f"{counters['hden']} denial history cases, {counters['pa']} authorization cases and {counters['hpa']} "
+          f"authorization history cases to {OUT}")
 
 
 if __name__ == "__main__":

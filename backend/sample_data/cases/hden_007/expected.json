@@ -13,7 +13,7 @@
       "payer_name": "Bluewater Mutual",
       "provider_name": "Harbor Imaging Center",
       "provider_npi": "1123884094",
-      "service_date": "10/21/2026",
+      "service_date": "10/23/2026",
       "total_charge": "$2,380.00",
       "prior_auth_number": "PA-7651122",
       "line_items": [
@@ -40,12 +40,12 @@
     "clinical_note": {
       "patient_name": "Jonah Delgado",
       "patient_dob": "04/06/1996",
-      "service_date": "October 21, 2026"
+      "service_date": "October 23, 2026"
     },
     "invoice": {
       "invoice_number": "INV-59963",
       "patient_name": "Jonah Delgado",
-      "service_date": "10/21/2026",
+      "service_date": "10/23/2026",
       "total_amount": "$2,380.00",
       "line_items": [
         {
@@ -59,8 +59,8 @@
     "prior_authorization": {
       "auth_number": "PA-7651122",
       "member_id": "BWM515058090",
-      "valid_from": "10/01/2026",
-      "valid_to": "11/30/2026",
+      "valid_from": "10/03/2026",
+      "valid_to": "12/02/2026",
       "approved_cpt_codes": [
         "70553"
       ]

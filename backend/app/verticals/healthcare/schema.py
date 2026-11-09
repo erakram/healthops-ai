@@ -19,6 +19,22 @@ class FieldSpec:
 
 
 DOCUMENT_TYPES: dict[str, dict] = {
+    "service_order": {
+        "label": "Service order",
+        "fields": [
+            FieldSpec("order_number", "Order number"),
+            FieldSpec("patient_name", "Patient name"),
+            FieldSpec("patient_dob", "Patient date of birth", "date"),
+            FieldSpec("member_id", "Member ID"),
+            FieldSpec("payer_name", "Payer"),
+            FieldSpec("ordering_provider", "Ordering provider"),
+            FieldSpec("provider_npi", "Provider NPI", "npi"),
+            FieldSpec("scheduled_date", "Scheduled date", "date"),
+            FieldSpec("urgency", "Urgency", required=False),
+        ],
+        "lists": {"line_items": "Requested services (CPT code, description, units; no charge)",
+                  "diagnosis_codes": "ICD-10 diagnosis codes"},
+    },
     "claim_form": {
         "label": "Claim form",
         "fields": [

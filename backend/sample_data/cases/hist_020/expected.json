@@ -13,7 +13,7 @@
       "payer_name": "Cedar Ridge Health",
       "provider_name": "Lakeside Orthopedics",
       "provider_npi": "1568798262",
-      "service_date": "10/16/2026",
+      "service_date": "10/18/2026",
       "total_charge": "$4,720.00",
       "prior_auth_number": "PA-4093635",
       "line_items": [
@@ -40,12 +40,12 @@
     "clinical_note": {
       "patient_name": "Ethan Osei",
       "patient_dob": "06/07/1973",
-      "service_date": "October 16, 2026"
+      "service_date": "October 18, 2026"
     },
     "invoice": {
       "invoice_number": "INV-64904",
       "patient_name": "Ethan Osea",
-      "service_date": "10/16/2026",
+      "service_date": "10/18/2026",
       "total_amount": "$4,720.00",
       "line_items": [
         {
@@ -59,8 +59,8 @@
     "prior_authorization": {
       "auth_number": "PA-4093635",
       "member_id": "CRH587041406",
-      "valid_from": "09/26/2026",
-      "valid_to": "11/25/2026",
+      "valid_from": "09/28/2026",
+      "valid_to": "11/27/2026",
       "approved_cpt_codes": [
         "29881"
       ]

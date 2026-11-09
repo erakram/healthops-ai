@@ -1,0 +1,62 @@
+{
+  "case_id": "hpa_004",
+  "scenario": "approved",
+  "title": "Imaging order with complete documentation",
+  "visit": "echo",
+  "patient": "Aisha Gallagher",
+  "record": {
+    "service_order": {
+      "order_number": "ORD-763817",
+      "patient_name": "Aisha Gallagher",
+      "patient_dob": "07/22/1996",
+      "member_id": "CRH244456296",
+      "payer_name": "Cedar Ridge Health",
+      "ordering_provider": "Maplewood Cardiology",
+      "provider_npi": "1293245423",
+      "scheduled_date": "11/17/2026",
+      "urgency": "routine",
+      "line_items": [
+        {
+          "cpt": "93306",
+          "description": "Echocardiogram, complete",
+          "units": 1,
+          "charge": null
+        }
+      ],
+      "diagnosis_codes": [
+        "R07.9",
+        "I10"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Aisha Gallagher",
+      "member_id": "CRH244456296",
+      "payer_name": "Cedar Ridge Health",
+      "group_number": "GRP-6544",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Aisha Gallagher",
+      "patient_dob": "07/22/1996",
+      "service_date": "November 6, 2026"
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "pa": {
+    "required": true,
+    "eligible": true,
+    "action": "submit",
+    "first_decision": "approved",
+    "policy_id": "MP-0930",
+    "cpt": "93306",
+    "criteria": {
+      "C1": true
+    },
+    "criteria_quotes": {
+      "C1": "Exertional chest pain for two weeks with long-standing hypertension."
+    },
+    "addendum": false
+  }
+}

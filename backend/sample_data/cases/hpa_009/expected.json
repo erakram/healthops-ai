@@ -1,0 +1,57 @@
+{
+  "case_id": "hpa_009",
+  "scenario": "not_required",
+  "title": "Physical therapy: no authorization needed",
+  "visit": "pt",
+  "patient": "Aisha Ashworth",
+  "record": {
+    "service_order": {
+      "order_number": "ORD-969213",
+      "patient_name": "Aisha Ashworth",
+      "patient_dob": "10/02/1984",
+      "member_id": "NWH964534281",
+      "payer_name": "Northwind Health Plan",
+      "ordering_provider": "Lakeside Orthopedics",
+      "provider_npi": "1291303422",
+      "scheduled_date": "11/24/2026",
+      "urgency": "routine",
+      "line_items": [
+        {
+          "cpt": "97110",
+          "description": "Therapeutic exercise, each 15 min",
+          "units": 3,
+          "charge": null
+        }
+      ],
+      "diagnosis_codes": [
+        "M54.50"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Aisha Ashworth",
+      "member_id": "NWH964534281",
+      "payer_name": "Northwind Health Plan",
+      "group_number": "GRP-3428",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Aisha Ashworth",
+      "patient_dob": "10/02/1984",
+      "service_date": "October 31, 2026"
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "pa": {
+    "required": false,
+    "eligible": true,
+    "action": "none",
+    "first_decision": null,
+    "policy_id": null,
+    "cpt": "97110",
+    "criteria": {},
+    "criteria_quotes": {},
+    "addendum": false
+  }
+}

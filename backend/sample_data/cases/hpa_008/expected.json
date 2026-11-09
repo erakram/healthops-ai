@@ -1,0 +1,61 @@
+{
+  "case_id": "hpa_008",
+  "scenario": "urgent",
+  "title": "Urgent brain MRI for a new headache pattern",
+  "visit": "brain",
+  "patient": "Jonah Gallagher",
+  "record": {
+    "service_order": {
+      "order_number": "ORD-849578",
+      "patient_name": "Jonah Gallagher",
+      "patient_dob": "01/21/1952",
+      "member_id": "NWH426047648",
+      "payer_name": "Northwind Health Plan",
+      "ordering_provider": "Harbor Imaging Center",
+      "provider_npi": "1644940631",
+      "scheduled_date": "11/12/2026",
+      "urgency": "urgent",
+      "line_items": [
+        {
+          "cpt": "70553",
+          "description": "MRI brain with and without contrast",
+          "units": 1,
+          "charge": null
+        }
+      ],
+      "diagnosis_codes": [
+        "R51.9"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Jonah Gallagher",
+      "member_id": "NWH426047648",
+      "payer_name": "Northwind Health Plan",
+      "group_number": "GRP-8222",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Jonah Gallagher",
+      "patient_dob": "01/21/1952",
+      "service_date": "November 7, 2026"
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "pa": {
+    "required": true,
+    "eligible": true,
+    "action": "submit",
+    "first_decision": "approved",
+    "policy_id": "MP-1150",
+    "cpt": "70553",
+    "criteria": {
+      "C1": true
+    },
+    "criteria_quotes": {
+      "C1": "New pattern of headache over the past month, now waking the patient at night."
+    },
+    "addendum": false
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "case_id": "hpa_002",
+  "scenario": "approved",
+  "title": "Imaging order with complete documentation",
+  "visit": "echo",
+  "patient": "Priya Brennan",
+  "record": {
+    "service_order": {
+      "order_number": "ORD-109930",
+      "patient_name": "Priya Brennan",
+      "patient_dob": "01/21/1970",
+      "member_id": "CRH919473349",
+      "payer_name": "Cedar Ridge Health",
+      "ordering_provider": "Maplewood Cardiology",
+      "provider_npi": "1358728263",
+      "scheduled_date": "11/30/2026",
+      "urgency": "routine",
+      "line_items": [
+        {
+          "cpt": "93306",
+          "description": "Echocardiogram, complete",
+          "units": 1,
+          "charge": null
+        }
+      ],
+      "diagnosis_codes": [
+        "R07.9",
+        "I10"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Priya Brennan",
+      "member_id": "CRH919473349",
+      "payer_name": "Cedar Ridge Health",
+      "group_number": "GRP-1914",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Priya Brennan",
+      "patient_dob": "01/21/1970",
+      "service_date": "October 31, 2026"
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "pa": {
+    "required": true,
+    "eligible": true,
+    "action": "submit",
+    "first_decision": "approved",
+    "policy_id": "MP-0930",
+    "cpt": "93306",
+    "criteria": {
+      "C1": true
+    },
+    "criteria_quotes": {
+      "C1": "Exertional chest pain for two weeks with long-standing hypertension."
+    },
+    "addendum": false
+  }
+}

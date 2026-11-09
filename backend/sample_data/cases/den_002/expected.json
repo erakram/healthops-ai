@@ -13,7 +13,7 @@
       "payer_name": "Cedar Ridge Health",
       "provider_name": "Riverside Family Medicine",
       "provider_npi": "1475463000",
-      "service_date": "10/29/2026",
+      "service_date": "10/31/2026",
       "total_charge": "$292.50",
       "prior_auth_number": null,
       "line_items": [
@@ -52,12 +52,12 @@
     "clinical_note": {
       "patient_name": "David Petrov",
       "patient_dob": "11/11/1967",
-      "service_date": "October 29, 2026"
+      "service_date": "October 31, 2026"
     },
     "invoice": {
       "invoice_number": "INV-71641",
       "patient_name": "David Petrov",
-      "service_date": "10/29/2026",
+      "service_date": "10/31/2026",
       "total_amount": "$292.50",
       "line_items": [
         {

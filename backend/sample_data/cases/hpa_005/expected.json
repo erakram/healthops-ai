@@ -1,0 +1,64 @@
+{
+  "case_id": "hpa_005",
+  "scenario": "missing_documentation",
+  "title": "Lumbar MRI order: the note doesn't say how long treatment was tried",
+  "visit": "lumbar_gap",
+  "patient": "Michael Holloway",
+  "record": {
+    "service_order": {
+      "order_number": "ORD-989443",
+      "patient_name": "Michael Holloway",
+      "patient_dob": "06/15/1972",
+      "member_id": "CRH517672313",
+      "payer_name": "Cedar Ridge Health",
+      "ordering_provider": "Lakeside Orthopedics",
+      "provider_npi": "1323143903",
+      "scheduled_date": "11/16/2026",
+      "urgency": "routine",
+      "line_items": [
+        {
+          "cpt": "72148",
+          "description": "MRI lumbar spine without contrast",
+          "units": 1,
+          "charge": null
+        }
+      ],
+      "diagnosis_codes": [
+        "M54.16"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Michael Holloway",
+      "member_id": "CRH517672313",
+      "payer_name": "Cedar Ridge Health",
+      "group_number": "GRP-2706",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Michael Holloway",
+      "patient_dob": "06/15/1972",
+      "service_date": "November 5, 2026"
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "pa": {
+    "required": true,
+    "eligible": true,
+    "action": "request_documentation",
+    "first_decision": "pended",
+    "after_addendum": "approved",
+    "policy_id": "MP-1180",
+    "cpt": "72148",
+    "criteria": {
+      "C1": false,
+      "C2": true
+    },
+    "criteria_quotes": {
+      "C2": "Exam shows a positive straight leg raise on the left with weakness of ankle dorsiflexion.",
+      "C1": "The patient completed six weeks of physical therapy and NSAIDs before this visit without improvement."
+    },
+    "addendum": true
+  }
+}

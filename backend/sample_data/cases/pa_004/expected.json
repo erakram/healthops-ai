@@ -1,0 +1,64 @@
+{
+  "case_id": "pa_004",
+  "scenario": "missing_documentation",
+  "title": "Lumbar MRI order: the note doesn't say how long treatment was tried",
+  "visit": "lumbar_gap",
+  "patient": "Maria Quintero",
+  "record": {
+    "service_order": {
+      "order_number": "ORD-754016",
+      "patient_name": "Maria Quintero",
+      "patient_dob": "01/04/1999",
+      "member_id": "BWM107806105",
+      "payer_name": "Bluewater Mutual",
+      "ordering_provider": "Lakeside Orthopedics",
+      "provider_npi": "1302251834",
+      "scheduled_date": "11/18/2026",
+      "urgency": "routine",
+      "line_items": [
+        {
+          "cpt": "72148",
+          "description": "MRI lumbar spine without contrast",
+          "units": 1,
+          "charge": null
+        }
+      ],
+      "diagnosis_codes": [
+        "M54.16"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Maria Quintero",
+      "member_id": "BWM107806105",
+      "payer_name": "Bluewater Mutual",
+      "group_number": "GRP-1526",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Maria Quintero",
+      "patient_dob": "01/04/1999",
+      "service_date": "November 6, 2026"
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "pa": {
+    "required": true,
+    "eligible": true,
+    "action": "request_documentation",
+    "first_decision": "pended",
+    "after_addendum": "approved",
+    "policy_id": "MP-1180",
+    "cpt": "72148",
+    "criteria": {
+      "C1": false,
+      "C2": true
+    },
+    "criteria_quotes": {
+      "C2": "Exam shows a positive straight leg raise on the left with weakness of ankle dorsiflexion.",
+      "C1": "The patient completed six weeks of physical therapy and NSAIDs before this visit without improvement."
+    },
+    "addendum": true
+  }
+}

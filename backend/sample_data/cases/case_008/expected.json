@@ -13,7 +13,7 @@
       "payer_name": "Summit CareShield",
       "provider_name": "Maplewood Cardiology",
       "provider_npi": "1719149076",
-      "service_date": "09/29/2026",
+      "service_date": "10/01/2026",
       "total_charge": "$1,095.00",
       "prior_auth_number": "PA-1586736",
       "line_items": [
@@ -40,12 +40,12 @@
     "clinical_note": {
       "patient_name": "Ruth Thornton",
       "patient_dob": "09/28/1989",
-      "service_date": "September 29, 2026"
+      "service_date": "October 1, 2026"
     },
     "invoice": {
       "invoice_number": "INV-99536",
       "patient_name": "Ruth Thornton",
-      "service_date": "09/29/2026",
+      "service_date": "10/01/2026",
       "total_amount": "$1,095.00",
       "line_items": [
         {
@@ -59,8 +59,8 @@
     "prior_authorization": {
       "auth_number": "PA-1586736",
       "member_id": "SCS701621502",
-      "valid_from": "09/09/2026",
-      "valid_to": "11/08/2026",
+      "valid_from": "09/11/2026",
+      "valid_to": "11/10/2026",
       "approved_cpt_codes": [
         "93306"
       ]

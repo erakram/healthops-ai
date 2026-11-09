@@ -1,0 +1,62 @@
+{
+  "case_id": "pa_001",
+  "scenario": "approved",
+  "title": "Imaging order with complete documentation",
+  "visit": "echo",
+  "patient": "Claire Kowalski",
+  "record": {
+    "service_order": {
+      "order_number": "ORD-229843",
+      "patient_name": "Claire Kowalski",
+      "patient_dob": "06/05/1995",
+      "member_id": "NWH943216904",
+      "payer_name": "Northwind Health Plan",
+      "ordering_provider": "Maplewood Cardiology",
+      "provider_npi": "1590372870",
+      "scheduled_date": "11/30/2026",
+      "urgency": "routine",
+      "line_items": [
+        {
+          "cpt": "93306",
+          "description": "Echocardiogram, complete",
+          "units": 1,
+          "charge": null
+        }
+      ],
+      "diagnosis_codes": [
+        "R07.9",
+        "I10"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Claire Kowalski",
+      "member_id": "NWH943216904",
+      "payer_name": "Northwind Health Plan",
+      "group_number": "GRP-8843",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Claire Kowalski",
+      "patient_dob": "06/05/1995",
+      "service_date": "November 8, 2026"
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "pa": {
+    "required": true,
+    "eligible": true,
+    "action": "submit",
+    "first_decision": "approved",
+    "policy_id": "MP-0930",
+    "cpt": "93306",
+    "criteria": {
+      "C1": true
+    },
+    "criteria_quotes": {
+      "C1": "Exertional chest pain for two weeks with long-standing hypertension."
+    },
+    "addendum": false
+  }
+}

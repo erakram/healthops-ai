@@ -13,7 +13,7 @@
       "payer_name": "Summit CareShield",
       "provider_name": "Lakeside Orthopedics",
       "provider_npi": "1052688102",
-      "service_date": "10/30/2026",
+      "service_date": "11/01/2026",
       "total_charge": "$4,720.00",
       "prior_auth_number": null,
       "line_items": [
@@ -40,12 +40,12 @@
     "clinical_note": {
       "patient_name": "Nadia Iverson",
       "patient_dob": "12/01/1986",
-      "service_date": "October 30, 2026"
+      "service_date": "November 1, 2026"
     },
     "invoice": {
       "invoice_number": "INV-38955",
       "patient_name": "Nadia Iverson",
-      "service_date": "10/30/2026",
+      "service_date": "11/01/2026",
       "total_amount": "$4,720.00",
       "line_items": [
         {

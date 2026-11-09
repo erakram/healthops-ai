@@ -13,7 +13,7 @@
       "payer_name": "Summit CareShield",
       "provider_name": "Maplewood Cardiology",
       "provider_npi": "1854792755",
-      "service_date": "10/15/2026",
+      "service_date": "10/17/2026",
       "total_charge": "$1,095.00",
       "prior_auth_number": null,
       "line_items": [
@@ -40,12 +40,12 @@
     "clinical_note": {
       "patient_name": "Ethan Sato",
       "patient_dob": "04/18/1960",
-      "service_date": "October 15, 2026"
+      "service_date": "October 17, 2026"
     },
     "invoice": {
       "invoice_number": "INV-50877",
       "patient_name": "Ethan Sato",
-      "service_date": "10/15/2026",
+      "service_date": "10/17/2026",
       "total_amount": "$1,095.00",
       "line_items": [
         {

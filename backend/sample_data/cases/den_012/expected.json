@@ -13,7 +13,7 @@
       "payer_name": "Bluewater Mutual",
       "provider_name": "Riverside Family Medicine",
       "provider_npi": "1928309388",
-      "service_date": "09/30/2026",
+      "service_date": "10/02/2026",
       "total_charge": "$380.00",
       "prior_auth_number": null,
       "line_items": [
@@ -46,12 +46,12 @@
     "clinical_note": {
       "patient_name": "Elena Kowalski",
       "patient_dob": "09/02/1978",
-      "service_date": "September 30, 2026"
+      "service_date": "October 2, 2026"
     },
     "invoice": {
       "invoice_number": "INV-22555",
       "patient_name": "Elena Kowalski",
-      "service_date": "09/30/2026",
+      "service_date": "10/02/2026",
       "total_amount": "$380.00",
       "line_items": [
         {

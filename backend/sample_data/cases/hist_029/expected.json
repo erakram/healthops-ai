@@ -13,7 +13,7 @@
       "payer_name": "Bluewater Mutual",
       "provider_name": "Maplewood Cardiology",
       "provider_npi": "1830568329",
-      "service_date": "10/25/2026",
+      "service_date": "10/27/2026",
       "total_charge": "$1,095.00",
       "prior_auth_number": null,
       "line_items": [
@@ -40,12 +40,12 @@
     "clinical_note": {
       "patient_name": "Andre Larkin",
       "patient_dob": "11/02/1995",
-      "service_date": "October 25, 2026"
+      "service_date": "October 27, 2026"
     },
     "invoice": {
       "invoice_number": "INV-25761",
       "patient_name": "Andre Larkin",
-      "service_date": "10/25/2026",
+      "service_date": "10/27/2026",
       "total_amount": "$1,095.00",
       "line_items": [
         {

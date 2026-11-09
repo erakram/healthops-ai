@@ -13,7 +13,7 @@
       "payer_name": "Northwind Health Plan",
       "provider_name": "Maplewood Cardiology",
       "provider_npi": "1580574725",
-      "service_date": "10/13/2026",
+      "service_date": "10/15/2026",
       "total_charge": "$1,095.00",
       "prior_auth_number": "PA-7345247",
       "line_items": [
@@ -40,13 +40,13 @@
     "clinical_note": {
       "patient_name": "Aisha Ramires",
       "patient_dob": "01/26/1968",
-      "service_date": "October 13, 2026"
+      "service_date": "October 15, 2026"
     },
     "prior_authorization": {
       "auth_number": "PA-7345247",
       "member_id": "NWH831513571",
-      "valid_from": "09/23/2026",
-      "valid_to": "11/22/2026",
+      "valid_from": "09/25/2026",
+      "valid_to": "11/24/2026",
       "approved_cpt_codes": [
         "93306"
       ]

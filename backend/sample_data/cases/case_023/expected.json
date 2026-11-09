@@ -13,7 +13,7 @@
       "payer_name": "Bluewater Mutual",
       "provider_name": "Maplewood Cardiology",
       "provider_npi": "1928728603",
-      "service_date": "10/05/2026",
+      "service_date": "10/07/2026",
       "total_charge": "$411.00",
       "prior_auth_number": null,
       "line_items": [
@@ -51,12 +51,12 @@
     "clinical_note": {
       "patient_name": "Robert Ashworth",
       "patient_dob": "07/02/1957",
-      "service_date": "October 5, 2026"
+      "service_date": "October 7, 2026"
     },
     "invoice": {
       "invoice_number": "INV-89233",
       "patient_name": "Robert Ashworth",
-      "service_date": "10/05/2026",
+      "service_date": "10/07/2026",
       "total_amount": "$411.00",
       "line_items": [
         {

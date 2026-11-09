@@ -13,7 +13,7 @@
       "payer_name": "Northwind Health Plan",
       "provider_name": "Harbor Imaging Center",
       "provider_npi": "1252679679",
-      "service_date": "10/22/2026",
+      "service_date": "10/24/2026",
       "total_charge": "$1,575.00",
       "prior_auth_number": "PA-2709921",
       "line_items": [
@@ -39,12 +39,12 @@
     "clinical_note": {
       "patient_name": "Andre Whitaker",
       "patient_dob": "09/20/1957",
-      "service_date": "October 22, 2026"
+      "service_date": "October 24, 2026"
     },
     "invoice": {
       "invoice_number": "INV-22423",
       "patient_name": "Andre Whitaker",
-      "service_date": "10/22/2026",
+      "service_date": "10/24/2026",
       "total_amount": "$1,575.00",
       "line_items": [
         {
@@ -58,8 +58,8 @@
     "prior_authorization": {
       "auth_number": "PA-2709921",
       "member_id": "NWH399770380",
-      "valid_from": "10/02/2026",
-      "valid_to": "12/01/2026",
+      "valid_from": "10/04/2026",
+      "valid_to": "12/03/2026",
       "approved_cpt_codes": [
         "72148"
       ]

@@ -13,7 +13,7 @@
       "payer_name": "Northwind Health Plan",
       "provider_name": "Lakeside Orthopedics",
       "provider_npi": "1260673557",
-      "service_date": "10/08/2026",
+      "service_date": "10/10/2026",
       "total_charge": "$246.00",
       "prior_auth_number": null,
       "line_items": [
@@ -39,12 +39,12 @@
     "clinical_note": {
       "patient_name": "Hannah Bianchi",
       "patient_dob": "11/09/1998",
-      "service_date": "October 8, 2026"
+      "service_date": "October 10, 2026"
     },
     "invoice": {
       "invoice_number": "INV-55623",
       "patient_name": "Hannah Bianchi",
-      "service_date": "10/08/2026",
+      "service_date": "10/10/2026",
       "total_amount": "$246.00",
       "line_items": [
         {

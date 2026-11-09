@@ -1,0 +1,62 @@
+{
+  "case_id": "pa_002",
+  "scenario": "approved",
+  "title": "Imaging order with complete documentation",
+  "visit": "echo",
+  "patient": "Robert Ashworth",
+  "record": {
+    "service_order": {
+      "order_number": "ORD-817498",
+      "patient_name": "Robert Ashworth",
+      "patient_dob": "09/25/1955",
+      "member_id": "NWH396989402",
+      "payer_name": "Northwind Health Plan",
+      "ordering_provider": "Maplewood Cardiology",
+      "provider_npi": "1321102117",
+      "scheduled_date": "11/16/2026",
+      "urgency": "routine",
+      "line_items": [
+        {
+          "cpt": "93306",
+          "description": "Echocardiogram, complete",
+          "units": 1,
+          "charge": null
+        }
+      ],
+      "diagnosis_codes": [
+        "R07.9",
+        "I10"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Robert Ashworth",
+      "member_id": "NWH396989402",
+      "payer_name": "Northwind Health Plan",
+      "group_number": "GRP-3264",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Robert Ashworth",
+      "patient_dob": "09/25/1955",
+      "service_date": "November 1, 2026"
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "pa": {
+    "required": true,
+    "eligible": true,
+    "action": "submit",
+    "first_decision": "approved",
+    "policy_id": "MP-0930",
+    "cpt": "93306",
+    "criteria": {
+      "C1": true
+    },
+    "criteria_quotes": {
+      "C1": "Exertional chest pain for two weeks with long-standing hypertension."
+    },
+    "addendum": false
+  }
+}

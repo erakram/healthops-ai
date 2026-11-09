@@ -1,0 +1,63 @@
+{
+  "case_id": "hpa_001",
+  "scenario": "approved",
+  "title": "Imaging order with complete documentation",
+  "visit": "lumbar_ok",
+  "patient": "Michael Mbeki",
+  "record": {
+    "service_order": {
+      "order_number": "ORD-699500",
+      "patient_name": "Michael Mbeki",
+      "patient_dob": "11/09/1960",
+      "member_id": "SCS353132385",
+      "payer_name": "Summit CareShield",
+      "ordering_provider": "Lakeside Orthopedics",
+      "provider_npi": "1352467918",
+      "scheduled_date": "11/23/2026",
+      "urgency": "routine",
+      "line_items": [
+        {
+          "cpt": "72148",
+          "description": "MRI lumbar spine without contrast",
+          "units": 1,
+          "charge": null
+        }
+      ],
+      "diagnosis_codes": [
+        "M54.16"
+      ]
+    },
+    "insurance_card": {
+      "member_name": "Michael Mbeki",
+      "member_id": "SCS353132385",
+      "payer_name": "Summit CareShield",
+      "group_number": "GRP-7863",
+      "coverage_start": "01/01/2025",
+      "coverage_end": null
+    },
+    "clinical_note": {
+      "patient_name": "Michael Mbeki",
+      "patient_dob": "11/09/1960",
+      "service_date": "November 8, 2026"
+    }
+  },
+  "expected_findings": [],
+  "expects_ai_review": false,
+  "pa": {
+    "required": true,
+    "eligible": true,
+    "action": "submit",
+    "first_decision": "approved",
+    "policy_id": "MP-1180",
+    "cpt": "72148",
+    "criteria": {
+      "C1": true,
+      "C2": true
+    },
+    "criteria_quotes": {
+      "C1": "Symptoms persisted despite six weeks of physical therapy and NSAIDs.",
+      "C2": "Exam shows a positive straight leg raise on the right with a reduced ankle reflex."
+    },
+    "addendum": false
+  }
+}

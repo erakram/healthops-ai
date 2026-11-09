@@ -8,7 +8,7 @@ from app.verticals.healthcare.rules import run_rules
 from app.verticals.healthcare.samples import FILE_KINDS, list_cases, truth_to_extracted
 from app.verticals.healthcare.schema import normalize_name, parse_date, parse_money, valid_icd10, valid_npi
 
-CASES = list_cases("")
+CASES = [c for c in list_cases("") if "pa" not in c]  # claim packets; pa_* are orders
 
 
 def _record(case):
