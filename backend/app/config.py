@@ -11,6 +11,15 @@ load_dotenv()
 BACKEND_ROOT = Path(__file__).resolve().parent.parent
 
 
+def sqlalchemy_url(url: str) -> str:
+    """Hosts like Render hand out postgres:// or postgresql:// addresses; SQLAlchemy reads those as
+    psycopg2, but the installed driver is psycopg 3."""
+    for prefix in ("postgres://", "postgresql://"):
+        if url.startswith(prefix):
+            return "postgresql+psycopg://" + url[len(prefix):]
+    return url
+
+
 @dataclass(frozen=True)
 class Settings:
     database_url: str  # sqlite locally, postgres in docker / on Render
@@ -44,7 +53,7 @@ class Settings:
             llm_provider=provider,
             anthropic_api_key=anthropic_key,
             claude_effort=os.getenv("CLAUDE_EFFORT", "medium"),
-            database_url=os.getenv("DATABASE_URL", f"sqlite:///{BACKEND_ROOT / 'data' / 'healthops.db'}"),
+            database_url=sqlalchemy_url(os.getenv("DATABASE_URL", f"sqlite:///{BACKEND_ROOT / 'data' / 'healthops.db'}")),
             storage_dir=Path(os.getenv("STORAGE_DIR", BACKEND_ROOT / "data" / "documents")),
             groq_api_key=groq_key,
             extraction_model=os.getenv("EXTRACTION_MODEL", default_model),

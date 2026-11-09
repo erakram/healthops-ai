@@ -153,6 +153,11 @@ E11.9; untick modifier 25 to watch the checks catch it, approve, then generate t
 
 **With Docker:** `ANTHROPIC_API_KEY=... docker compose up --build`, then http://localhost:3000.
 
+**On Render:** in the Render dashboard choose New > Blueprint and pick this repository; `render.yaml` creates the API,
+the web app and a Postgres database. Paste a `GROQ_API_KEY` when asked. On the free plan services sleep after about
+15 idle minutes, the database is removed after 30 days, and the demo data re-seeds itself on an empty database. If
+Render names the API something other than `healthops-api.onrender.com`, change `BACKEND_URL` in `render.yaml`.
+
 ## Test and evaluate
 
 ```bash

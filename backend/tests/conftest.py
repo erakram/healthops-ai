@@ -4,7 +4,8 @@ from pathlib import Path
 
 # Point the app at a throwaway database before anything imports app.config.
 _tmp = Path(tempfile.mkdtemp(prefix="healthops-test-"))
-os.environ["DATABASE_URL"] = f"sqlite:///{_tmp / 'test.db'}"
+# TEST_DATABASE_URL runs the suite on Postgres (CI); it must be an empty database.
+os.environ["DATABASE_URL"] = os.getenv("TEST_DATABASE_URL") or f"sqlite:///{_tmp / 'test.db'}"
 os.environ["STORAGE_DIR"] = str(_tmp / "documents")
 os.environ["SEED_DEMO_DATA"] = "true"
 os.environ["GROQ_API_KEY"] = ""
