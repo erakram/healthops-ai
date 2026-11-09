@@ -11,6 +11,17 @@ tamper-evident audit trail.
 
 ## What it does
 
+**Front office (an Indian hospital OPD):**
+
+```
+mobile no. ─► find / register ─► complaint as said ─► Intake Agent ─► red-flag rules ─► doctor + fee ─► token ─► live queue
+              duplicate check     (Hinglish, Hindi,    symptoms with    emergency? no      on duty, seen       OPD slip   call / skip /
+              family on 1 phone    English)            their quotes     token, casualty    before, shortest               recall
+                                                       + department                        wait; free follow-up
+```
+
+**Back office (US revenue cycle):**
+
 ```
 order ─► requirement check ─► Clinical Criteria Agent ─► gaps? ask the physician ─► Request Agent ─► staff ─► payer (FHIR PAS)
          payer + CPT rules     note vs payer policy        addendum → re-check       cited summary            approved / pended / denied
@@ -56,6 +67,9 @@ bank CSV ─► reconciliation: deposit ↔ 835 by EFT trace number ─► short
 | **837P claim file** | Submissions are real X12 837P files (CLM with frequency code, HI diagnosis qualifiers, SV1 lines, REF*F8 for corrected claims); the mock payer parses them back, with segment-count and total checks. |
 | **PHI masking** | Every LLM call goes through a masking layer: patient names (all their forms), member IDs, birth dates, phone numbers, SSNs and emails become tokens like `[PERSON_1]` before leaving the process, and are restored in the answer. On by default (`PHI_MASKING=false` to turn off). Service dates, codes and amounts stay, since the agents reason over them; this is not full Safe Harbor de-identification. |
 | **Scanned documents** | Pages with no text layer are OCR'd with the macOS Vision framework (a 44 KB Swift helper compiled on first use, no downloads); OCR'd pages are labeled. Elsewhere they're marked as needing OCR instead of being silently read as empty. |
+| **OPD front desk** | Staff search by mobile number (one number often covers a family), name, UHID or ABHA. Registration scores possible duplicates (phone, name similarity with Indian spelling variants like Mohd/Mohammed, age, sex; ABHA decides when both have one) and staff confirm. The Intake Agent reads the complaint as the patient said it, in English, Hinglish or Devanagari, and returns symptoms (each with its exact words, or it's dropped), duration, severity, a one-line English summary and a department from a fixed list. |
+| **Red flags** | Rules, not the model: chest pain with sweating or breathlessness (or over 30), stroke signs, breathing difficulty, serious bleeding, fits, poisoning and bites, accidents, self-harm, danger signs in pregnancy, fever with a stiff neck, a very sick young child. They run on the complaint in all three scripts and on the agent's English symptoms. The agent can add a flag with a quote; it can never clear one. A flagged patient gets no routine token unless staff record that a casualty doctor cleared them (audited). |
+| **Doctor, fee, token** | Children go to Paediatrics (except eye, ENT and bone problems) and pregnancy to Gynaecology, whatever the model said. The doctor is picked from those on duty that day: the one a returning patient saw before, else the shortest wait; if no one in the department is in, General Medicine, with the day the specialist is next in. A follow-up within 7 days of a paid visit to the same doctor is free. Choosing another doctor needs a reason. Tokens are numbered per doctor per day; the OPD slip is a PDF; the queue board updates live (call, done, skip, recall). |
 | **Evals** | `evals/run_evals.py` scores the real model against the answer keys of 26 synthetic packets: classification, field accuracy, grounding rate, finding precision/recall, AI-review catches and false alarms, tokens and time. |
 
 ## Stack
@@ -79,6 +93,7 @@ healthops-ai/
 │   │   ├── verticals/
 │   │   │   └── healthcare/  document types, rules, prompts, code sets, E/M rules, 835, FHIR PAS, CARC codes,
 │   │   │                    policies, mock payer  ← the "vertical pack"
+│   │   │   └── opd_india/   departments + Hindi/Hinglish keywords, red-flag rules, intake prompt, OPD slip
 │   │   ├── api/             auth, claims, dashboard, audit, live events
 │   │   ├── pipeline.py      extract → validate → submit handlers
 │   │   └── worker.py        background job runner
@@ -88,13 +103,16 @@ healthops-ai/
 │   │   ├── ar.py            unpaid claims, 276/277 status checks, follow-up actions
 │   │   ├── billing.py       patient statements, payments, plans, reminders
 │   │   ├── reconciliation.py  bank deposits ↔ 835s
+│   │   ├── frontdesk.py     OPD: patient matching, doctor choice, fees, tokens, queue
+│   │   ├── agents/intake.py Intake Agent (complaint → symptoms, department; guardrails)
 │   ├── scripts/generate_samples.py   synthetic packets with planted problems + answer keys
 │   ├── evals/run_evals.py            intake agents vs. the answer keys, with the real model
 │   ├── evals/run_denial_evals.py     denial agents vs. the den_* answer keys
 │   ├── evals/run_auth_evals.py       prior authorization agents vs. the pa_* answer keys
 │   ├── evals/run_coding_evals.py     Coding Agent vs. the enc_* answer keys
 │   ├── migrations/                   Alembic migrations (run on startup)
-│   └── tests/                        255 tests, offline (fake LLM)
+│   ├── evals/run_opd_evals.py        OPD intake vs. sample_data/opd_cases.json (32 complaints)
+│   └── tests/                        342 tests, offline (fake LLM)
 ├── frontend/                Next.js app
 └── docker-compose.yml       Postgres + API + web
 ```
@@ -144,12 +162,17 @@ cd backend
 .venv/bin/python -m evals.run_denial_evals   # denial agents: triage, criteria, citations, appeal outcomes
 .venv/bin/python -m evals.run_auth_evals     # prior authorization: requirement, criteria, gaps, payer decisions
 .venv/bin/python -m evals.run_coding_evals   # coding: ICD/CPT precision and recall, E/M level, search recall
+.venv/bin/python -m evals.run_opd_evals      # OPD intake: red-flag recall, false emergencies, department accuracy
 ```
 
 Schema changes ship as Alembic migrations and are applied on startup; an existing database is upgraded in
 place. Sample dates are relative to when
 `scripts.generate_samples` ran (see `sample_data/payer_state.json`); regenerate and reset if they're months old,
 or the mock payer will start denying claims for timely filing.
+
+Latest OPD intake eval (gpt-oss-120b on Groq, 32 complaints in English, Hinglish and Devanagari): red flags 12/12
+(also 12/12 with the rules alone), 1 false emergency (a 24-year-old's gym chest pain, which the agent flagged to be safe),
+department 95%.
 
 The rules test runs every sample's answer key through the rules engine and requires that **exactly** the
 planted problems are found: each one caught, nothing else flagged.
@@ -158,6 +181,7 @@ planted problems are found: each one caught, nothing else flagged.
 
 - OCR uses macOS Vision, so scanned pages are only read on a Mac; the Docker image marks them as needing OCR.
 - PHI masking is pattern-based (labels and known ID formats), not an NER model like Presidio.
-- No front office yet: patient intake, scheduling and eligibility at check-in are next.
+- The front office is an Indian OPD and the back office is a US revenue cycle; OPD visits don't become US claims.
+- No real ABHA (ABDM) connection: the number is stored and matched, not verified with the national registry.
 - The payer is a mock: deterministic rules and a synthetic policy library, not a real payer's edits.
 - On Groq's free tier (~8k tokens/minute, 200k/day) about one claim per minute fits. Jobs wait out rate limits and resume automatically on either provider.

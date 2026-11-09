@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { ClipboardCheck, FileStack, Hourglass, Landmark, Tags, Wallet, LayoutDashboard, LogOut, Menu, Scale, ScrollText, X } from "lucide-react";
+import { ClipboardCheck, ConciergeBell, FileStack, ListOrdered, Hourglass, Landmark, Tags, Wallet, LayoutDashboard, LogOut, Menu, Scale, ScrollText, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -15,6 +15,8 @@ import { cn } from "@/lib/utils";
 
 const NAV = [
   { href: "/dashboard", label: "Command center", icon: LayoutDashboard },
+  { href: "/front-desk", label: "Front desk (OPD)", icon: ConciergeBell },
+  { href: "/opd-queue", label: "OPD queue", icon: ListOrdered, badge: "opd" as const },
   { href: "/authorizations", label: "Authorizations", icon: ClipboardCheck, badge: "auths" as const },
   { href: "/coding", label: "Coding", icon: Tags, badge: "coding" as const },
   { href: "/claims", label: "Claims", icon: FileStack, badge: "claims" as const },
@@ -39,7 +41,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { data: auths } = useQuery({ queryKey: ["auths", "summary"], queryFn: api.authorizationsSummary, refetchInterval: 30_000 });
   const { data: coding } = useQuery({ queryKey: ["encounters", "summary"], queryFn: api.encountersSummary, refetchInterval: 30_000 });
   const { data: ar } = useQuery({ queryKey: ["ar", "summary"], queryFn: api.arSummary, refetchInterval: 60_000 });
-  const badges = { claims: waiting?.length ?? 0, denials: denials?.open ?? 0, auths: auths?.needs_documentation ?? 0,
+  const { data: opd } = useQuery({ queryKey: ["opd", "summary"], queryFn: api.opdSummary, refetchInterval: 30_000 });
+  const badges = { opd: opd?.waiting ?? 0, claims: waiting?.length ?? 0, denials: denials?.open ?? 0, auths: auths?.needs_documentation ?? 0,
     coding: coding?.review ?? 0, ar: ar?.due_for_follow_up ?? 0 };
   const connected = useLiveEvents((event) => {
     if (event.type === "auth.updated" && ["approved", "pended", "denied"].includes(event.status ?? "")) {
@@ -79,6 +82,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                     item.badge === "denials" ? "bg-orange-400/15 text-orange-200 ring-orange-400/30"
                       : item.badge === "auths" ? "bg-violet-400/15 text-violet-200 ring-violet-400/30"
                       : item.badge === "coding" ? "bg-cyan-400/15 text-cyan-200 ring-cyan-400/30"
+                      : item.badge === "opd" ? "bg-teal-400/15 text-teal-200 ring-teal-400/30"
                       : item.badge === "ar" ? "bg-sky-400/15 text-sky-200 ring-sky-400/30" : "bg-amber-400/15 text-amber-200 ring-amber-400/30")}>
                   {badges[item.badge]}
                 </motion.span>

@@ -11,12 +11,12 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from app.api import ar, auth, authorizations, billing, claims, coding, denials, insights, reconciliation
+from app.api import ar, auth, authorizations, billing, claims, coding, denials, frontdesk, insights, reconciliation
 from app.config import settings
 from app.core.llm import default_llm
 from app.db import SessionLocal, engine
 from app.db_migrate import migrate
-from app.seed import seed_history, seed_users
+from app.seed import seed_history, seed_opd, seed_users
 from app.worker import Worker
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -32,6 +32,7 @@ async def lifespan(app: FastAPI):
         with SessionLocal() as db:
             seed_users(db)
             seed_history(db)
+            seed_opd(db)
     worker = Worker(app.state.llm if hasattr(app.state, "llm") else default_llm())
     worker.start()
     app.state.worker = worker
@@ -49,6 +50,7 @@ app.include_router(coding.router)
 app.include_router(ar.router)
 app.include_router(billing.router)
 app.include_router(reconciliation.router)
+app.include_router(frontdesk.router)
 
 
 @app.get("/api/health")

@@ -420,3 +420,73 @@ class BankDeposit(Base):
     remittance_ids: Mapped[list] = mapped_column(JSON, default=list)
     note: Mapped[str | None] = mapped_column(Text)
     imported_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+# ---------- Front office: an Indian hospital OPD ----------
+
+class OpdPatient(Base):
+    """A registered patient. Found by mobile number first; one number often serves a whole family."""
+
+    __tablename__ = "opd_patients"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    uhid: Mapped[str] = mapped_column(String(20), unique=True)  # the hospital's patient ID
+    name: Mapped[str] = mapped_column(String(200))
+    sex: Mapped[str] = mapped_column(String(1))  # M | F | O
+    dob: Mapped[str | None] = mapped_column(String(10))
+    age_years: Mapped[float | None] = mapped_column(Float)  # when only an age was given, as of registered_on
+    phone: Mapped[str] = mapped_column(String(10), index=True)
+    abha: Mapped[str | None] = mapped_column(String(14), unique=True)  # Ayushman Bharat Health Account number, digits
+    city: Mapped[str | None] = mapped_column(String(100))
+    registered_on: Mapped[str] = mapped_column(String(10))
+    registered_by: Mapped[str] = mapped_column(String(200))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class Doctor(Base):
+    __tablename__ = "doctors"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(200))
+    department: Mapped[str] = mapped_column(String(40), index=True)
+    qualification: Mapped[str] = mapped_column(String(100))
+    room: Mapped[str] = mapped_column(String(20))
+    fee: Mapped[float] = mapped_column(Float)  # consultation fee, rupees
+    days: Mapped[list] = mapped_column(JSON, default=list)  # OPD weekdays, 0 = Monday
+    opd_start: Mapped[str] = mapped_column(String(5))
+    opd_end: Mapped[str] = mapped_column(String(5))
+    minutes_per_patient: Mapped[int] = mapped_column(Integer, default=10)
+    languages: Mapped[list] = mapped_column(JSON, default=list)
+
+
+class OpdVisit(Base):
+    """One trip to the OPD: the complaint, what intake found, and the token.
+
+    triaged -> waiting -> in_consult -> done; or skipped (not there when called, can be recalled),
+    cancelled, or emergency (sent to casualty instead of a token)."""
+
+    __tablename__ = "opd_visits"
+    __table_args__ = (UniqueConstraint("doctor_id", "visit_date", "token"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    number: Mapped[str] = mapped_column(String(30), unique=True)
+    patient_id: Mapped[int] = mapped_column(ForeignKey("opd_patients.id"), index=True)
+    doctor_id: Mapped[int | None] = mapped_column(ForeignKey("doctors.id"), index=True)
+    visit_date: Mapped[str] = mapped_column(String(10), index=True)
+    token: Mapped[int | None] = mapped_column(Integer)
+    status: Mapped[str] = mapped_column(String(20), default="triaged", index=True)
+    complaint: Mapped[str] = mapped_column(Text)
+    intake: Mapped[dict] = mapped_column(JSON, default=dict)  # the Intake Agent's note, red flags, department
+    suggestion: Mapped[dict] = mapped_column(JSON, default=dict)  # doctors considered and why
+    override_reason: Mapped[str | None] = mapped_column(Text)  # staff chose another doctor, or cleared a red flag
+    fee: Mapped[float] = mapped_column(Float, default=0)
+    fee_note: Mapped[str | None] = mapped_column(String(200))
+    payment_mode: Mapped[str | None] = mapped_column(String(10))  # cash | upi | card
+    created_by: Mapped[str] = mapped_column(String(200))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    booked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    called_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    done_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    patient: Mapped[OpdPatient] = relationship()
+    doctor: Mapped[Doctor | None] = relationship()

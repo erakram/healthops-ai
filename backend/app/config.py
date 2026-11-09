@@ -30,6 +30,7 @@ class Settings:
     max_upload_mb: float
     payer_delay_seconds: float  # how long the mock payer takes to answer (days, in real life)
     phi_masking: bool  # replace patient identifiers with tokens before any LLM call (core/phi.py)
+    hospital_name: str  # printed on OPD slips
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -57,6 +58,7 @@ class Settings:
             max_upload_mb=float(os.getenv("MAX_UPLOAD_MB", "10")),
             payer_delay_seconds=float(os.getenv("PAYER_DELAY_SECONDS", "6")),
             phi_masking=os.getenv("PHI_MASKING", "true").lower() == "true",
+            hospital_name=os.getenv("HOSPITAL_NAME", "HealthOps Demo Hospital"),
         )
 
 

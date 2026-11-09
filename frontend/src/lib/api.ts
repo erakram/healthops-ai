@@ -356,6 +356,49 @@ export class ApiError extends Error {
   }
 }
 
+
+/* ---------- OPD front desk ---------- */
+
+export interface OpdPatient {
+  id: number; uhid: string; name: string; sex: "M" | "F" | "O"; dob: string | null; age: number | null; age_label: string;
+  phone: string; abha: string | null; city: string | null; registered_on: string;
+}
+export interface OpdPatientDetail extends OpdPatient {
+  family: OpdPatient[];
+  visits: { id: number; number: string; visit_date: string; status: string; token: number | null; doctor: string | null;
+    department_name: string | null; summary: string; fee: number }[];
+}
+export interface DuplicateMatch { patient: OpdPatient; score: number; why: string[] }
+export interface RedFlag { id: string; label: string; action: string; matched: string; sign?: string }
+export interface DoctorOption {
+  id: number; name: string; department: string; department_name: string; qualification: string; room: string; fee: number;
+  days: string[]; hours: string; on_duty: boolean; next_on_duty: string | null; waiting: number; seen: number; wait_minutes: number;
+  languages: string[]; seen_before?: string | null; fee_due?: number; fee_note?: string; reason?: string;
+}
+export interface OpdIntake {
+  complaint: string; language: string | null; symptoms: { name: string; quote: string }[]; dropped_symptoms: number;
+  duration: string | null; severity: "mild" | "moderate" | "severe" | "unknown"; summary_en: string | null; red_flags: RedFlag[];
+  department: string; department_name: string; department_source: "agent" | "keywords" | "rule" | "default" | "demo";
+  department_reason: string; keyword_department: string | null; agent_department: string | null;
+  agent: { used: boolean; error: string | null; usage: { model: string; input_tokens: number; output_tokens: number; latency_ms: number } | null };
+}
+export interface OpdVisit {
+  id: number; number: string; visit_date: string; token: number | null;
+  status: "triaged" | "waiting" | "in_consult" | "done" | "skipped" | "cancelled" | "emergency";
+  complaint: string; intake: OpdIntake;
+  suggestion: { department: string; department_name: string; note: string | null; options: DoctorOption[]; suggested_doctor_id: number | null };
+  override_reason: string | null; fee: number; fee_note: string | null; payment_mode: string | null; patient: OpdPatient;
+  doctor: { id: number; name: string; room: string; department_name: string } | null;
+}
+export interface QueueDoctor extends DoctorOption {
+  now: { id: number; token: number; name: string } | null;
+  visits: { id: number; token: number; status: OpdVisit["status"]; name: string; age_label: string; sex: string; summary: string; fee: number }[];
+}
+export interface OpdSummary {
+  date: string; day: string; tokens: number; waiting: number; in_consult: number; seen: number; emergencies: number;
+  collected: number; free_follow_ups: number; new_patients: number; doctors_on_duty: number;
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(path, { credentials: "same-origin", ...init });
   if (res.status === 401 && typeof window !== "undefined" && !path.startsWith("/api/auth")) {
@@ -463,6 +506,19 @@ export const api = {
   createClaimFromEncounter: (id: number) => request<EncounterDetail & { claim_number: string }>(`/api/encounters/${id}/claim`, { method: "POST" }),
   retryEncounter: (id: number) => request<EncounterDetail>(`/api/encounters/${id}/retry`, { method: "POST" }),
 
+  opdSummary: () => request<OpdSummary>("/api/frontdesk/summary"),
+  opdDoctors: (day?: string) => request<DoctorOption[]>(`/api/frontdesk/doctors${day ? `?day=${day}` : ""}`),
+  searchPatients: (q: string) => request<OpdPatient[]>(`/api/frontdesk/patients?q=${encodeURIComponent(q)}`),
+  opdPatient: (id: number) => request<OpdPatientDetail>(`/api/frontdesk/patients/${id}`),
+  registerPatient: (body: { name: string; sex: string; phone: string; age?: number; dob?: string; abha?: string; city?: string; confirm_new?: boolean }) =>
+    request<{ registered: true; patient: OpdPatient } | { registered: false; possible_duplicates: DuplicateMatch[] }>("/api/frontdesk/patients", json(body)),
+  opdIntake: (patient_id: number, complaint: string, visit_date?: string) => request<OpdVisit>("/api/frontdesk/intake", json({ patient_id, complaint, visit_date })),
+  opdVisit: (id: number) => request<OpdVisit>(`/api/frontdesk/visits/${id}`),
+  bookToken: (id: number, doctor_id: number, payment_mode?: string, override_reason?: string) =>
+    request<OpdVisit>(`/api/frontdesk/visits/${id}/book`, json({ doctor_id, payment_mode, override_reason })),
+  sendToEmergency: (id: number) => request<OpdVisit>(`/api/frontdesk/visits/${id}/emergency`, { method: "POST" }),
+  queueAction: (id: number, action: "call" | "done" | "skip" | "recall" | "cancel") => request<OpdVisit>(`/api/frontdesk/visits/${id}/${action}`, { method: "POST" }),
+  opdQueue: () => request<{ date: string; doctors: QueueDoctor[] }>("/api/frontdesk/queue"),
   arList: () => request<ArRow[]>("/api/ar"),
   arSummary: () => request<ArSummary>("/api/ar/summary"),
   arDetail: (claimId: number) => request<ArDetail>(`/api/ar/${claimId}`),

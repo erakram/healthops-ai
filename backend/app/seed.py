@@ -511,3 +511,6 @@ def seed_history(db: Session) -> int:
                       "denials": db.scalar(select(func.count(Denial.id))), "authorizations": authorizations,
                       "encounters": encounters})
     return created
+
+
+from app.seed_opd import seed_opd  # noqa: E402,F401  (front office demo data, seeded from main)

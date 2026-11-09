@@ -25,6 +25,8 @@ class FakeLLM:
     def complete_json(self, system: str, user: str, model: str | None = None) -> LLMResult:
         self.calls += 1
         from app.verticals.healthcare.samples import coding_reply
+        if system.startswith("You are the OPD intake assistant"):
+            return LLMResult(opd_reply(json.loads(user)["complaint"]), "fake", 250, 80, 5)
         coded = coding_reply(self.cases, system, user)
         if coded is not None:
             return LLMResult(coded, "fake", 800, 150, 5)
@@ -104,3 +106,16 @@ def _identifies(case: dict, kind: str, text: str) -> bool:
     if kind == "clinical_note":  # names repeat across cases; the visit date narrows it down
         return bool(value) and value in text and record["service_date"] in text
     return bool(value) and str(value) in text
+
+
+def opd_cases() -> list[dict]:
+    from app.config import BACKEND_ROOT
+    return json.loads((BACKEND_ROOT / "sample_data" / "opd_cases.json").read_text())
+
+
+def opd_reply(complaint: str) -> dict:
+    """The answer key's department, and the whole complaint quoted as one symptom."""
+    case = next((c for c in opd_cases() if c["complaint"] == complaint), None)
+    return {"language": "hinglish", "symptoms": [{"name": "complaint", "quote": complaint}], "duration": None,
+            "severity": "moderate", "department": case["department"] if case else "general_medicine",
+            "department_reason": "From the answer key.", "red_flag_signs": [], "summary_en": complaint[:80]}

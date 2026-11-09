@@ -16,6 +16,10 @@ export const money = (v: number | null | undefined, compact = false) =>
         maximumFractionDigits: compact ? 1 : 2,
       }).format(v);
 
+/** Rupees, Indian digit grouping: ₹1,25,000. */
+export const inr = (v: number | null | undefined) =>
+  v == null ? "—" : new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(v);
+
 export const shortDate = (iso: string | null | undefined) =>
   iso ? new Date(iso.length === 10 ? `${iso}T00:00:00` : iso).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—";
 
