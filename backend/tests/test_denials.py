@@ -344,6 +344,7 @@ def test_llm_retries_when_the_model_returns_a_list():
     from app.core.llm import GroqLLM
 
     replies = iter(['[{"text": "a paragraph"}]', '{"paragraphs": []}'])
+    seen = []
 
     class Message:
         def __init__(self):
@@ -353,10 +354,12 @@ def test_llm_retries_when_the_model_returns_a_list():
         class chat:
             class completions:
                 @staticmethod
-                def create(**_):
+                def create(**kwargs):
+                    seen.append(kwargs["messages"])
                     return SimpleNamespace(choices=[SimpleNamespace(message=Message())],
                                            usage=SimpleNamespace(prompt_tokens=1, completion_tokens=1))
 
     llm = GroqLLM.__new__(GroqLLM)
     llm.client, llm.default_model, llm._rate_limit_error = Client, "m", type("Never", (Exception,), {})
     assert llm.complete_json("s", "u").data == {"paragraphs": []}
+    assert "a JSON list, not an object" in seen[1][-1]["content"]  # the retry says what was wrong

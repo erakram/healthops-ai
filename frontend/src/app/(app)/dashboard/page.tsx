@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { Activity, AlertTriangle, ArrowRight, Bot, CircleDollarSign, Clock3, Cpu, Gavel, Percent, Scale, Send, ShieldAlert, Sparkles, Timer } from "lucide-react";
+import { Activity, AlertTriangle, ArrowRight, Bot, CircleDollarSign, ClipboardCheck, Clock3, Cpu, Gavel, Percent, Scale, Send, ShieldAlert, Sparkles, Timer } from "lucide-react";
 import { motion } from "motion/react";
 import Link from "next/link";
 import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
@@ -50,6 +50,7 @@ function DashboardBody({ data }: { data: Dashboard }) {
           foot={k.avg_processing_seconds == null ? "Process a claim to measure" : <>average across {k.ai_calls} agent calls</>} />
       </div>
 
+      <Authorizations />
       <Revenue data={data} />
 
       <div className="grid gap-5 xl:grid-cols-3">
@@ -210,6 +211,42 @@ function DashboardBody({ data }: { data: Dashboard }) {
           </Panel>
         </motion.div>
       </div>
+    </motion.div>
+  );
+}
+
+function Authorizations() {
+  const { data: a } = useQuery({ queryKey: ["auths", "summary"], queryFn: api.authorizationsSummary, refetchInterval: 20_000 });
+  if (!a) return null;
+  const items = [
+    { label: "Need documentation", value: a.needs_documentation, tone: "text-amber-300", fmt: undefined },
+    { label: "With payers", value: a.with_payer, tone: "text-sky-300", fmt: undefined },
+    { label: "Approved first time", value: a.first_pass_approval_rate ?? 0, tone: "text-emerald-300",
+      fmt: (v: number) => (a.first_pass_approval_rate == null ? "—" : `${v.toFixed(0)}%`) },
+    { label: "Payer turnaround", value: (a.avg_turnaround_seconds ?? 0) / 3600, tone: "text-violet-300",
+      fmt: (v: number) => (a.avg_turnaround_seconds == null ? "—" : v >= 24 ? `${(v / 24).toFixed(1)}d` : `${v.toFixed(1)}h`) },
+  ];
+  return (
+    <motion.div variants={stagger.item}>
+      <Panel className="p-6">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <div className="flex items-center gap-2"><ClipboardCheck className="size-4 text-violet-300" /><h3 className="font-medium text-white">Prior authorizations</h3></div>
+            <p className="text-xs text-slate-400">Before the service: documentation gaps caught before the payer has to ask</p>
+          </div>
+          <Link href="/authorizations" className="group flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm text-violet-200 ring-1 ring-violet-400/25 transition hover:bg-violet-400/10">
+            Open requests <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          {items.map((s) => (
+            <div key={s.label} className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
+              <AnimatedNumber value={s.value} format={s.fmt} className={cn("block text-2xl font-semibold tracking-tight", s.tone)} />
+              <p className="text-xs text-slate-400">{s.label}</p>
+            </div>
+          ))}
+        </div>
+      </Panel>
     </motion.div>
   );
 }

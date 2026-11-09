@@ -31,7 +31,8 @@ export function DocumentViewer({ documents, focus, onSelect }: {
   if (!doc) return null;
   const pages = Math.max(doc.pages, 1);
   const src = pageImageUrl(doc.id, page);
-  const box = focus && focus.document_id === doc.id && focus.page === page ? focus.bbox : null;
+  // A focus with an empty box just opens the document (e.g. "show the determination letter").
+  const box = focus && focus.document_id === doc.id && focus.page === page && focus.bbox[2] > focus.bbox[0] ? focus.bbox : null;
 
   return (
     <div className="flex h-full flex-col">

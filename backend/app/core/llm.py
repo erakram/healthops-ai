@@ -69,33 +69,35 @@ class GroqLLM:
     def complete_json(self, system: str, user: str, model: str | None = None) -> LLMResult:
         model = model or self.default_model
         started = time.perf_counter()
-        last_error = None
-        for _ in range(2):  # one extra try if the model returns invalid JSON
+        messages = [{"role": "system", "content": system}, {"role": "user", "content": user}]
+        tokens_in = tokens_out = 0
+        problem = "no reply"
+        for _ in range(3):  # a bad reply is retried with a note saying what was wrong
             try:
                 response = self.client.chat.completions.create(
-                    model=model,
-                    messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
-                    response_format={"type": "json_object"},
-                    temperature=0,
+                    model=model, messages=messages, response_format={"type": "json_object"}, temperature=0,
                     **_model_options(model),
                 )
             except self._rate_limit_error as exc:  # the SDK already retried a few times
                 raise RateLimited(f"Rate limited by {model}", _wait_from(str(exc))) from exc
+            usage = response.usage
+            tokens_in += getattr(usage, "prompt_tokens", 0) or 0
+            tokens_out += getattr(usage, "completion_tokens", 0) or 0
             content = response.choices[0].message.content or ""
             try:
                 data = json.loads(content)
-            except json.JSONDecodeError as exc:
-                last_error = exc
-                continue
-            if not isinstance(data, dict):  # seen in evals: a bare list instead of the requested object
-                last_error = ValueError(f"expected a JSON object, got {type(data).__name__}")
-                continue
-            usage = response.usage
-            return LLMResult(data=data, model=model,
-                             input_tokens=getattr(usage, "prompt_tokens", 0) or 0,
-                             output_tokens=getattr(usage, "completion_tokens", 0) or 0,
-                             latency_ms=int((time.perf_counter() - started) * 1000))
-        raise LLMError(f"Model returned invalid JSON twice: {last_error}")
+                problem = "" if isinstance(data, dict) else f"a JSON {type(data).__name__}, not an object"
+            except json.JSONDecodeError:
+                problem = "not valid JSON"
+            if not problem:
+                return LLMResult(data=data, model=model, input_tokens=tokens_in, output_tokens=tokens_out,
+                                 latency_ms=int((time.perf_counter() - started) * 1000))
+            # Seen in evals: gpt-oss sometimes answers with the inner list (e.g. just the paragraphs).
+            messages += [{"role": "assistant", "content": content[:4000]},
+                         {"role": "user", "content": f"That reply was {problem}. Reply again with one JSON object in "
+                                                     "exactly the shape the instructions give, top-level keys "
+                                                     "included, and nothing else."}]
+        raise LLMError(f"Model's reply was {problem} three times")
 
 
 _JSON_ONLY = ("\n\nRespond with the JSON object only: no prose before or after it, no code fences.")

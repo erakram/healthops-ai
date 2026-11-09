@@ -216,6 +216,55 @@ export interface SampleCase {
   stage: "intake" | "after_submission";
 }
 
+/* ---------- Prior authorization ---------- */
+
+export type AuthStatus =
+  | "received" | "reading" | "checking" | "not_required" | "ineligible" | "needs_documentation" | "ready"
+  | "submitted" | "approved" | "pended" | "denied" | "withdrawn" | "failed";
+export type AuthAction = "submit" | "request_documentation" | "do_not_submit" | "none" | "ineligible";
+
+export interface AuthSummary {
+  id: number; number: string; status: AuthStatus; status_label: string; urgency: "routine" | "urgent";
+  source: string; patient_name: string | null; payer_name: string | null; member_id: string | null;
+  services: { cpt: string; description: string | null; units: number }[]; scheduled_date: string | null;
+  action: AuthAction | null; action_label: string | null; missing: number; attempts: number; auth_number: string | null;
+  submitted_at: string | null; due_at: string | null; hours_left: number | null; decided_at: string | null;
+  turnaround_seconds: number | null; has_sample_addendum: boolean; created_at: string; updated_at: string;
+}
+
+export interface AuthCriterion extends Criterion { source?: string | null }
+
+export interface AuthDetail extends AuthSummary {
+  extracted: Record<string, Record<string, ExtractedField>>;
+  requirement: {
+    required?: boolean; eligible?: boolean; reasons?: string[]; policy_id?: string | null; required_cpts?: string[];
+    eligibility?: { active: boolean; terminated_on: string | null; payer: string };
+  };
+  assessment: {
+    action?: AuthAction; reasons?: string[]; criteria?: AuthCriterion[]; summary?: string; policy_id?: string | null;
+    missing?: { id: string; text: string; ask: string; unverified_quote: string | null }[];
+  };
+  draft: Appeal["draft"] & { facts?: Record<string, unknown> };
+  letter: Appeal["letter"];
+  decision: {
+    decision?: "approved" | "pended" | "denied"; review_action?: string; outcome?: string; auth_number?: string | null;
+    valid_from?: string | null; valid_to?: string | null; disposition?: string; notes?: string[];
+    satisfied?: string[]; missing?: string[];
+  };
+  fhir_request: Record<string, unknown>; fhir_response: Record<string, unknown>;
+  policy: Policy | null;
+  documents: (DocumentInfo & { addendum?: boolean })[];
+  events: ClaimEvent[];
+  agent_runs: { agent: string; model: string; input_tokens: number; output_tokens: number; latency_ms: number }[];
+}
+
+export interface AuthsSummary {
+  open: number; needs_documentation: number; with_payer: number; approved: number; approval_rate: number | null;
+  first_pass_approval_rate: number | null; avg_turnaround_seconds: number | null; not_required: number;
+}
+
+export interface AuthSample { case_id: string; title: string; scenario: string; patient: string; files: string[]; has_addendum: boolean }
+
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
     super(message);
@@ -286,6 +335,29 @@ export const api = {
     return request<{ matched: number; unknown_claims: string[]; remittances: Remittance[] }>("/api/remittances/import",
       { method: "POST", body: form });
   },
+  authorizations: (view: "open" | "waiting" | "done" | "all" = "open") => request<AuthSummary[]>(`/api/authorizations?view=${view}`),
+  authorizationsSummary: () => request<AuthsSummary>("/api/authorizations/summary"),
+  authorization: (id: number) => request<AuthDetail>(`/api/authorizations/${id}`),
+  authSamples: () => request<AuthSample[]>("/api/auth-samples"),
+  loadAuthSample: (caseId: string) => request<AuthSummary>(`/api/auth-samples/${caseId}/load`, { method: "POST" }),
+  createAuthorization: (files: File[]) => {
+    const form = new FormData();
+    files.forEach((f) => form.append("files", f));
+    return request<AuthSummary>("/api/authorizations", { method: "POST", body: form });
+  },
+  addAuthDocument: (id: number, file: File) => {
+    const form = new FormData();
+    form.append("files", file);
+    return request<AuthDetail>(`/api/authorizations/${id}/documents`, { method: "POST", body: form });
+  },
+  addSampleAddendum: (id: number) => request<AuthDetail>(`/api/authorizations/${id}/sample-addendum`, { method: "POST" }),
+  saveAuthLetter: (id: number, paragraphs: { source_index: number | null; text: string }[]) =>
+    request<AuthDetail>(`/api/authorizations/${id}/letter`, { ...json({ paragraphs }), method: "PUT" }),
+  submitAuthorization: (id: number, paragraphs: { source_index: number | null; text: string }[], note?: string) =>
+    request<AuthDetail>(`/api/authorizations/${id}/submit`, json({ paragraphs, note })),
+  withdrawAuthorization: (id: number, note: string) => request<AuthDetail>(`/api/authorizations/${id}/withdraw`, json({ note })),
+  retryAuthorization: (id: number) => request<AuthDetail>(`/api/authorizations/${id}/retry`, { method: "POST" }),
+
   remittanceRaw: async (id: number) => {
     const res = await fetch(`/api/remittances/${id}/raw`, { credentials: "same-origin" });
     if (!res.ok) throw new ApiError(res.status, res.statusText);

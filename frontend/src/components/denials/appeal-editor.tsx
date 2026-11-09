@@ -25,7 +25,8 @@ function initial(appeal: Appeal): Edit[] {
   return (appeal.draft.paragraphs ?? []).map((p, i) => ({ source_index: i, text: p.text }));
 }
 
-export function AppealEditor({ appeal, editable, sending, saving, recovered, onSend, onSave, onFocus, onPolicy }: {
+export function AppealEditor({ appeal, editable, sending, saving, recovered, onSend, onSave, onFocus, onPolicy,
+  sendLabel = "Send appeal to payer", waitingLabel = "Sent. Waiting for the payer's appeal reviewer…" }: {
   appeal: Appeal;
   editable: boolean;
   sending: boolean;
@@ -35,6 +36,8 @@ export function AppealEditor({ appeal, editable, sending, saving, recovered, onS
   onSave: (paragraphs: Edit[]) => void;
   onFocus: (e: Evidence) => void;
   onPolicy: (quote: string) => void;
+  sendLabel?: string;
+  waitingLabel?: string;
 }) {
   const draft = appeal.draft;
   const isDraft = appeal.status === "draft";
@@ -70,7 +73,7 @@ export function AppealEditor({ appeal, editable, sending, saving, recovered, onS
       {appeal.status === "sent" && (
         <div className="flex items-center gap-3 rounded-2xl border border-violet-400/25 bg-violet-500/[0.07] p-4">
           <span className="relative flex size-2.5"><span className="absolute inline-flex size-full animate-pulse-ring rounded-full bg-violet-400" /><span className="relative size-2.5 rounded-full bg-violet-400" /></span>
-          <p className="text-sm text-violet-100">Sent. Waiting for the payer&apos;s appeal reviewer…</p>
+          <p className="text-sm text-violet-100">{waitingLabel}</p>
         </div>
       )}
 
@@ -203,7 +206,7 @@ export function AppealEditor({ appeal, editable, sending, saving, recovered, onS
           {dirty && <Button variant="secondary" loading={saving} onClick={() => { onSave(edits.filter((e) => e.text.trim())); setDirty(false); }}>Save draft</Button>}
           <Button variant="primary" loading={sending} disabled={!edits.some((e) => e.text.trim())}
             onClick={() => onSend(edits.filter((e) => e.text.trim()))}>
-            <Send className="size-4" /> Send appeal to payer
+            <Send className="size-4" /> {sendLabel}
           </Button>
         </div>
       )}

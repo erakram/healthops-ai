@@ -153,9 +153,15 @@ def main() -> None:
             except RateLimited as exc:
                 print(f"        rate limited, waiting {exc.wait_seconds:.0f}s")
                 time.sleep(exc.wait_seconds)
+            except Exception as exc:  # a crash is a result too; keep going
+                result = {"case_id": case["case_id"], "scenario": case["scenario"], "error": f"{type(exc).__name__}: {exc}"}
+                break
         else:
             raise SystemExit("Rate limited 5 times in a row")
         results.append(result)
+        if "error" in result:
+            print(f"[{i:>2}/{len(cases)}] {case['case_id']} {case['scenario']:<22} ERROR {result['error'][:90]}")
+            continue
         ok = "ok " if result["action"] == result["expected"]["action"] else "BAD"
         line = f"[{i:>2}/{len(cases)}] {case['case_id']} {case['scenario']:<22} {ok} {result['action']:<22}"
         if "draft" in result:
@@ -166,7 +172,8 @@ def main() -> None:
         print(line)
         time.sleep(args.pause)
 
-    summary = {**summarize(results), "model": model, "provider": settings.llm_provider}
+    ok = [r for r in results if "error" not in r]
+    summary = {**summarize(ok), "errors": len(results) - len(ok), "model": model, "provider": settings.llm_provider}
     REPORTS.mkdir(exist_ok=True)
     path = REPORTS / f"auth-{datetime.now():%Y%m%d-%H%M%S}.json"
     path.write_text(json.dumps({"summary": summary, "cases": results}, indent=2))

@@ -12,6 +12,10 @@ tamper-evident audit trail.
 ## What it does
 
 ```
+order ─► requirement check ─► Clinical Criteria Agent ─► gaps? ask the physician ─► Request Agent ─► staff ─► payer (FHIR PAS)
+         payer + CPT rules     note vs payer policy        addendum → re-check       cited summary            approved / pended / denied
+                                                                                                              + determination letter
+
 upload ─► Document Agent ─► rules engine ─► Claims Review Agent ─► human review ─► payer
           reads each PDF     17 checks        finds what rules       approve /        submitted
           + evidence boxes   (no LLM)         can't (with a quote)   reject / correct  exactly once
@@ -30,6 +34,7 @@ payer ─► 835 remittance ─► Denial Triage Agent ─► Appeal Agent ─�
 | **Human in the loop** | Agents never approve. A biller approves or rejects (with a reason); anyone can correct a misread field, which re-validates the claim and is stored as a future test case. |
 | **Durable workflow** | An explicit state machine plus a job queue in the database. Jobs survive restarts, resume document by document, wait out provider rate limits, and the payer submission is idempotent. |
 | **Audit trail** | Append-only, each row hashed with the previous row's hash. The UI re-verifies the whole chain. |
+| **Prior authorization** | Before an MRI or a procedure: rules decide whether this payer needs authorization and whether coverage is active; the Clinical Criteria Agent checks the note against the payer's policy (a criterion counts only with a quote found in a note) and turns gaps into precise asks for the physician. An addendum note triggers a re-check. The Request Agent drafts a cited medical necessity summary (same verification as appeals). Staff submit it as a FHIR Bundle shaped after HL7 Da Vinci PAS (Claim with use "preauthorization"); the mock payer checks every quote against the attached records itself and answers with a ClaimResponse: approved (with an authorization number, period and a determination letter PDF that a later claim can use), pended for more information, or denied. The CMS response clocks (72 h urgent, 7 days standard) are tracked. |
 | **Payer and 835** | A deterministic mock payer adjudicates each submission (timely filing, eligibility, authorization, records review, bundling edits, fee schedule, deductible) and answers with real X12 835 text. Our side reads it with an 835 parser, the same path as an imported clearinghouse file, and opens a denial for every adjustment someone must act on. Corrected claims get a reversal (CLP 22) and a replacement payment. |
 | **Denial Triage Agent** | Mostly rules: the reason code (CARC/RARC) gives the category, the payer contract gives the deadline, the packet shows whether an authorization existed. The LLM only judges whether the clinical note meets the payer policy's criteria, and a criterion counts as met only with a quote found in the note. Policies are found with BM25 search over the policy library. Recommends appeal, corrected claim, bill patient or write-off, with expected recovery. |
 | **Appeal Agent** | Drafts the appeal; every argument paragraph must cite the note, the authorization or the policy. Quotes are verified against the source, paragraphs with no verified citation or with a date, amount or ID that isn't in the record are removed and shown to the biller. The letter header (IDs, dates, amounts) is filled in by code. The biller edits and sends; citations stay attached server-side. |
@@ -48,18 +53,21 @@ healthops-ai/
 ├── backend/
 │   ├── app/
 │   │   ├── core/            workflow state machine, jobs, audit chain, auth, LLM adapter, events
-│   │   ├── agents/          document, claims review, denial triage and appeal agents
+│   │   ├── agents/          document, claims review, criteria, request, denial triage and appeal agents
+│   │   │                    (cited_writing.py: the quote-verified letter writer they share)
 │   │   ├── documents/       PDF text + word boxes, page rendering, quote grounding
 │   │   ├── verticals/
-│   │   │   └── healthcare/  document types, rules, prompts, 835, CARC codes, policies, mock payer  ← the "vertical pack"
+│   │   │   └── healthcare/  document types, rules, prompts, 835, FHIR PAS, CARC codes, policies, mock payer  ← the "vertical pack"
 │   │   ├── api/             auth, claims, dashboard, audit, live events
 │   │   ├── pipeline.py      extract → validate → submit handlers
 │   │   └── worker.py        background job runner
+│   │   ├── authorizations.py  auth_read → auth_check → auth_decide handlers (prior authorization)
 │   │   ├── revenue.py       remit → triage → draft_appeal → appeal_decision handlers
 │   ├── scripts/generate_samples.py   synthetic packets with planted problems + answer keys
 │   ├── evals/run_evals.py            intake agents vs. the answer keys, with the real model
 │   ├── evals/run_denial_evals.py     denial agents vs. the den_* answer keys
-│   └── tests/                        155 tests, offline (fake LLM)
+│   ├── evals/run_auth_evals.py       prior authorization agents vs. the pa_* answer keys
+│   └── tests/                        174 tests, offline (fake LLM)
 ├── frontend/                Next.js app
 └── docker-compose.yml       Postgres + API + web
 ```
@@ -92,7 +100,9 @@ Good ones to show: *Clinical note says the chest X-ray was deferred* (only the A
 *Invoice contains hidden instructions to the AI* (prompt injection), and from the "payer will answer" group
 *Epidural injection denied as not medically necessary, note supports it*: approve it, and a few seconds later the
 payer's 835 arrives, triage checks the note against the policy, and an appeal is drafted for you to send.
-The **Denials** page also has seeded history to work, including corrected claims.
+The **Denials** page also has seeded history to work, including corrected claims. On **Authorizations**, try
+*Lumbar MRI order: the note doesn't say how long treatment was tried*: the Criteria Agent finds the gap, you add
+the physician's sample addendum, it re-checks and redrafts, and the payer approves with an authorization number.
 
 **With Docker:** `ANTHROPIC_API_KEY=... docker compose up --build`, then http://localhost:3000.
 
@@ -103,6 +113,7 @@ cd backend
 .venv/bin/python -m pytest -q          # offline, deterministic: rules, audit chain, workflow, full API flow
 .venv/bin/python -m evals.run_evals          # intake agents, real model, ~1 claim/minute on Groq's free tier
 .venv/bin/python -m evals.run_denial_evals   # denial agents: triage, criteria, citations, appeal outcomes
+.venv/bin/python -m evals.run_auth_evals     # prior authorization: requirement, criteria, gaps, payer decisions
 ```
 
 The database schema has no migrations yet: after pulling changes that add tables or columns, delete

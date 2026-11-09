@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { FileStack, LayoutDashboard, LogOut, Menu, Scale, ScrollText, X } from "lucide-react";
+import { ClipboardCheck, FileStack, LayoutDashboard, LogOut, Menu, Scale, ScrollText, X } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 
 const NAV = [
   { href: "/dashboard", label: "Command center", icon: LayoutDashboard },
+  { href: "/authorizations", label: "Authorizations", icon: ClipboardCheck, badge: "auths" as const },
   { href: "/claims", label: "Claims", icon: FileStack, badge: "claims" as const },
   { href: "/denials", label: "Denials", icon: Scale, badge: "denials" as const },
   { href: "/audit", label: "Audit trail", icon: ScrollText, roles: ["biller", "admin"] },
@@ -31,8 +32,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     refetchInterval: 30_000,
   });
   const { data: denials } = useQuery({ queryKey: ["denials", "summary"], queryFn: api.denialsSummary, refetchInterval: 30_000 });
-  const badges = { claims: waiting?.length ?? 0, denials: denials?.open ?? 0 };
+  const { data: auths } = useQuery({ queryKey: ["auths", "summary"], queryFn: api.authorizationsSummary, refetchInterval: 30_000 });
+  const badges = { claims: waiting?.length ?? 0, denials: denials?.open ?? 0, auths: auths?.needs_documentation ?? 0 };
   const connected = useLiveEvents((event) => {
+    if (event.type === "auth.updated" && ["approved", "pended", "denied"].includes(event.status ?? "")) {
+      const words = { approved: "approved", pended: "pended: the payer wants more information", denied: "denied" } as Record<string, string>;
+      toast.message(`Prior authorization ${words[event.status!]}`, {
+        action: { label: "Open", onClick: () => router.push(`/authorizations/${event.authorization_id}`) },
+      });
+    }
     if (event.type === "claim.updated" && event.status === "needs_review") toast.message("A claim needs review", {
       description: "The agents finished and found issues.",
       action: { label: "Open", onClick: () => router.push(`/claims/${event.claim_id}`) },
@@ -61,7 +69,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               {item.badge && !!badges[item.badge] && (
                 <motion.span key={badges[item.badge]} initial={{ scale: 0 }} animate={{ scale: 1 }}
                   className={cn("relative rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1",
-                    item.badge === "denials" ? "bg-orange-400/15 text-orange-200 ring-orange-400/30" : "bg-amber-400/15 text-amber-200 ring-amber-400/30")}>
+                    item.badge === "denials" ? "bg-orange-400/15 text-orange-200 ring-orange-400/30"
+                      : item.badge === "auths" ? "bg-violet-400/15 text-violet-200 ring-violet-400/30" : "bg-amber-400/15 text-amber-200 ring-amber-400/30")}>
                   {badges[item.badge]}
                 </motion.span>
               )}
