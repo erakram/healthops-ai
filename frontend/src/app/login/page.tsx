@@ -11,6 +11,7 @@ import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui";
 import { api, type Role } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { SiteFooter } from "@/components/site-footer";
 
 const ROLE_INFO: Record<Role, { icon: typeof UserCheck; blurb: string; gradient: string }> = {
   intake: { icon: FileSearch, blurb: "Uploads claim packets and fixes misread fields", gradient: "from-cyan-400/20 to-cyan-400/0" },
@@ -174,6 +175,7 @@ function LoginInner() {
           </form>
         </motion.div>
       </section>
+      <SiteFooter className="absolute inset-x-0 bottom-0 border-t-0 bg-transparent py-4" />
     </div>
   );
 }

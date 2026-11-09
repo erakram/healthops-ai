@@ -9,6 +9,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { Aurora } from "@/components/aurora";
 import { Logo } from "@/components/logo";
+import { SiteFooter } from "@/components/site-footer";
 import { api } from "@/lib/api";
 import { useLiveEvents } from "@/lib/live";
 import { cn } from "@/lib/utils";
@@ -146,8 +147,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         )}
       </AnimatePresence>
 
-      <main className="relative lg:pl-64">
-        <div className="mx-auto max-w-[1400px] px-4 py-8 md:px-8 md:py-10">{children}</div>
+      <main className="relative flex min-h-screen flex-col lg:pl-64">
+        <div className="mx-auto w-full max-w-[1400px] flex-1 px-4 py-8 md:px-8 md:py-10">{children}</div>
+        <SiteFooter className="mx-4 md:mx-8" />
       </main>
     </div>
   );
